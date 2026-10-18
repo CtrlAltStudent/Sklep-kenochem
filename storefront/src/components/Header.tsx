@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowRight, Briefcase, ChevronDown, Clock, Heart, Loader2, Menu, Phone, Search, ShoppingCart, Sparkles, Truck, User, X,
+  ArrowRight, Briefcase, ChevronDown, ChevronRight, Clock, Heart, Loader2, Menu, Phone, Search, ShoppingCart, Sparkles, Truck, User, X,
 } from "lucide-react";
 import { categoryPhoto } from "@/lib/photos";
 import { categories, formatPrice, minPrice, FREE_SHIPPING, type ProductCardData } from "@/lib/data";
@@ -121,7 +121,7 @@ function MegaPanel({ slug, counts, onClose, onEnter }: { slug: string; counts: C
   return (
     <div onMouseEnter={onEnter} className="absolute inset-x-0 top-full z-40 hidden animate-fade-in rounded-b-3xl bg-white shadow-2xl shadow-brand-950/30 lg:block">
       <div className="kc-stripe" />
-      <div className="mx-auto grid max-w-shop grid-cols-[1fr_320px] gap-8 px-6 py-7">
+      <div className="mx-auto grid max-h-[calc(100vh-200px)] max-w-shop grid-cols-[1fr_280px] gap-8 overflow-y-auto px-6 py-7">
         <div>
           <div className="mb-5 flex items-end justify-between">
             <h3 className="flex items-center gap-3 text-xl font-extrabold text-navy">
@@ -133,27 +133,42 @@ function MegaPanel({ slug, counts, onClose, onEnter }: { slug: string; counts: C
               Zobacz całą kategorię <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          {/* Kolumny: podkategoria (nagłówek) + kategorie 3. poziomu – jak na kenochem.098.pl / agrosimex */}
+          <div className="columns-3 gap-6 xl:columns-4">
             {cat.children.map((s) => {
               const n = counts[`${cat.slug}/${s.slug}`] ?? 0;
+              if (!n) return null;
+              const types = s.types.filter((t) => counts[`${cat.slug}/${s.slug}/${t.slug}`]);
               return (
-                <Link key={s.slug} href={`/kategoria/${cat.slug}?sub=${s.slug}`} onClick={onClose}
-                  className={`group relative flex items-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-br from-leaf-50 to-white p-3.5 ring-1 ring-leaf-100 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-leaf/15 hover:ring-leaf-300 ${n ? "" : "opacity-50"}`}>
-                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white text-brand-700 shadow-sm ring-1 ring-leaf-100 transition group-hover:bg-leaf group-hover:text-white group-hover:ring-leaf">
-                    <CatIcon name={s.lucide} className="h-6 w-6" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm leading-tight font-bold text-ink group-hover:text-brand-800">{s.name}</span>
-                    <span className="mt-1 inline-block rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-leaf-700 ring-1 ring-leaf-100">{n} prod.</span>
-                  </span>
-                  <ArrowRight className="h-4 w-4 shrink-0 -translate-x-1 text-leaf opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100" />
-                </Link>
+                <div key={s.slug} className="mb-5 break-inside-avoid">
+                  <Link href={`/kategoria/${cat.slug}?sub=${s.slug}`} onClick={onClose}
+                    className="group flex items-center gap-2.5 rounded-xl py-1 pr-2 transition hover:text-brand-800">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-leaf-50 text-brand-700 ring-1 ring-leaf-100 transition group-hover:bg-leaf group-hover:text-white group-hover:ring-leaf">
+                      <CatIcon name={s.lucide} className="h-4.5 w-4.5" />
+                    </span>
+                    <span className="text-sm leading-tight font-extrabold text-navy group-hover:text-brand-800">{s.name}</span>
+                    <ChevronRight className="h-3.5 w-3.5 shrink-0 text-leaf" />
+                  </Link>
+                  {types.length > 0 && (
+                    <ul className="mt-1.5 space-y-0.5 border-l-2 border-leaf-100 pl-3 ml-[18px]">
+                      {types.map((t) => (
+                        <li key={t.slug}>
+                          <Link href={`/kategoria/${cat.slug}?sub=${s.slug}&typ=${t.slug}`} onClick={onClose}
+                            className="flex items-baseline justify-between gap-2 rounded-md px-2 py-1 text-[13px] text-slate-600 transition hover:bg-leaf-50 hover:text-brand-800">
+                            <span>{t.name}</span>
+                            <span className="text-[11px] text-slate-400">{counts[`${cat.slug}/${s.slug}/${t.slug}`]}</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               );
             })}
           </div>
         </div>
-        <div className="group relative isolate flex flex-col justify-end overflow-hidden rounded-2xl p-5 text-white">
-          <Image src={categoryPhoto[cat.slug] ?? "/brand/mYCIE-AUTA-1.jpg"} alt="" fill sizes="320px" className="-z-10 object-cover transition duration-700 group-hover:scale-110" />
+        <div className="group relative isolate sticky top-0 flex min-h-[320px] flex-col justify-end self-start overflow-hidden rounded-2xl p-5 text-white">
+          <Image src={categoryPhoto[cat.slug] ?? "/brand/mYCIE-AUTA-1.jpg"} alt="" fill sizes="280px" className="-z-10 object-cover transition duration-700 group-hover:scale-110" />
           <div className="absolute inset-0 -z-10 bg-gradient-to-t from-brand-950/95 via-brand-900/50 to-transparent" />
           <span className="text-xs font-bold tracking-widest text-leaf-300 uppercase">{counts[cat.slug] ?? 0} produktów</span>
           <p className="mt-1 text-xl leading-tight font-black">{cat.name}</p>
@@ -169,6 +184,7 @@ function MegaPanel({ slug, counts, onClose, onEnter }: { slug: string; counts: C
 
 function MobileMenu({ onClose, counts }: { onClose: () => void; counts: CategoryCounts }) {
   const [open, setOpen] = useState<string | null>(null);
+  const [openSub, setOpenSub] = useState<string | null>(null);
   return (
     <div className="fixed inset-0 z-50 lg:hidden">
       <div className="absolute inset-0 animate-fade-in bg-brand-950/50 backdrop-blur-sm" onClick={onClose} />
@@ -193,11 +209,33 @@ function MobileMenu({ onClose, counts }: { onClose: () => void; counts: Category
                   <Link href={`/kategoria/${c.slug}`} onClick={onClose} className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold text-accent-dark">
                     <ArrowRight className="h-4 w-4" /> Wszystkie w kategorii
                   </Link>
-                  {c.children.map((s) => (
-                    <Link key={s.slug} href={`/kategoria/${c.slug}?sub=${s.slug}`} onClick={onClose} className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-700 active:bg-brand-50">
-                      <CatIcon name={s.lucide} className="h-4.5 w-4.5 text-brand-700" /> {s.name}
-                    </Link>
-                  ))}
+                  {c.children.filter((s) => counts[`${c.slug}/${s.slug}`]).map((s) => {
+                    const types = s.types.filter((t) => counts[`${c.slug}/${s.slug}/${t.slug}`]);
+                    const subOpen = openSub === s.slug;
+                    return (
+                      <div key={s.slug}>
+                        <div className="flex items-center">
+                          <Link href={`/kategoria/${c.slug}?sub=${s.slug}`} onClick={onClose} className="flex flex-1 items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-700 active:bg-brand-50">
+                            <CatIcon name={s.lucide} className="h-4.5 w-4.5 text-brand-700" /> {s.name}
+                          </Link>
+                          {types.length > 0 && (
+                            <button onClick={() => setOpenSub(subOpen ? null : s.slug)} aria-label={`Rozwiń ${s.name}`} className="grid h-9 w-9 place-items-center rounded-lg text-slate-400 active:bg-brand-50">
+                              <ChevronDown className={`h-4 w-4 transition ${subOpen ? "rotate-180" : ""}`} />
+                            </button>
+                          )}
+                        </div>
+                        {subOpen && (
+                          <div className="mb-1 ml-5 grid animate-fade-in border-l-2 border-leaf-100 pl-3">
+                            {types.map((t) => (
+                              <Link key={t.slug} href={`/kategoria/${c.slug}?sub=${s.slug}&typ=${t.slug}`} onClick={onClose} className="rounded-md px-2 py-1.5 text-[13px] text-slate-600 active:bg-leaf-50">
+                                {t.name}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

@@ -47,13 +47,14 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
   const description = desc.html;
   const category = getCategory(product.category)!;
   const sub = category.children.find((s) => s.slug === product.subcategory);
+  const type = sub?.types.find((t) => t.slug === product.type);
   const related = products
     .filter((p) => p.subcategory === product.subcategory && p.slug !== product.slug && usableImages(p.images).length)
     .slice(0, 4);
 
   const spec = [
     ["Marka", product.brand],
-    ["Kategoria", sub ? `${category.name} › ${sub.name}` : category.name],
+    ["Kategoria", [category.name, sub?.name, type?.name].filter(Boolean).join(" › ")],
     ["Pojemność / wariant", product.variants[0].label],
     ["Kod SKU", product.sku],
     ["EAN", product.ean],
@@ -74,11 +75,13 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
         { name: "Strona główna", url: "/" },
         { name: category.name, url: `/kategoria/${category.slug}` },
         ...(sub ? [{ name: sub.name, url: `/kategoria/${category.slug}?sub=${sub.slug}` }] : []),
+        ...(sub && type ? [{ name: type.name, url: `/kategoria/${category.slug}?sub=${sub.slug}&typ=${type.slug}` }] : []),
         { name: product.name, url: `/produkt/${product.slug}` },
       ], reviews)} />
       <Breadcrumbs items={[
         { label: category.name, href: `/kategoria/${category.slug}` },
         ...(sub ? [{ label: sub.name, href: `/kategoria/${category.slug}?sub=${sub.slug}` }] : []),
+        ...(sub && type ? [{ label: type.name, href: `/kategoria/${category.slug}?sub=${sub.slug}&typ=${type.slug}` }] : []),
         { label: product.name },
       ]} />
 

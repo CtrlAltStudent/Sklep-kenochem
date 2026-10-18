@@ -66,6 +66,8 @@ async function CategoryListing({ searchParams, slug, items, counts }: {
   const params = await searchParams;
   const category = getCategory(slug)!;
   const activeSub = typeof params.sub === "string" ? params.sub : "";
+  const activeType = typeof params.typ === "string" ? params.typ : "";
+  const activeSubDef = category.children.find((s) => s.slug === activeSub);
   return (
     <>
       {/* Skróty podkategorii – zmiana ?sub= tworzy listę od nowa (key), więc filtr zawsze się ustawia */}
@@ -83,7 +85,23 @@ async function CategoryListing({ searchParams, slug, items, counts }: {
           );
         })}
       </div>
-      <Listing key={`${slug}|${activeSub}`} products={items} category={category} counts={counts} params={params} />
+      {/* Kategorie 3. poziomu wybranej podkategorii */}
+      {activeSubDef && (
+        <div className="no-scrollbar -mx-4 -mt-5 mb-8 flex gap-2 overflow-x-auto px-4 pb-1">
+          {activeSubDef.types.map((ty) => {
+            const n = counts[`${slug}/${activeSub}/${ty.slug}`] ?? 0;
+            if (!n) return null;
+            const on = activeType === ty.slug;
+            return (
+              <Link key={ty.slug} href={on ? `/kategoria/${slug}?sub=${activeSub}` : `/kategoria/${slug}?sub=${activeSub}&typ=${ty.slug}`} scroll={false}
+                className={`shrink-0 rounded-full px-4 py-2 text-[13px] font-semibold whitespace-nowrap ring-1 transition ${on ? "bg-leaf text-white ring-leaf" : "bg-white text-slate-700 ring-leaf-100 hover:ring-leaf"}`}>
+                {ty.name} <span className={on ? "text-white/80" : "text-slate-400"}>{n}</span>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+      <Listing key={`${slug}|${activeSub}|${activeType}`} products={items} category={category} counts={counts} params={params} />
     </>
   );
 }

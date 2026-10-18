@@ -19,9 +19,10 @@ export const Categories: CollectionConfig = {
         const parentId = typeof data.parent === "object" ? data.parent?.id : data.parent;
         const pad = (n: unknown) => String(Number(n ?? 0)).padStart(3, "0");
         if (parentId) {
+          // Dowolna głębokość: dział › podkategoria › typ (ścieżka rodzica + własny człon)
           const parent = await req.payload.findByID({ collection: "categories", id: parentId, depth: 0, req, overrideAccess: true });
-          data.path = `${pad(parent.order)} ${parent.name} › ${pad(data.order)} ${data.name}`;
-          data.depth = 1;
+          data.path = `${parent.path || `${pad(parent.order)} ${parent.name}`} › ${pad(data.order)} ${data.name}`;
+          data.depth = (Number(parent.depth) || 0) + 1;
         } else {
           data.path = `${pad(data.order)} ${data.name}`;
           data.depth = 0;

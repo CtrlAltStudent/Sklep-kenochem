@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowDownUp, ArrowRight, BadgePercent, Check, ChevronDown, LayoutGrid, List, Search, SlidersHorizontal, X } from "lucide-react";
-import { categories, minPrice, type Category, type ProductCardData } from "@/lib/data";
+import { categories, findType, minPrice, type Category, type ProductCardData } from "@/lib/data";
 import { productForm, sizeBucket, sizeBuckets } from "@/lib/facets";
 import { CatIcon } from "./CatIcon";
 import { ProductCard } from "./ProductCard";
@@ -86,11 +86,15 @@ function PriceRange({ min, max, value, onChange }: { min: number; max: number; v
   );
 }
 
+// typ (3. poziom) → podkategoria
+const typeSub = new Map(categories.flatMap((c) => c.children.flatMap((s) => s.types.map((t) => [t.slug, s.slug] as const))));
+
 export function Listing({ products, category, counts, params = {} }: {
   products: ProductCardData[]; category?: Category; counts?: Record<string, number>; params?: Params;
 }) {
   // Stan filtrów – startowo z adresu strony (?marka=…&cena=…)
   const [subs, setSubs] = useState<string[]>(list(params.sub));
+  const [types, setTypes] = useState<string[]>(list(params.typ));
   const [cats, setCats] = useState<string[]>(list(params.kat));
   const [brands, setBrands] = useState<string[]>(list(params.marka));
   const [sizes, setSizes] = useState<string[]>(list(params.opak));
@@ -124,12 +128,12 @@ export function Listing({ products, category, counts, params = {} }: {
 
   // Filtry działają dwuetapowo (jak w dużych sklepach): zaznaczenia to „szkic”,
   // lista zmienia się dopiero po kliknięciu „Zastosuj”. Liczniki przy opcjach liczone są dla szkicu.
-  type F = { subs: string[]; cats: string[]; brands: string[]; sizes: string[]; forms: string[]; price: [number, number]; onlyAvailable: boolean; onlyPromo: boolean; onlyNew: boolean };
-  const draft: F = { subs, cats, brands, sizes, forms, price, onlyAvailable, onlyPromo, onlyNew };
+  type F = { subs: string[]; types: string[]; cats: string[]; brands: string[]; sizes: string[]; forms: string[]; price: [number, number]; onlyAvailable: boolean; onlyPromo: boolean; onlyNew: boolean };
+  const draft: F = { subs, types, cats, brands, sizes, forms, price, onlyAvailable, onlyPromo, onlyNew };
   const [applied, setApplied] = useState<F>(draft);
   const key = (f: F) => JSON.stringify({ ...f, price: [f.price[0], Number.isFinite(f.price[1]) ? f.price[1] : null] });
   const dirty = key(draft) !== key(applied);
-  const loadDraft = (f: F) => { setSubs(f.subs); setCats(f.cats); setBrands(f.brands); setSizes(f.sizes); setForms(f.forms); setPrice(f.price); setOnlyAvailable(f.onlyAvailable); setOnlyPromo(f.onlyPromo); setOnlyNew(f.onlyNew); };
+  const loadDraft = (f: F) => { setSubs(f.subs); setTypes(f.types); setCats(f.cats); setBrands(f.brands); setSizes(f.sizes); setForms(f.forms); setPrice(f.price); setOnlyAvailable(f.onlyAvailable); setOnlyPromo(f.onlyPromo); setOnlyNew(f.onlyNew); };
   const apply = () => { setApplied(draft); setShown(PAGE); };
   const cancel = () => loadDraft(applied);
   // Zmiana od razu w obu stanach (np. usunięcie znacznika nad listą)
@@ -142,6 +146,7 @@ export function Listing({ products, category, counts, params = {} }: {
     const keep = new URLSearchParams(window.location.search).get("q");
     if (keep) q.set("q", keep);
     if (a.subs.length) q.set("sub", a.subs.join(","));
+    if (a.types.length) q.set("typ", a.types.join(","));
     if (a.cats.length) q.set("kat", a.cats.join(","));
     if (a.brands.length) q.set("marka", a.brands.join(","));
     if (a.sizes.length) q.set("opak", a.sizes.join(","));
@@ -156,14 +161,21 @@ export function Listing({ products, category, counts, params = {} }: {
     if (url !== `${window.location.pathname}${window.location.search}`) window.history.replaceState(null, "", url);
   }, [applied, sort, view]);
 
-  const empty: F = { subs: [], cats: [], brands: [], sizes: [], forms: [], price: [0, Infinity], onlyAvailable: false, onlyPromo: false, onlyNew: false };
+  const empty: F = { subs: [], types: [], cats: [], brands: [], sizes: [], forms: [], price: [0, Infinity], onlyAvailable: false, onlyPromo: false, onlyNew: false };
   const reset = () => { loadDraft(empty); setApplied(empty); setShown(PAGE); };
   const toggle = (arr: string[], set: (v: string[]) => void, v: string) => set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
-  type Skip = "sub" | "cat" | "brand" | "size" | "form" | "price";
+  // Kategoria 3. poziomu: w podkategorii z zaznaczonymi typami pokazujemy tylko te typy
+  const typeOk = (p: ProductCardData, f: F) => {
+    if (!f.types.length) return true;
+    const sel = f.types.filter((t) => typeSub.get(t) === p.subcategory);
+    return !sel.length || (!!p.type && sel.includes(p.type));
+  };
+  type Skip = "sub" | "type" | "cat" | "brand" | "size" | "form" | "price";
   const match = (p: ProductCardData, f: F, skip?: Skip) => {
     const m = meta.get(p.slug)!;
     return (skip === "sub" || !f.subs.length || f.subs.includes(p.subcategory)) &&
+      (skip === "type" || skip === "sub" || typeOk(p, f)) &&
       (skip === "cat" || !f.cats.length || f.cats.includes(p.category)) &&
       (skip === "brand" || !f.brands.length || f.brands.includes(p.brand)) &&
       (skip === "size" || !f.sizes.length || m.sizes.some((s) => f.sizes.includes(s))) &&
@@ -178,6 +190,7 @@ export function Listing({ products, category, counts, params = {} }: {
   };
 
   const subCounts = facet("sub", (p) => [p.subcategory]);
+  const typeCounts = facet("type", (p) => [p.type ?? ""]);
   const catCounts = facet("cat", (p) => [p.category]);
   const brandCounts = facet("brand", (p) => [p.brand]);
   const sizeCounts = facet("size", (p) => meta.get(p.slug)!.sizes);
@@ -197,13 +210,14 @@ export function Listing({ products, category, counts, params = {} }: {
 
   const priceActive = price[0] > 0 || Number.isFinite(price[1]);
   const offerCount = [onlyAvailable, onlyPromo, onlyNew].filter(Boolean).length;
-  const countOf = (f: F) => f.subs.length + f.cats.length + f.brands.length + f.sizes.length + f.forms.length + (f.price[0] > 0 || Number.isFinite(f.price[1]) ? 1 : 0) + [f.onlyAvailable, f.onlyPromo, f.onlyNew].filter(Boolean).length;
+  const countOf = (f: F) => f.subs.length + f.types.length + f.cats.length + f.brands.length + f.sizes.length + f.forms.length + (f.price[0] > 0 || Number.isFinite(f.price[1]) ? 1 : 0) + [f.onlyAvailable, f.onlyPromo, f.onlyNew].filter(Boolean).length;
   const activeCount = countOf(applied);
   const without = (arr: string[], v: string) => arr.filter((x) => x !== v);
   const ap = applied;
 
   const chips: { label: string; clear: () => void }[] = [
-    ...ap.subs.map((s) => ({ label: category?.children.find((c) => c.slug === s)?.name ?? s, clear: () => applyNow({ subs: without(ap.subs, s) }) })),
+    ...ap.subs.map((s) => ({ label: category?.children.find((c) => c.slug === s)?.name ?? s, clear: () => applyNow({ subs: without(ap.subs, s), types: ap.types.filter((t) => typeSub.get(t) !== s) }) })),
+    ...ap.types.map((t) => ({ label: findType(t)?.type.name ?? t, clear: () => applyNow({ types: without(ap.types, t) }) })),
     ...ap.cats.map((s) => ({ label: categories.find((c) => c.slug === s)?.name ?? s, clear: () => applyNow({ cats: without(ap.cats, s) }) })),
     ...ap.brands.map((b) => ({ label: b, clear: () => applyNow({ brands: without(ap.brands, b) }) })),
     ...ap.sizes.map((b) => ({ label: b, clear: () => applyNow({ sizes: without(ap.sizes, b) }) })),
@@ -235,9 +249,25 @@ export function Listing({ products, category, counts, params = {} }: {
         <Section title="Podkategoria" count={subs.length}>
           {category.children.map((s) => {
             const n = subCounts.get(s.slug) ?? 0;
-            if (!n && !subs.includes(s.slug)) return null;
-            return <CheckRow key={s.slug} checked={subs.includes(s.slug)} onChange={() => toggle(subs, setSubs, s.slug)} count={n}
-              label={<span className="flex items-center gap-2"><CatIcon name={s.lucide} className="h-4 w-4 text-brand-700" />{s.name}</span>} />;
+            const on = subs.includes(s.slug);
+            if (!n && !on) return null;
+            return (
+              <div key={s.slug}>
+                <CheckRow checked={on} count={n}
+                  onChange={() => { if (on) { setSubs(without(subs, s.slug)); setTypes(types.filter((t) => typeSub.get(t) !== s.slug)); } else setSubs([...subs, s.slug]); }}
+                  label={<span className="flex items-center gap-2"><CatIcon name={s.lucide} className="h-4 w-4 text-brand-700" />{s.name}</span>} />
+                {/* Kategorie 3. poziomu pod zaznaczoną podkategorią */}
+                {on && (
+                  <div className="mb-1 ml-3 border-l-2 border-leaf-100 pl-3">
+                    {s.types.map((t) => {
+                      const tn = typeCounts.get(t.slug) ?? 0;
+                      if (!tn && !types.includes(t.slug)) return null;
+                      return <CheckRow key={t.slug} checked={types.includes(t.slug)} onChange={() => toggle(types, setTypes, t.slug)} count={tn} label={<span className="text-[13px]">{t.name}</span>} />;
+                    })}
+                  </div>
+                )}
+              </div>
+            );
           })}
         </Section>
       ) : (

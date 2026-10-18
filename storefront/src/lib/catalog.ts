@@ -42,14 +42,17 @@ async function load(): Promise<Catalog> {
     payload.find({ collection: "categories", limit: 0, pagination: false, depth: 0, overrideAccess: true, select: { slug: true, parent: true } }),
   ]);
 
-  // id kategorii → [kategoria główna, podkategoria] (slugi zgodne z menu sklepu)
+  // id kategorii → [dział, podkategoria, typ] (slugi zgodne z menu sklepu). Produkt może wisieć na dowolnym poziomie.
   const catById = new Map(cats.docs.map((c) => [c.id, c]));
-  const slugPair = (id: number | undefined): [string, string] => {
-    const c = id != null ? catById.get(id) : undefined;
-    if (!c) return ["", ""];
-    const parentId = c.parent == null ? undefined : typeof c.parent === "object" ? c.parent.id : c.parent;
-    const parent = parentId != null ? catById.get(parentId) : undefined;
-    return parent ? [parent.slug ?? "", c.slug ?? ""] : [c.slug ?? "", ""];
+  const parentOf = (c: (typeof cats.docs)[number]) => {
+    const id = c.parent == null ? undefined : typeof c.parent === "object" ? c.parent.id : c.parent;
+    return id != null ? catById.get(id) : undefined;
+  };
+  const slugPath = (id: number | undefined): [string, string, string] => {
+    let c = id != null ? catById.get(id) : undefined;
+    const chain: string[] = [];
+    while (c && chain.length < 5) { chain.unshift(c.slug ?? ""); c = parentOf(c); }
+    return [chain[0] ?? "", chain[1] ?? "", chain[2] ?? ""];
   };
 
   const now = Date.now();
@@ -61,7 +64,7 @@ async function load(): Promise<Catalog> {
   for (const d of docs) {
     if (!d.slug) continue;
     const catId = d.category == null ? undefined : typeof d.category === "object" ? d.category.id : d.category;
-    const [category, subcategory] = slugPair(catId);
+    const [category, subcategory, type] = slugPath(catId);
     const onSale = saleActive(d.sale, now);
     const price = onSale ? d.sale!.price! : d.price;
     const crossed = onSale ? d.price : d.oldPrice ?? undefined;
@@ -79,6 +82,7 @@ async function load(): Promise<Catalog> {
       brand: d.brand && !NOT_BRANDS.has(d.brand.toLowerCase()) ? d.brand : "",
       category,
       subcategory,
+      type: type || undefined,
       sku: d.sku ?? "",
       ean: d.ean ?? "",
       vat: d.vatRate ?? 23,
@@ -100,6 +104,7 @@ async function load(): Promise<Catalog> {
     counts[p.category] = (counts[p.category] ?? 0) + 1;
     const k = `${p.category}/${p.subcategory}`;
     counts[k] = (counts[k] ?? 0) + 1;
+    if (p.type) counts[`${k}/${p.type}`] = (counts[`${k}/${p.type}`] ?? 0) + 1;
   }
 
   return {

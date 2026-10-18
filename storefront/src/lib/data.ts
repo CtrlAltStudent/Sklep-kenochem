@@ -7,15 +7,18 @@ export type Category = {
   icon: string; // ikona z /public/brand (z kenochem.com)
   lucide: IconName; // ikona konturowa (menu, listy)
   color: string; // kolor akcentu kategorii
-  children: { slug: string; name: string; lucide: IconName }[];
+  children: Subcategory[];
 };
+
+// 2. poziom (podkategoria) z listą kategorii 3. poziomu („typ”, np. Mycie samochodu › Aktywne piany)
+export type Subcategory = { slug: string; name: string; lucide: IconName; types: { slug: string; name: string }[] };
 
 // Nazwy ikon Lucide używanych dla kategorii (komponent: components/CatIcon.tsx)
 export type IconName =
   | "Car" | "Droplets" | "Bug" | "Disc3" | "AppWindow" | "Armchair" | "Sparkles" | "ShieldCheck" | "ShowerHead" | "FlaskConical"
   | "Cog" | "SprayCan" | "Fan" | "Brush" | "Eraser" | "Layers" | "PaintRoller" | "Pipette" | "HardHat" | "Shapes" | "Building2"
   | "Building" | "ChefHat" | "Shirt" | "Sofa" | "Hand" | "Scroll" | "House" | "Bath" | "Trees" | "Frame" | "Flower2" | "Wind"
-  | "AirVent" | "Flame" | "TestTubeDiagonal" | "Wrench" | "Droplet" | "Fuel" | "AudioWaveform" | "Tractor" | "ShieldPlus";
+  | "AirVent" | "Flame" | "TestTubeDiagonal" | "Wrench" | "Droplet" | "Fuel" | "AudioWaveform" | "Tractor" | "ShieldPlus" | "Truck";
 
 export type Variant = { id: string; label: string; price: number; oldPrice?: number };
 
@@ -26,6 +29,7 @@ export type Product = {
   brand: string;
   category: string;
   subcategory: string;
+  type?: string; // kategoria 3. poziomu (slug), jeśli produkt jest do niej przypisany
   sku: string;
   ean: string;
   vat: number;
@@ -39,7 +43,7 @@ export type Product = {
 };
 
 // Lekka wersja produktu wysyłana do przeglądarki (listy, koszyk, ulubione).
-export type ProductCardData = Pick<Product, "slug" | "name" | "brand" | "category" | "subcategory" | "stock" | "variants" | "badges" | "lowestPrice30d"> & {
+export type ProductCardData = Pick<Product, "slug" | "name" | "brand" | "category" | "subcategory" | "type" | "stock" | "variants" | "badges" | "lowestPrice30d"> & {
   image?: string;
 };
 
@@ -55,6 +59,7 @@ export const toCard = (p: Product): ProductCardData => ({
   brand: p.brand,
   category: p.category,
   subcategory: p.subcategory,
+  type: p.type,
   stock: p.stock,
   variants: p.variants,
   badges: p.badges,
@@ -64,6 +69,14 @@ export const toCard = (p: Product): ProductCardData => ({
 
 export const FREE_SHIPPING = 399;
 
+// Adres kategorii 3. poziomu: <podkategoria>-<nazwa>, np. mycie-samochodu-aktywne-piany (nazwy się powtarzają między działami)
+const PL_CHARS: Record<string, string> = { ą: "a", ć: "c", ę: "e", ł: "l", ń: "n", ó: "o", ś: "s", ź: "z", ż: "z" };
+const slugPart = (s: string) => s.toLowerCase().replace(/[ąćęłńóśźż]/g, (c) => PL_CHARS[c]).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const sub = (slug: string, name: string, lucide: IconName, types: string[]): Subcategory => ({
+  slug, name, lucide, types: types.map((t) => ({ slug: `${slug}-${slugPart(t)}`, name: t })),
+});
+
+// Drzewo kategorii jak na kenochem.098.pl: dział › podkategoria › typ produktu
 export const categories: Category[] = [
   {
     slug: "chemia-samochodowa",
@@ -72,13 +85,13 @@ export const categories: Category[] = [
     lucide: "Car",
     color: "#4f9a12",
     children: [
-      { slug: "mycie-samochodu", name: "Mycie samochodu", lucide: "Droplets" },
-      { slug: "trudne-zabrudzenia", name: "Trudne zabrudzenia", lucide: "Bug" },
-      { slug: "felgi-i-opony", name: "Felgi i opony", lucide: "Disc3" },
-      { slug: "szyby-i-szklo", name: "Szyby i szkło", lucide: "AppWindow" },
-      { slug: "wnetrze-samochodu", name: "Wnętrze samochodu", lucide: "Armchair" },
-      { slug: "pielegnacja-lakieru", name: "Pielęgnacja lakieru", lucide: "Sparkles" },
-      { slug: "elementy-zewnetrzne", name: "Elementy zewnętrzne", lucide: "ShieldCheck" },
+      sub("mycie-samochodu", "Mycie samochodu", "Droplets", ["Aktywne piany", "Szampony samochodowe", "Pre-wash i TFR", "APC do samochodu", "Preparaty do mocnych zabrudzeń"]),
+      sub("trudne-zabrudzenia", "Trudne zabrudzenia", "Bug", ["Usuwanie owadów", "Usuwanie smoły, asfaltu, kleju i żywicy", "Deironizery i osady metaliczne"]),
+      sub("felgi-i-opony", "Felgi i opony", "Disc3", ["Płyny do felg", "Krwawa felga", "Neutralne płyny do felg", "Kwaśne płyny do felg", "Dressingi i czernidła do opon"]),
+      sub("szyby-i-szklo", "Szyby i szkło", "AppWindow", ["Płyny do szyb samochodowych", "Niewidzialne wycieraczki", "Odmrażacze do szyb", "Antypara", "Płyny do spryskiwaczy"]),
+      sub("wnetrze-samochodu", "Wnętrze samochodu", "Armchair", ["Kokpit i plastiki", "Tapicerka materiałowa", "Skóra samochodowa", "Klimatyzacja samochodowa", "Zapachy i neutralizatory do samochodu"]),
+      sub("pielegnacja-lakieru", "Pielęgnacja lakieru", "Sparkles", ["Pasty polerskie", "Cleanery, politury i AIO", "Quick detailery", "Woski samochodowe", "Powłoki ceramiczne i ochronne"]),
+      sub("elementy-zewnetrzne", "Elementy zewnętrzne", "ShieldCheck", ["Plastiki zewnętrzne", "Gumy i uszczelki", "Chrom i metale", "Dachy cabrio", "Czyszczenie silnika", "Konserwacja podwozia"]),
     ],
   },
   {
@@ -88,26 +101,27 @@ export const categories: Category[] = [
     lucide: "ShowerHead",
     color: "#1f5f8b",
     children: [
-      { slug: "chemia-do-myjni", name: "Chemia do myjni", lucide: "FlaskConical" },
-      { slug: "czesci-do-myjek", name: "Części do myjek", lucide: "Cog" },
-      { slug: "pianownice-i-oprysk", name: "Pianownice i oprysk", lucide: "SprayCan" },
-      { slug: "odkurzacze-i-tapicerka", name: "Odkurzacze i urządzenia", lucide: "Fan" },
+      sub("chemia-do-myjni", "Chemia do myjni", "FlaskConical", ["Aktywne piany do myjni", "Proszki do myjni samochodowych", "Szampony do myjni", "Woski osuszające i hydrowoski", "Preparaty do felg do myjni", "Preparaty do owadów, smoły i asfaltu"]),
+      sub("czesci-do-myjek", "Części do myjek", "Cog", ["Lance i pistolety", "Węże i bębny", "Dysze do myjek", "Szybkozłącza i adaptery", "Filtry, redukcje i zawory", "Akcesoria do myjek"]),
+      sub("pianownice-i-oprysk", "Pianownice i oprysk", "SprayCan", ["Pianownice ręczne", "Pianownice do myjek", "Opryskiwacze ciśnieniowe", "Opryskiwacze pianujące"]),
+      sub("odkurzacze-i-tapicerka", "Odkurzacze i tapicerka", "Fan", ["Odkurzacze", "Odkurzacze piorące", "Pistolety piorące", "Tornadory", "Akcesoria do odkurzaczy"]),
+      sub("wyposazenie-stanowisk-mycia", "Wyposażenie stanowisk mycia", "ShowerHead", ["Szczotki do myjni", "Ściągaczki do wody", "Płyny do szyb do myjni", "Pokrowce i folie na stanowiska mycia", "Uchwyty do dywaników"]),
     ],
   },
   {
     slug: "sprzet-i-akcesoria",
-    name: "Sprzęt i akcesoria",
+    name: "Sprzęt i akcesoria czyszczące",
     icon: "/brand/Akcesoria2.png",
     lucide: "Brush",
     color: "#2f7d32",
     children: [
-      { slug: "szczotki-i-miotly", name: "Szczotki, miotły i zmiotki", lucide: "Brush" },
-      { slug: "sciagaczki", name: "Ściągaczki i myjki do szyb", lucide: "Eraser" },
-      { slug: "mikrofibry-i-gabki", name: "Mikrofibry, gąbki i pady", lucide: "Layers" },
-      { slug: "mopy", name: "Mopy i systemy sprzątania", lucide: "PaintRoller" },
-      { slug: "opryskiwacze", name: "Opryskiwacze i dozowanie", lucide: "Pipette" },
-      { slug: "ochrona-osobista", name: "Ochrona osobista", lucide: "HardHat" },
-      { slug: "pozostale-akcesoria", name: "Pozostałe akcesoria", lucide: "Shapes" },
+      sub("szczotki-i-miotly", "Szczotki, miotły i zmiotki", "Brush", ["Szczotki Vikan", "Szczotki do kostki brukowej", "Szczotki do mycia samochodu", "Szczotki do podłóg", "Miotły przemysłowe", "Zmiotki i szufelki"]),
+      sub("sciagaczki", "Ściągaczki i zbieranie wody", "Eraser", ["Ściągaczki do szyb", "Ściągaczki do podłogi", "Ściągaczki do wody", "Gumowe ściągaczki Vikan", "Akcesoria do ściągaczek"]),
+      sub("mikrofibry-i-gabki", "Mikrofibry, gąbki i pady", "Layers", ["Mikrofibry uniwersalne", "Mikrofibry do szyb", "Ręczniki do osuszania", "Gąbki i rękawice", "Pady i futra polerskie"]),
+      sub("mopy", "Mopy i systemy sprzątania", "PaintRoller", ["Mopy i stelaże", "Kije i drążki teleskopowe", "Wiadra i wyciskarki", "Wózki sprzątające", "Worki na odpady"]),
+      sub("opryskiwacze", "Opryskiwacze i dozowanie", "Pipette", ["Opryskiwacze ciśnieniowe", "Opryskiwacze pneumatyczne", "Dozowniki", "Pompki", "Butelki i opakowania"]),
+      sub("ochrona-osobista", "Ochrona osobista", "HardHat", ["Rękawiczki", "Pokrowce i folie ochronne", "Akcesoria ochronne"]),
+      sub("pozostale-akcesoria", "Zestawy i pozostałe akcesoria", "Shapes", ["Zestawy akcesoriów czyszczących"]),
     ],
   },
   {
@@ -117,12 +131,12 @@ export const categories: Category[] = [
     lucide: "Building2",
     color: "#17344a",
     children: [
-      { slug: "chemia-obiektowa", name: "Chemia obiektowa", lucide: "Building" },
-      { slug: "kuchnia-i-gastronomia", name: "Kuchnia i gastronomia", lucide: "ChefHat" },
-      { slug: "pranie-i-tekstylia", name: "Pranie i tekstylia", lucide: "Shirt" },
-      { slug: "dywany-i-tapicerka", name: "Dywany i tapicerka", lucide: "Sofa" },
-      { slug: "higiena-rak", name: "Higiena rąk i BHP", lucide: "Hand" },
-      { slug: "czysciwa-i-papier", name: "Czyściwa i papier", lucide: "Scroll" },
+      sub("chemia-obiektowa", "Chemia obiektowa", "Building", ["Podłogi i posadzki", "Łazienki i sanitariaty", "Mycie powierzchni", "Szyby i lustra", "Ekologiczne środki czystości"]),
+      sub("kuchnia-i-gastronomia", "Kuchnia i gastronomia", "ChefHat", ["Ręczne mycie naczyń", "Chemia do zmywarek", "Płyny nabłyszczające do zmywarek", "Odtłuszczanie kuchni", "Czyszczenie pieców, grilli i frytkownic", "Odkamienianie urządzeń"]),
+      sub("pranie-i-tekstylia", "Pranie i tekstylia", "Shirt", ["Proszki do prania", "Płyny i żele do prania", "Płyny do płukania", "Pranie odzieży roboczej", "Odplamiacze"]),
+      sub("dywany-i-tapicerka", "Dywany i tapicerka", "Sofa", ["Pranie dywanów", "Pranie tapicerki", "Odplamiacze", "Neutralizatory zapachów"]),
+      sub("higiena-rak", "Higiena rąk, BHP i dozowniki", "Hand", ["Mydła i żele do rąk", "Pasty BHP", "Kremy do rąk", "Dezynfekcja rąk", "Dozowniki do mydła"]),
+      sub("czysciwa-i-papier", "Czyściwa i papier", "Scroll", ["Czyściwa przemysłowe", "Ręczniki papierowe", "Papier toaletowy", "Podajniki i dozowniki", "Chusteczki i ściereczki"]),
     ],
   },
   {
@@ -132,9 +146,10 @@ export const categories: Category[] = [
     lucide: "House",
     color: "#6aa50f",
     children: [
-      { slug: "chemia-do-domu", name: "Chemia do domu", lucide: "Bath" },
-      { slug: "czyszczenie-zewnetrzne", name: "Czyszczenie zewnętrzne", lucide: "Trees" },
-      { slug: "odswiezanie-domu", name: "Okna i lustra", lucide: "Frame" },
+      sub("chemia-do-domu", "Chemia do domu", "Bath", ["Kuchnia i odtłuszczanie", "Łazienka i WC", "Podłogi", "Szyby i lustra", "Pranie", "Dywany i tapicerka", "Meble", "Środki ekologiczne"]),
+      sub("czyszczenie-zewnetrzne", "Czyszczenie zewnętrzne", "Trees", ["Kostka brukowa i kamień", "Elewacje", "Dachy", "Mycie paneli fotowoltaicznych", "Usuwanie mchu i zabrudzeń", "Markizy i zadaszenia"]),
+      sub("akcesoria-domowe", "Akcesoria domowe", "House", ["Mycie okien", "Mycie podłóg", "Ściereczki do kurzu", "Worki na śmieci", "Miotły i szczotki", "Mopy i wiadra", "Zmywanie naczyń"]),
+      sub("odswiezanie-domu", "Odświeżanie domu", "Frame", ["Odświeżacze powietrza", "Neutralizatory zapachów", "Zapachy do domu"]),
     ],
   },
   {
@@ -144,9 +159,10 @@ export const categories: Category[] = [
     lucide: "Flower2",
     color: "#8a5bb5",
     children: [
-      { slug: "zapachy-samochodowe", name: "Zapachy samochodowe", lucide: "Wind" },
-      { slug: "neutralizatory", name: "Odświeżacze i neutralizatory", lucide: "AirVent" },
-      { slug: "aromamarketing", name: "Dyfuzory, olejki i świece", lucide: "Flame" },
+      sub("zapachy-samochodowe", "Zapachy samochodowe", "Wind", ["Perfumy samochodowe", "Zawieszki zapachowe", "Puszki zapachowe", "Zapachy do klimatyzacji"]),
+      sub("neutralizatory", "Odświeżacze i neutralizatory", "AirVent", ["Odświeżacze w sprayu", "One Shot", "Neutralizatory zapachów", "Automatyczne odświeżacze i wkłady", "Neutralizatory do pomieszczeń i pojazdów"]),
+      sub("zapachy-do-domu", "Zapachy do domu i biura", "Flower2", ["Saszetki zapachowe", "Patyczki zapachowe", "Świece zapachowe", "Olejki i esencje zapachowe"]),
+      sub("aromamarketing", "Aromamarketing", "Flame", ["Dyfuzory zapachowe", "Olejki do dyfuzorów"]),
     ],
   },
   {
@@ -156,15 +172,25 @@ export const categories: Category[] = [
     lucide: "TestTubeDiagonal",
     color: "#b4541a",
     children: [
-      { slug: "chemia-warsztatowa", name: "Chemia warsztatowa i techniczna", lucide: "Wrench" },
-      { slug: "zmywacze-i-odtluszczacze", name: "Zmywacze i odtłuszczacze", lucide: "Droplet" },
-      { slug: "smary", name: "Smary i preparaty techniczne", lucide: "Fuel" },
-      { slug: "myjki-ultradzwiekowe", name: "Myjki ultradźwiękowe i DPF", lucide: "AudioWaveform" },
-      { slug: "rolnictwo", name: "Rolnictwo, przemysł spożywczy, łodzie", lucide: "Tractor" },
-      { slug: "dezynfekcja", name: "Dezynfekcja specjalistyczna", lucide: "ShieldPlus" },
+      sub("chemia-warsztatowa", "Chemia warsztatowa i techniczna", "Wrench", ["Mycie części i narzędzi", "Chemia techniczna", "Czyściwa warsztatowe", "Utrzymanie czystości w warsztacie", "Dodatki do paliwa"]),
+      sub("zmywacze-i-odtluszczacze", "Zmywacze, odtłuszczacze i odrdzewiacze", "Droplet", ["Zmywacze do hamulców", "Odtłuszczacze przemysłowe", "Odrdzewiacze", "Usuwanie kleju i etykiet"]),
+      sub("smary", "Smary i preparaty techniczne", "Fuel", ["Smary techniczne", "Smary do łańcuchów", "Smary ceramiczne, miedziowe i grafitowe", "Testery i kleje techniczne"]),
+      sub("myjki-ultradzwiekowe", "Myjki ultradźwiękowe i DPF", "AudioWaveform", ["Płyny do myjek ultradźwiękowych", "Czyszczenie DPF/FAP", "Preparaty do trudnych zabrudzeń"]),
+      sub("rolnictwo", "Rolnictwo i gospodarstwo", "Tractor", ["Mycie maszyn rolniczych", "Higiena budynków inwentarskich", "Mycie i dezynfekcja urządzeń udojowych", "Chemia do wędzarni", "Urządzenia pianujące"]),
+      sub("transport", "Transport i pojazdy specjalne", "Truck", ["Mycie pojazdów ciężarowych", "Komory ładunkowe i chłodnie", "Dezynfekcja pojazdów"]),
+      sub("dezynfekcja", "Dezynfekcja specjalistyczna", "ShieldPlus", ["Dezynfekcja powierzchni", "Dezynfekcja pojazdów specjalistyczna", "Produkty specjalistyczne", "Uzdatnianie wody"]),
     ],
   },
 ];
+
+// Szybkie wyszukiwanie kategorii 3. poziomu po slugu
+export const findType = (typeSlug: string) => {
+  for (const c of categories) for (const s of c.children) {
+    const t = s.types.find((x) => x.slug === typeSlug);
+    if (t) return { category: c, sub: s, type: t };
+  }
+  return undefined;
+};
 
 export const blogPosts = [
   { slug: "jak-myc-auto-bezdotykowo", title: "Mycie bezdotykowe krok po kroku – jak nie porysować lakieru", date: "2026-10-02", excerpt: "Aktywna piana, czas działania, ciśnienie i odległość lancy. Wszystko, co musisz wiedzieć.", tag: "Poradnik", image: "/brand/mYCIE-AUTA-1.jpg" },

@@ -442,6 +442,7 @@ export interface Category {
         | 'AudioWaveform'
         | 'Tractor'
         | 'ShieldPlus'
+        | 'Truck'
       )
     | null;
   color?: string | null;
