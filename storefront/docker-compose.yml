@@ -1,0 +1,23 @@
+# Lokalna baza danych sklepu (PostgreSQL).
+# Start:  docker compose up -d
+# Stop:   docker compose down        (dane zostają w wolumenie kenochem_pgdata)
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kenochem
+      POSTGRES_PASSWORD: kenochem_dev
+      POSTGRES_DB: kenochem_shop
+    ports:
+      - "5433:5432" # 5433, żeby nie kolidować z ewentualnym lokalnym Postgresem
+    volumes:
+      - kenochem_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kenochem -d kenochem_shop"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  kenochem_pgdata:

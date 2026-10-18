@@ -1,0 +1,33 @@
+# Sklep testowy na VPS: aplikacja (Next.js + Payload) + Caddy (HTTPS z Let's Encrypt, hasło na stronę).
+# Pliki na serwerze: /opt/kenochem (ten katalog), dane trwałe w ./data i ./media.
+services:
+  app:
+    build: ./app
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: file:/data/kenochem.db
+      NODE_OPTIONS: --max-old-space-size=768
+    volumes:
+      - ./data:/data
+      - ./media:/app/media
+    expose:
+      - "3000"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on: [app]
+    env_file: .env
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

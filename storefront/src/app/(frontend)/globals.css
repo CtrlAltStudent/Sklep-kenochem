@@ -1,0 +1,126 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* Kolory z logo Kenochem: ciemna zieleń #2b6e1a, jasna zieleń #6cb00c, granat z banerów #17344a */
+  --color-ink: #17262f;
+  --color-brand-50: #f3f8ec;
+  --color-brand-100: #e4f0d6;
+  --color-brand-200: #c9e2ad;
+  --color-brand-700: #2b6e1a;
+  --color-brand-800: #225815;
+  --color-brand-900: #1a4510;
+  --color-brand-950: #102d09;
+  --color-accent: #4f9a12;
+  --color-accent-dark: #3b7a0c;
+  --color-lime: #8fcc2e;
+  /* Jasna, „liściowa” zieleń z logo – drugi kolor marki (gradienty, akcenty, aktywne stany) */
+  --color-leaf-50: #f5faeb;
+  --color-leaf-100: #e8f4d0;
+  --color-leaf-200: #d0e9a3;
+  --color-leaf-300: #add86a;
+  --color-leaf-400: #8cc63a;
+  --color-leaf: #6cb00c;
+  --color-leaf-600: #5a970a;
+  --color-leaf-700: #477809;
+  --color-navy: #17344a;
+
+  --animate-slide-in: slide-in 0.25s ease-out;
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-pop: pop 0.3s ease-out;
+}
+
+@keyframes slide-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+body {
+  background: #f6f8fb;
+  color: var(--color-ink);
+}
+
+/* Ukrycie paska przewijania w poziomych listach */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+/* ---------- Elastyczny układ: szerokość treści i skala do wielkości ekranu ---------- */
+/* Telefon/tablet: pełna szerokość z marginesem; Full HD: 1280 px; większe ekrany: szerzej + większa skala */
+.max-w-shop { max-width: 80rem; }
+@media (min-width: 1536px) { .max-w-shop { max-width: 90rem; } }
+@media (min-width: 1880px) { .max-w-shop { max-width: 105rem; } }
+
+/* 2K / WQHD (2560 px) i 4K: całość proporcjonalnie większa, żeby nie wyglądała jak „znaczek” na środku */
+@media (min-width: 2200px) { html { font-size: 112.5%; } }
+@media (min-width: 3000px) { html { font-size: 137.5%; } }
+@media (min-width: 3600px) { html { font-size: 162.5%; } }
+
+/* ---------- Animacje strony głównej ---------- */
+@keyframes aurora {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(6%, -8%) scale(1.15); }
+  66% { transform: translate(-6%, 6%) scale(0.92); }
+}
+@keyframes floaty {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-14px) rotate(var(--r, 0deg)); }
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes shine {
+  from { background-position: 200% center; }
+  to { background-position: -200% center; }
+}
+.aurora { animation: aurora 18s ease-in-out infinite; }
+.floaty { animation: floaty 6s ease-in-out infinite; }
+.marquee { animation: marquee 40s linear infinite; }
+.marquee:hover { animation-play-state: paused; }
+.text-shine {
+  background: linear-gradient(90deg, #c9f27a, #ffffff, #8fcc2e, #ffffff, #c9f27a);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shine 8s linear infinite;
+}
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.8s cubic-bezier(.2,.7,.2,1), transform 0.8s cubic-bezier(.2,.7,.2,1); }
+.reveal.is-visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .aurora, .floaty, .marquee, .text-shine { animation: none; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+/* Karty produktów na ciemnym tle – czytelny pasek dostępności */
+.on-dark .card-avail .text-green-700 { color: #c9f27a; }
+.on-dark .card-avail .text-slate-500 { color: rgb(255 255 255 / 0.65); }
+
+/* ---------- Dwie zielenie z logo: gradient marki ---------- */
+/* Główne przyciski (koszyk, szukaj, zastosuj): od jasnej zieleni liścia do ciemnej zieleni napisu */
+.btn-kc {
+  background-image: linear-gradient(120deg, #6cb00c 0%, #3f8c14 45%, #2b6e1a 100%);
+  background-size: 200% 100%;
+  background-position: 0% 0;
+  box-shadow: 0 10px 24px -10px rgb(76 140 15 / 0.65);
+  transition: background-position 0.35s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+.btn-kc:hover { background-position: 100% 0; box-shadow: 0 12px 28px -10px rgb(43 110 26 / 0.7); }
+.bg-kc-gradient { background-image: linear-gradient(120deg, #6cb00c 0%, #2b6e1a 100%); }
+.bg-kc-gradient-deep { background-image: linear-gradient(120deg, #2b6e1a 0%, #1a4510 55%, #102d09 100%); }
+.text-kc-gradient {
+  background-image: linear-gradient(100deg, #6cb00c, #2b6e1a);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+/* Cienki pasek marki (pod górną belką, nad stopką) */
+.kc-stripe { height: 3px; background-image: linear-gradient(90deg, #2b6e1a, #6cb00c 35%, #8cc63a 50%, #6cb00c 65%, #2b6e1a); }
