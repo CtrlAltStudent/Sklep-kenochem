@@ -92,7 +92,7 @@ export function ProductRail({ products }: { products: ProductCardData[] }) {
     <div className="group/rail relative">
       <div ref={ref} onScroll={update} className="no-scrollbar -mx-4 flex snap-x gap-4 overflow-x-auto scroll-smooth px-4 pb-4">
         {products.map((p) => (
-          <div key={p.slug} className="w-[46%] shrink-0 snap-start sm:w-[31%] lg:w-[23.5%] min-[1880px]:w-[19%]"><ProductCard product={p} /></div>
+          <div key={p.slug} className="w-[64%] shrink-0 snap-start min-[480px]:w-[46%] sm:w-[31%] lg:w-[23.5%] min-[1880px]:w-[19%]"><ProductCard product={p} /></div>
         ))}
       </div>
       {!edge.start && (

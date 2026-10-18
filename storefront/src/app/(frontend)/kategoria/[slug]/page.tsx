@@ -71,30 +71,30 @@ async function CategoryListing({ searchParams, slug, items, counts }: {
   return (
     <>
       {/* Skróty podkategorii – zmiana ?sub= tworzy listę od nowa (key), więc filtr zawsze się ustawia */}
-      <div className="no-scrollbar -mx-4 mb-8 flex gap-2 overflow-x-auto px-4 pb-1">
+      <div className="mb-6 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
         {category.children.map((s) => {
           const n = counts[`${slug}/${s.slug}`] ?? 0;
           if (!n) return null;
           const on = activeSub === s.slug;
           return (
             <Link key={s.slug} href={on ? `/kategoria/${slug}` : `/kategoria/${slug}?sub=${s.slug}`} scroll={false}
-              className={`group flex shrink-0 items-center gap-2.5 rounded-2xl py-2 pr-4 pl-2 text-sm font-semibold whitespace-nowrap ring-1 transition ${on ? "bg-kc-gradient text-white ring-transparent shadow-lg shadow-leaf/25" : "bg-white ring-brand-100 hover:ring-leaf"}`}>
-              <span className={`grid h-9 w-9 place-items-center rounded-xl transition ${on ? "bg-white/20 text-white" : "bg-leaf-50 text-brand-700 group-hover:bg-leaf group-hover:text-white"}`}><CatIcon name={s.lucide} className="h-4.5 w-4.5" /></span>
-              {s.name} <span className={`text-xs font-normal ${on ? "text-white/80" : "text-slate-400"}`}>{n}</span>
+              className={`group flex min-w-0 items-center gap-2.5 rounded-2xl py-2 pr-3 pl-2 text-[13px] leading-tight font-semibold ring-1 ring-inset transition-colors sm:pr-4 sm:text-sm ${on ? "bg-kc-gradient text-white ring-transparent" : "bg-white ring-brand-100 hover:bg-leaf-50/60 hover:ring-leaf"}`}>
+              <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl transition-colors ${on ? "bg-white/20 text-white" : "bg-leaf-50 text-brand-700 group-hover:bg-leaf group-hover:text-white"}`}><CatIcon name={s.lucide} className="h-4.5 w-4.5" /></span>
+              <span className="min-w-0 flex-1 sm:flex-none">{s.name}</span> <span className={`shrink-0 text-xs font-normal ${on ? "text-white/80" : "text-slate-400"}`}>{n}</span>
             </Link>
           );
         })}
       </div>
       {/* Kategorie 3. poziomu wybranej podkategorii */}
       {activeSubDef && (
-        <div className="no-scrollbar -mx-4 -mt-5 mb-8 flex gap-2 overflow-x-auto px-4 pb-1">
+        <div className="-mt-3 mb-6 flex flex-wrap gap-2">
           {activeSubDef.types.map((ty) => {
             const n = counts[`${slug}/${activeSub}/${ty.slug}`] ?? 0;
             if (!n) return null;
             const on = activeType === ty.slug;
             return (
               <Link key={ty.slug} href={on ? `/kategoria/${slug}?sub=${activeSub}` : `/kategoria/${slug}?sub=${activeSub}&typ=${ty.slug}`} scroll={false}
-                className={`shrink-0 rounded-full px-4 py-2 text-[13px] font-semibold whitespace-nowrap ring-1 transition ${on ? "bg-leaf text-white ring-leaf" : "bg-white text-slate-700 ring-leaf-100 hover:ring-leaf"}`}>
+                className={`max-w-full rounded-full px-3.5 py-1.5 text-[13px] font-semibold ring-1 ring-inset transition-colors ${on ? "bg-leaf text-white ring-leaf" : "bg-white text-slate-700 ring-leaf-100 hover:bg-leaf-50 hover:ring-leaf"}`}>
                 {ty.name} <span className={on ? "text-white/80" : "text-slate-400"}>{n}</span>
               </Link>
             );

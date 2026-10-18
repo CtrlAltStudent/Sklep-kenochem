@@ -116,9 +116,9 @@ export default async function Home() {
         <div className="border-t border-white/10 bg-white/5 backdrop-blur">
           <div className="mx-auto grid max-w-shop grid-cols-2 gap-px px-4 lg:grid-cols-4">
             {perks.map(({ icon: Icon, title, text }) => (
-              <div key={title} className="flex items-center gap-3 py-5">
+              <div key={title} className="flex items-start gap-2.5 py-4 sm:items-center sm:gap-3 sm:py-5">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-lime/15 text-lime"><Icon className="h-5 w-5" /></span>
-                <div className="min-w-0"><p className="text-sm font-bold">{title}</p><p className="truncate text-xs text-white/60">{text}</p></div>
+                <div className="min-w-0"><p className="text-sm font-bold">{title}</p><p className="text-xs leading-snug text-white/60">{text}</p></div>
               </div>
             ))}
           </div>
@@ -168,7 +168,7 @@ export default async function Home() {
         {/* ===== OKAZJE DNIA ===== */}
         {darkRail.length > 0 && (
           <Reveal>
-            <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-900 via-brand-950 to-black p-6 text-white sm:p-10">
+            <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-900 via-brand-950 to-black px-4 py-6 text-white sm:p-10">
               <div className="aurora pointer-events-none absolute -top-40 -right-40 h-96 w-96 rounded-full bg-lime/20 blur-3xl" />
               <div className="relative mb-8 flex flex-wrap items-end justify-between gap-6">
                 <div>
