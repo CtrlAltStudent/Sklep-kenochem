@@ -71,7 +71,7 @@ export const FREE_SHIPPING = 399;
 
 // Adres kategorii 3. poziomu: <podkategoria>-<nazwa>, np. mycie-samochodu-aktywne-piany (nazwy się powtarzają między działami)
 const PL_CHARS: Record<string, string> = { ą: "a", ć: "c", ę: "e", ł: "l", ń: "n", ó: "o", ś: "s", ź: "z", ż: "z" };
-const slugPart = (s: string) => s.toLowerCase().replace(/[ąćęłńóśźż]/g, (c) => PL_CHARS[c]).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+export const slugPart = (s: string) => s.toLowerCase().replace(/[ąćęłńóśźż]/g, (c) => PL_CHARS[c]).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const sub = (slug: string, name: string, lucide: IconName, types: string[]): Subcategory => ({
   slug, name, lucide, types: types.map((t) => ({ slug: `${slug}-${slugPart(t)}`, name: t })),
 });
@@ -216,3 +216,6 @@ export function unitPrice(price: number, label: string): string | null {
 
 export const formatPrice = (n: number) =>
   new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" }).format(n);
+
+// Adres strony marki: /marki/<slug>
+export const brandSlug = (brand: string) => slugPart(brand);

@@ -243,7 +243,10 @@ function MobileMenu({ onClose, counts }: { onClose: () => void; counts: Category
         </nav>
         <div className="grid grid-cols-3 gap-2 border-t border-brand-100 p-4 text-sm font-semibold">
           <Link href="/b2b" onClick={onClose} className="btn-kc rounded-xl py-3 text-center text-white">B2B</Link>
+          <Link href="/promocje" onClick={onClose} className="rounded-xl bg-brand-50 py-3 text-center">Promocje</Link>
           <Link href="/nowosci" onClick={onClose} className="rounded-xl bg-brand-50 py-3 text-center">Nowości</Link>
+          <Link href="/bestsellery" onClick={onClose} className="rounded-xl bg-brand-50 py-3 text-center">Bestsellery</Link>
+          <Link href="/marki" onClick={onClose} className="rounded-xl bg-brand-50 py-3 text-center">Marki</Link>
           <Link href="/kontakt" onClick={onClose} className="rounded-xl bg-brand-50 py-3 text-center">Kontakt</Link>
         </div>
       </aside>
@@ -285,8 +288,11 @@ export function Header({ counts }: { counts: CategoryCounts }) {
             <Truck className="h-3.5 w-3.5" /> Darmowa dostawa od {formatPrice(FREE_SHIPPING)} · wysyłka w 24 h
           </span>
           <div className="flex items-center gap-4">
+            <Link href="/promocje" className="hidden hover:text-white lg:block">Promocje</Link>
+            <Link href="/bestsellery" className="hidden hover:text-white lg:block">Bestsellery</Link>
             <Link href="/nowosci" className="hidden items-center gap-1 hover:text-white sm:flex"><Sparkles className="h-3.5 w-3.5" /> Nowości</Link>
-            <Link href="/blog" className="hidden hover:text-white sm:block">Poradniki</Link>
+            <Link href="/marki" className="hidden hover:text-white lg:block">Marki</Link>
+            <Link href="/blog" className="hidden hover:text-white xl:block">Poradniki</Link>
             <Link href="/kontakt" className="hidden hover:text-white sm:block">Kontakt</Link>
             <Link href="/b2b" className="flex items-center gap-1.5 rounded-md bg-lime px-2 py-0.5 font-bold text-brand-950 hover:bg-white"><Briefcase className="h-3.5 w-3.5" /> Strefa B2B</Link>
           </div>

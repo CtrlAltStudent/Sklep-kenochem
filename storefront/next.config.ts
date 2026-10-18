@@ -13,7 +13,6 @@ const nextConfig: NextConfig = {
       { source: "/platnosci", destination: "/dostawa-i-platnosci", permanent: true },
       { source: "/moje-konto", destination: "/konto", permanent: true },
       { source: "/wishlist", destination: "/ulubione", permanent: true },
-      { source: "/promocje", destination: "/nowosci", permanent: true },
     ];
   },
   images: {
@@ -25,7 +24,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.supabase.co" },
     ],
     // Pliki wgrane w panelu
-    localPatterns: [{ pathname: "/api/media/file/**" }, { pathname: "/brand/**" }, { pathname: "/stock/**" }, { pathname: "/marks/**" }],
+    localPatterns: [{ pathname: "/api/media/file/**" }, { pathname: "/brand/**" }, { pathname: "/stock/**" }, { pathname: "/marks/**" }, { pathname: "/ghs/**" }],
   },
   turbopack: {
     root: dirname,

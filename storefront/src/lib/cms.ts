@@ -64,3 +64,24 @@ export const getReviews = cache(async (productSlug: string) => {
   const average = docs.length ? docs.reduce((s, r) => s + r.rating, 0) / docs.length : 0;
   return { reviews: docs, average, count: docs.length, histogram };
 });
+
+// Najnowsze zatwierdzone opinie (4–5★) do sekcji „Opinie klientów” na stronie głównej + średnia ze wszystkich
+export const getLatestReviews = cache(async () => {
+  const payload = await getCms();
+  const [{ docs }, all] = await Promise.all([
+    payload.find({
+      collection: "reviews", where: { and: [{ status: { equals: "approved" } }, { rating: { greater_than_equal: 4 } }] },
+      limit: 6, depth: 1, sort: "-createdAt", overrideAccess: false,
+    }),
+    payload.find({ collection: "reviews", where: { status: { equals: "approved" } }, limit: 0, pagination: false, depth: 0, select: { rating: true }, overrideAccess: false }),
+  ]);
+  const count = all.docs.length;
+  const average = count ? all.docs.reduce((s, r) => s + r.rating, 0) / count : 0;
+  return {
+    count, average,
+    reviews: docs.map((r) => ({
+      id: r.id, rating: r.rating, title: r.title, content: r.content, author: r.author, verified: Boolean(r.verified), createdAt: r.createdAt,
+      product: typeof r.product === "object" && r.product ? { name: r.product.name, slug: r.product.slug ?? "" } : undefined,
+    })),
+  };
+});

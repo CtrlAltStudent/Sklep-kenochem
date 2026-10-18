@@ -5,7 +5,7 @@
 import "server-only";
 import { getCms } from "./cms";
 import { catalogVersion } from "./catalogCache";
-import { usableImages, type Product } from "./data";
+import { brandSlug, usableImages, type Product } from "./data";
 import type { Product as CmsProduct } from "@/payload-types";
 
 const TTL = 60_000;
@@ -19,6 +19,7 @@ type Catalog = {
   related: Map<string, string[]>;
   html: Map<string, string>;
   rich: Map<string, unknown>;
+  safety: Map<string, Safety>;
 };
 
 const g = globalThis as typeof globalThis & { __kcCatalog?: { at: number; version: number; data: Promise<Catalog> } };
@@ -37,6 +38,7 @@ async function load(): Promise<Catalog> {
       select: {
         name: true, slug: true, brand: true, category: true, sku: true, ean: true, vatRate: true, stock: true, unitLabel: true, price: true,
         oldPrice: true, lowestPrice30d: true, sale: true, images: true, shortDescription: true, badges: true, descriptionHtml: true, content: true, related: true,
+        hazardPictograms: true, signalWord: true, sds: true, safetyNotes: true,
       },
     }),
     payload.find({ collection: "categories", limit: 0, pagination: false, depth: 0, overrideAccess: true, select: { slug: true, parent: true } }),
@@ -60,6 +62,7 @@ async function load(): Promise<Catalog> {
   const related = new Map<string, string[]>();
   const html = new Map<string, string>();
   const rich = new Map<string, unknown>();
+  const safety = new Map<string, Safety>();
 
   for (const d of docs) {
     if (!d.slug) continue;
@@ -97,6 +100,10 @@ async function load(): Promise<Catalog> {
     if (d.related?.length) related.set(d.slug, d.related.map((r) => (typeof r === "object" ? r.slug ?? "" : "")).filter(Boolean));
     if (d.descriptionHtml) html.set(d.slug, d.descriptionHtml);
     if (d.content) rich.set(d.slug, d.content);
+    const sdsUrl = typeof d.sds === "object" && d.sds?.url ? d.sds.url : undefined;
+    if (sdsUrl || d.hazardPictograms?.length || (d.signalWord && d.signalWord !== "none") || d.safetyNotes) {
+      safety.set(d.slug, { sds: sdsUrl, pictograms: d.hazardPictograms ?? [], signal: d.signalWord && d.signalWord !== "none" ? d.signalWord : undefined, notes: d.safetyNotes ?? undefined });
+    }
   }
 
   const counts: Record<string, number> = {};
@@ -115,6 +122,7 @@ async function load(): Promise<Catalog> {
     related,
     html,
     rich,
+    safety,
   };
 }
 
@@ -133,6 +141,10 @@ export function getCatalog(): Promise<Catalog> {
 export const getProducts = async () => (await getCatalog()).products;
 export const getProduct = async (slug: string) => (await getCatalog()).bySlug.get(slug);
 export const getCategoryCounts = async () => (await getCatalog()).counts;
+
+// Bezpieczeństwo (CLP/GPSR): karta charakterystyki, piktogramy GHS, hasło ostrzegawcze – z zakładki „Bezpieczeństwo” w panelu
+export type Safety = { sds?: string; pictograms: string[]; signal?: "warning" | "danger"; notes?: string };
+export const getSafety = async (slug: string) => (await getCatalog()).safety.get(slug);
 
 export async function getDescription(slug: string) {
   const c = await getCatalog();
@@ -166,3 +178,20 @@ export const getNewest = async () => (await getProducts()).filter((p) => p.badge
 export const getOnSale = async () => (await getProducts()).filter((p) => p.variants.some((v) => v.oldPrice));
 export const getByCategory = async (slug: string) => (await getProducts()).filter((p) => p.category === slug);
 export const pickFrom = async (category: string, n: number) => withImage(await getProducts()).filter((p) => p.category === category).slice(0, n);
+
+// Marki z liczbą produktów i zdjęciem najpopularniejszego produktu (strona /marki)
+export async function getBrands() {
+  const map = new Map<string, { name: string; slug: string; count: number; image?: string; categories: Set<string> }>();
+  for (const p of await getProducts()) {
+    if (!p.brand) continue;
+    const slug = brandSlug(p.brand);
+    const b = map.get(slug) ?? { name: p.brand, slug, count: 0, image: undefined, categories: new Set<string>() };
+    b.count++;
+    b.categories.add(p.category);
+    if (!b.image) b.image = usableImages(p.images)[0];
+    map.set(slug, b);
+  }
+  return [...map.values()].sort((a, b) => b.count - a.count);
+}
+export const getByBrand = async (slug: string) => (await getProducts()).filter((p) => p.brand && brandSlug(p.brand) === slug);
+export const getBestsellers = async () => (await getProducts()).filter((p) => p.badges?.includes("bestseller"));

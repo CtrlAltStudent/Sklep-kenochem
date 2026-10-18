@@ -6,6 +6,9 @@ import { getCategoryCounts, getFeatured, getNewest, getOnSale, getProducts, pick
 import { CatIcon } from "@/components/CatIcon";
 import { categoryPhoto } from "@/lib/photos";
 import { Countdown, CountUp, HeroSearch, ProductRail, Reveal } from "@/components/home/HomeBits";
+import { UsageFinder } from "@/components/home/UsageFinder";
+import { HomeReviews } from "@/components/home/HomeReviews";
+import { getLatestReviews } from "@/lib/cms";
 
 function SectionTitle({ title, href, kicker, dark }: { title: string; href?: string; kicker?: string; dark?: boolean }) {
   return (
@@ -52,7 +55,7 @@ const brandsStrip = ["Kenotek", "Kenochem", "Orion", "Tenzi", "Vikan", "Kwazar",
 const bentoSpan = ["md:col-span-2 md:row-span-2", "md:row-span-2", "", "", "md:col-span-2", "", ""];
 
 export default async function Home() {
-  const [counts, featured, newest, onSale, products, carwash] = await Promise.all([getCategoryCounts(), getFeatured(), getNewest(), getOnSale(), getProducts(), pickFrom("myjnie-i-urzadzenia", 12)]);
+  const [counts, featured, newest, onSale, products, carwash, reviews] = await Promise.all([getCategoryCounts(), getFeatured(), getNewest(), getOnSale(), getProducts(), pickFrom("myjnie-i-urzadzenia", 12), getLatestReviews()]);
   const withImg = (list: typeof products) => list.filter((p) => usableImages(p.images).length);
   const deals = withImg(onSale).slice(0, 12);
   // Gdy w panelu nie ma aktywnych promocji, ciemna sekcja pokazuje ofertę dla myjni (bez licznika)
@@ -165,6 +168,9 @@ export default async function Home() {
           </div>
         </Reveal>
 
+        {/* ===== WEDŁUG ZASTOSOWANIA ===== */}
+        <Reveal><UsageFinder counts={counts} /></Reveal>
+
         {/* ===== OKAZJE DNIA ===== */}
         {darkRail.length > 0 && (
           <Reveal>
@@ -271,6 +277,9 @@ export default async function Home() {
           </section>
         </Reveal>
 
+        {/* ===== OPINIE ===== */}
+        <Reveal><HomeReviews data={reviews} /></Reveal>
+
         {/* ===== O NAS ===== */}
         <Reveal>
           <section className="grid items-center gap-8 overflow-hidden rounded-[2rem] bg-white ring-1 ring-brand-100 lg:grid-cols-2">
@@ -278,7 +287,7 @@ export default async function Home() {
               <span className="rounded-full bg-brand-50 px-3 py-1 text-[11px] font-bold tracking-widest text-brand-800 uppercase ring-1 ring-brand-100">O nas</span>
               <h2 className="mt-4 text-3xl font-black tracking-tight text-navy sm:text-4xl">Hurtownia profesjonalnej chemii z Białegostoku</h2>
               <p className="mt-4 leading-relaxed text-slate-600">Jesteśmy jedną z większych hurtowni profesjonalnej chemii do myjni samochodowych, chemii do sprzątania, chemii rolniczej oraz kosmetyków samochodowych dla firm autodetailingowych. Znajdujemy się w Białymstoku, ale bez problemu realizujemy zamówienia z całej Polski i zagranicy.</p>
-              <Link href="/informacje-o-sklepie" className="mt-6 inline-flex items-center gap-2 font-bold text-accent-dark transition-all hover:gap-3">Poznaj nas bliżej <ArrowRight className="h-4 w-4" /></Link>
+              <Link href="/o-nas" className="mt-6 inline-flex items-center gap-2 font-bold text-accent-dark transition-all hover:gap-3">Poznaj nas bliżej <ArrowRight className="h-4 w-4" /></Link>
             </div>
             <div className="relative h-72 lg:h-full lg:min-h-[420px]">
               <Image src="/brand/25-lat-1.jpg" alt="Kenochem – 25 lat z Wami" fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover object-right" />

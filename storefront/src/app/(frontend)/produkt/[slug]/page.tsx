@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowDown, BadgePercent, FileText, Headset, ShieldAlert, Star, TriangleAlert } from "lucide-react";
-import { getCategory, toCard, usableImages } from "@/lib/data";
-import { getDescription, getFeatured, getProduct, getProducts } from "@/lib/catalog";
+import Image from "next/image";
+import { ArrowDown, BadgePercent, Download, FileText, Headset, ShieldAlert, Star, TriangleAlert } from "lucide-react";
+import { brandSlug, getCategory, toCard, usableImages } from "@/lib/data";
+import { getDescription, getFeatured, getProduct, getProducts, getSafety } from "@/lib/catalog";
 import { getReviews } from "@/lib/cms";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CatIcon } from "@/components/CatIcon";
@@ -29,6 +30,12 @@ export async function generateMetadata(props: PageProps<"/produkt/[slug]">): Pro
   return { title: p?.name, description: p?.short, openGraph: p?.images[0] ? { images: [p.images[0]] } : undefined };
 }
 
+// Opisy piktogramów GHS (pliki w public/ghs – domena publiczna, ONZ)
+const ghsLabel: Record<string, string> = {
+  GHS01: "Materiały wybuchowe", GHS02: "Łatwopalne", GHS03: "Utleniające", GHS04: "Gazy pod ciśnieniem", GHS05: "Żrące",
+  GHS06: "Toksyczne", GHS07: "Drażniące / szkodliwe", GHS08: "Zagrożenie dla zdrowia", GHS09: "Niebezpieczne dla środowiska",
+};
+
 function Stars({ value, className = "h-4 w-4" }: { value: number; className?: string }) {
   return (
     <span className="flex" aria-label={`${value.toFixed(1)} na 5`}>
@@ -43,7 +50,7 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
   const { slug } = await props.params;
   const product = await getProduct(slug);
   if (!product) notFound();
-  const [desc, reviews, products] = await Promise.all([getDescription(slug), getReviews(slug), getProducts()]);
+  const [desc, reviews, products, safety] = await Promise.all([getDescription(slug), getReviews(slug), getProducts(), getSafety(slug)]);
   const description = desc.html;
   const category = getCategory(product.category)!;
   const sub = category.children.find((s) => s.slug === product.subcategory);
@@ -92,7 +99,7 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
 
           <div className="flex min-w-0 flex-col">
             <div className="flex flex-wrap items-center gap-2">
-              {product.brand && <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-bold tracking-wide text-brand-800 uppercase ring-1 ring-brand-100">{product.brand}</span>}
+              {product.brand && <Link href={`/marki/${brandSlug(product.brand)}`} className="rounded-full bg-brand-50 px-3 py-1 text-xs font-bold tracking-wide text-brand-800 uppercase ring-1 ring-brand-100 transition hover:bg-leaf hover:text-white hover:ring-leaf">{product.brand}</Link>}
               {sub && (
                 <Link href={`/kategoria/${category.slug}?sub=${sub.slug}`} className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-slate-500 ring-1 ring-brand-100 hover:text-brand-800">
                   <CatIcon name={sub.lucide} className="h-3.5 w-3.5" /> {sub.name}
@@ -118,7 +125,7 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
             </dl>
 
             <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
-              <a href="#bezpieczenstwo" className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-slate-600 ring-1 ring-brand-100 transition hover:text-brand-800 hover:ring-leaf"><FileText className="h-4 w-4 text-leaf" /> Karta charakterystyki</a>
+              <a href={safety?.sds ?? "#bezpieczenstwo"} {...(safety?.sds ? { target: "_blank", rel: "noreferrer" } : {})} className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-slate-600 ring-1 ring-brand-100 transition hover:text-brand-800 hover:ring-leaf"><FileText className="h-4 w-4 text-leaf" /> {safety?.sds ? "Pobierz kartę charakterystyki" : "Karta charakterystyki"}</a>
               <a href="tel:+48500021705" className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-slate-600 ring-1 ring-brand-100 transition hover:text-brand-800 hover:ring-leaf"><Headset className="h-4 w-4 text-leaf" /> Porada eksperta: 500 021 705</a>
             </div>
 
@@ -161,15 +168,41 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
             { id: "bezpieczenstwo", label: "Pliki i bezpieczeństwo", content: (<>
           <h2 className="sr-only">Pliki do pobrania i bezpieczeństwo</h2>
           <div className="grid gap-4 md:grid-cols-2">
-            <a className="flex cursor-pointer items-center gap-4 rounded-2xl p-5 ring-1 ring-brand-100 transition hover:bg-brand-50">
-              <span className="grid h-12 w-12 place-items-center rounded-xl bg-red-50 text-red-600"><FileText className="h-6 w-6" /></span>
-              <span><b className="block text-navy">Karta charakterystyki (SDS)</b><span className="text-sm text-slate-500">PDF – na życzenie wyślemy e-mailem</span></span>
-            </a>
+            {safety?.sds ? (
+              <a href={safety.sds} target="_blank" rel="noreferrer" download
+                className="group flex items-center gap-4 rounded-2xl p-5 ring-1 ring-brand-100 transition hover:bg-leaf-50 hover:ring-leaf">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-red-50 text-red-600"><FileText className="h-6 w-6" /></span>
+                <span className="flex-1"><b className="block text-navy">Karta charakterystyki (SDS)</b><span className="text-sm text-slate-500">PDF · pobierz</span></span>
+                <Download className="h-5 w-5 text-leaf transition group-hover:translate-y-0.5" />
+              </a>
+            ) : (
+              <Link href={`/kontakt?produkt=${encodeURIComponent(`Karta charakterystyki: ${product.name}`)}`}
+                className="group flex items-center gap-4 rounded-2xl p-5 ring-1 ring-brand-100 transition hover:bg-leaf-50 hover:ring-leaf">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-red-50 text-red-600"><FileText className="h-6 w-6" /></span>
+                <span className="flex-1"><b className="block text-navy">Karta charakterystyki (SDS)</b><span className="text-sm text-slate-500">Poproś o kartę – wyślemy ją e-mailem</span></span>
+              </Link>
+            )}
             <div className="flex items-center gap-4 rounded-2xl p-5 ring-1 ring-brand-100">
-              <span className="grid h-12 w-12 place-items-center rounded-xl bg-brand-50 text-brand-700"><ShieldAlert className="h-6 w-6" /></span>
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700"><ShieldAlert className="h-6 w-6" /></span>
               <span className="text-sm text-slate-600"><b className="block text-navy">Odpowiedzialność za produkt (GPSR)</b>KENOCHEM Kuczyński Sp. J., Gen. Wł. Andersa 40, 15-113 Białystok</span>
             </div>
           </div>
+          {(safety?.pictograms.length || safety?.signal) ? (
+            <div className="mt-5 flex flex-wrap items-center gap-4 rounded-2xl bg-slate-50 p-5">
+              {safety.signal && (
+                <span className={`rounded-lg px-3 py-1.5 text-sm font-black tracking-wide uppercase ${safety.signal === "danger" ? "bg-red-600 text-white" : "bg-amber-400 text-amber-950"}`}>
+                  {safety.signal === "danger" ? "Niebezpieczeństwo" : "Uwaga"}
+                </span>
+              )}
+              {safety.pictograms.map((g) => (
+                <span key={g} className="flex flex-col items-center gap-1 text-[11px] font-semibold text-slate-500" title={ghsLabel[g] ?? g}>
+                  <Image src={`/ghs/${g}.svg`} alt={ghsLabel[g] ?? g} width={56} height={56} unoptimized />
+                  {g}
+                </span>
+              ))}
+            </div>
+          ) : null}
+          {safety?.notes && <p className="mt-4 text-sm leading-relaxed whitespace-pre-line text-slate-600">{safety.notes}</p>}
           <p className="mt-5 flex gap-2 text-sm text-slate-600"><TriangleAlert className="h-5 w-5 shrink-0 text-amber-500" /> Przed użyciem przeczytaj etykietę i kartę charakterystyki. Przechowuj w miejscu niedostępnym dla dzieci, stosuj rękawice ochronne.</p>
         </>) },
             { id: "opinie", label: `Opinie (${reviews.count})`, content: (<>
