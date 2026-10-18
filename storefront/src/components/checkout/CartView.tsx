@@ -58,7 +58,7 @@ export function CartView({ minShip }: { minShip: number }) {
               Dostawa i płatność <ArrowRight className="h-5 w-5" />
             </Link>
             <div className="mt-4 flex items-center justify-center gap-2">
-              <BrandMark name="blik" /><BrandMark name="p24" /><BrandMark name="inpost" /><BrandMark name="orlen" />
+              <BrandMark name="blik" /><BrandMark name="p24" /><BrandMark name="inpost-paczkomat" /><BrandMark name="orlen" />
             </div>
           </div>
           <ul className="grid gap-2 rounded-3xl bg-white p-5 text-[13px] text-slate-600 ring-1 ring-brand-100">

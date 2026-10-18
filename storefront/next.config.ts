@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.supabase.co" },
     ],
     // Pliki wgrane w panelu
-    localPatterns: [{ pathname: "/api/media/file/**" }, { pathname: "/brand/**" }, { pathname: "/stock/**" }],
+    localPatterns: [{ pathname: "/api/media/file/**" }, { pathname: "/brand/**" }, { pathname: "/stock/**" }, { pathname: "/marks/**" }],
   },
   turbopack: {
     root: dirname,
