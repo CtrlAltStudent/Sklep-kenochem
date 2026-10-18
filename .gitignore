@@ -1,2 +1,5 @@
 # Lokalne ustawienia Claude Code
 .claude/settings.local.json
+
+# Prywatny kontekst dla Claude (serwer, preferencje) – tylko lokalnie
+CLAUDE.local.md
