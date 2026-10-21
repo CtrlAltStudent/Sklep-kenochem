@@ -1,0 +1,151 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-barlow), var(--font-inter), ui-sans-serif, sans-serif;
+
+  /* Sonax: grafit/karbon jako baza (brand-*), czerwień z logo #d32e2e jako akcent (accent, leaf, lime).
+     Nazwy klas zostały po wersji Kenochem – zmieniają się tylko wartości. */
+  --color-ink: #15191e;
+  --color-brand-50: #f3f4f6;
+  --color-brand-100: #e5e7eb;
+  --color-brand-200: #cfd4da;
+  --color-brand-500: #5b6470;
+  --color-brand-600: #3d434b;
+  --color-brand-700: #2f343a;
+  --color-brand-800: #22272e;
+  --color-brand-900: #181c21;
+  --color-brand-950: #0e1013;
+  --color-accent: #d32e2e;
+  --color-accent-dark: #b3201f;
+  /* Akcent na ciemnym tle (napisy, ikonki) – jaśniejsza czerwień, czytelna na grafitowym tle */
+  --color-lime: #ff4f4f;
+  --color-leaf-50: #fdf2f2;
+  --color-leaf-100: #fbe1e1;
+  --color-leaf-200: #f6c4c4;
+  --color-leaf-300: #ee9696;
+  --color-leaf-400: #e35d5d;
+  --color-leaf: #d32e2e;
+  --color-leaf-600: #b3201f;
+  --color-leaf-700: #8f1919;
+  --color-navy: #15191e;
+
+  --animate-slide-in: slide-in 0.25s ease-out;
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-pop: pop 0.3s ease-out;
+}
+
+@keyframes slide-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+body {
+  background: #f3f4f6;
+  color: var(--color-ink);
+}
+
+/* Nagłówki sekcji w stylu sportowym: wąski, pochylony, wersalikami */
+.font-display, .title-sport {
+  font-family: var(--font-display);
+  font-style: italic;
+  letter-spacing: 0.005em;
+}
+.title-sport { text-transform: uppercase; font-weight: 800; line-height: 0.95; }
+
+/* Ukrycie paska przewijania w poziomych listach */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+/* ---------- Elastyczny układ: szerokość treści i skala do wielkości ekranu ---------- */
+/* Telefon/tablet: pełna szerokość z marginesem; Full HD: 1280 px; większe ekrany: szerzej + większa skala */
+.max-w-shop { max-width: 80rem; }
+@media (min-width: 1536px) { .max-w-shop { max-width: 90rem; } }
+@media (min-width: 1880px) { .max-w-shop { max-width: 105rem; } }
+
+/* 2K / WQHD (2560 px) i 4K: całość proporcjonalnie większa, żeby nie wyglądała jak „znaczek” na środku */
+@media (min-width: 2200px) { html { font-size: 112.5%; } }
+@media (min-width: 3000px) { html { font-size: 137.5%; } }
+@media (min-width: 3600px) { html { font-size: 162.5%; } }
+
+/* ---------- Animacje strony głównej ---------- */
+@keyframes aurora {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(6%, -8%) scale(1.15); }
+  66% { transform: translate(-6%, 6%) scale(0.92); }
+}
+@keyframes floaty {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-14px) rotate(var(--r, 0deg)); }
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes shine {
+  from { background-position: 200% center; }
+  to { background-position: -200% center; }
+}
+.aurora { animation: aurora 18s ease-in-out infinite; }
+.floaty { animation: floaty 6s ease-in-out infinite; }
+.marquee { animation: marquee 40s linear infinite; }
+.marquee:hover { animation-play-state: paused; }
+.text-shine {
+  background: linear-gradient(90deg, #ff4f4f, #ffffff, #d32e2e, #ffffff, #ff4f4f);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shine 8s linear infinite;
+}
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.8s cubic-bezier(.2,.7,.2,1), transform 0.8s cubic-bezier(.2,.7,.2,1); }
+.reveal.is-visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .aurora, .floaty, .marquee, .text-shine { animation: none; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+/* Karty produktów na ciemnym tle – czytelny pasek dostępności */
+.on-dark .card-avail .text-green-700 { color: #86efac; }
+.on-dark .card-avail .text-slate-500 { color: rgb(255 255 255 / 0.65); }
+
+/* ---------- Gradienty marki: czerwień Sonax i karbon ---------- */
+/* Główne przyciski (koszyk, szukaj, zastosuj) */
+.btn-kc {
+  background-image: linear-gradient(120deg, #e53e3e 0%, #d32e2e 45%, #a51b1b 100%);
+  background-size: 200% 100%;
+  background-position: 0% 0;
+  box-shadow: 0 10px 24px -10px rgb(211 46 46 / 0.6);
+  transition: background-position 0.35s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+.btn-kc:hover { background-position: 100% 0; box-shadow: 0 12px 28px -10px rgb(165 27 27 / 0.7); }
+.bg-kc-gradient { background-image: linear-gradient(120deg, #e53e3e 0%, #a51b1b 100%); }
+.bg-kc-gradient-deep { background-image: linear-gradient(120deg, #2f343a 0%, #181c21 55%, #0e1013 100%); }
+.text-kc-gradient {
+  background-image: linear-gradient(100deg, #ff4f4f, #b3201f);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+/* Pasek marki (pod górną belką, nad stopką) – jak pas wyścigowy: czerwień z cienką białą linią */
+.kc-stripe { height: 4px; background-image: linear-gradient(90deg, #d32e2e 0 62%, #fff 62% 63.5%, #d32e2e 63.5% 66%, #fff 66% 67.5%, #2f343a 67.5%); }
+
+/* Ukośne cięcie (jak na banerach Sonax) – przyciski i znaczniki */
+.skew-cta { transform: skewX(-12deg); }
+.skew-cta > * { transform: skewX(12deg); }
+/* Karbonowa faktura tła ciemnych sekcji */
+.carbon {
+  background-color: #111418;
+  background-image:
+    linear-gradient(45deg, rgb(255 255 255 / 0.025) 25%, transparent 25%, transparent 75%, rgb(255 255 255 / 0.025) 75%),
+    linear-gradient(45deg, rgb(255 255 255 / 0.025) 25%, transparent 25%, transparent 75%, rgb(255 255 255 / 0.025) 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 4px 4px;
+}

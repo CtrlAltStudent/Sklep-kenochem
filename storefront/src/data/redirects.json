@@ -1,0 +1,422 @@
+[
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/akcesoria-samochodowe/",
+  "to": "/kategoria/akcesoria-detailingowe"
+ },
+ {
+  "from": "/kategoria-produktu/akcesoria-samochodowe/",
+  "to": "/kategoria/akcesoria-detailingowe"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/pielegnacja-zewnetrzna-auta/tworzywa-sztuczne-i-guma/",
+  "to": "/kategoria/mycie-auta?sub=plastiki-guma-i-detale"
+ },
+ {
+  "from": "/kategoria-produktu/tworzywa-sztuczne-i-guma/",
+  "to": "/kategoria/mycie-auta?sub=plastiki-guma-i-detale"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/pielegnacja-zewnetrzna-auta/czyszczenie-szyb-i-lusterek-w-aucie/",
+  "to": "/kategoria/mycie-auta?sub=szyby-i-lusterka"
+ },
+ {
+  "from": "/kategoria-produktu/czyszczenie-szyb-i-lusterek-w-aucie/",
+  "to": "/kategoria/mycie-auta?sub=szyby-i-lusterka"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/pielegnacja-zewnetrzna-auta/czyszczenie-lamp-i-reflektorow-w-aucie/",
+  "to": "/kategoria/mycie-auta?sub=plastiki-guma-i-detale"
+ },
+ {
+  "from": "/kategoria-produktu/czyszczenie-lamp-i-reflektorow-w-aucie/",
+  "to": "/kategoria/mycie-auta?sub=plastiki-guma-i-detale"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/pielegnacja-zewnetrzna-auta/czyszczenie-i-pielegnacja-lakieru-samochodowego/",
+  "to": "/kategoria/polerowanie-i-ochrona"
+ },
+ {
+  "from": "/kategoria-produktu/czyszczenie-i-pielegnacja-lakieru-samochodowego/",
+  "to": "/kategoria/polerowanie-i-ochrona"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/pielegnacja-wnetrza-auta/",
+  "to": "/kategoria/wnetrze-auta"
+ },
+ {
+  "from": "/kategoria-produktu/pielegnacja-wnetrza-auta/",
+  "to": "/kategoria/wnetrze-auta"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/pielegnacja-wnetrza-auta/czyszczenie-kokpitu-i-plastikow-w-aucie/",
+  "to": "/kategoria/wnetrze-auta?sub=kokpit-i-plastiki"
+ },
+ {
+  "from": "/kategoria-produktu/czyszczenie-kokpitu-i-plastikow-w-aucie/",
+  "to": "/kategoria/wnetrze-auta?sub=kokpit-i-plastiki"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/pielegnacja-wnetrza-auta/czyszczenie-tapicerki-i-dywanikow/",
+  "to": "/kategoria/wnetrze-auta?sub=tapicerka-i-dywaniki"
+ },
+ {
+  "from": "/kategoria-produktu/czyszczenie-tapicerki-i-dywanikow/",
+  "to": "/kategoria/wnetrze-auta?sub=tapicerka-i-dywaniki"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/pielegnacja-wnetrza-auta/czyszczenie-skory-i-alcantary/",
+  "to": "/kategoria/wnetrze-auta?sub=skora-i-alcantara"
+ },
+ {
+  "from": "/kategoria-produktu/czyszczenie-skory-i-alcantary/",
+  "to": "/kategoria/wnetrze-auta?sub=skora-i-alcantara"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/pielegnacja-wnetrza-auta/nawiewy-i-klimatyzacja/",
+  "to": "/kategoria/wnetrze-auta?sub=klimatyzacja-i-nawiewy"
+ },
+ {
+  "from": "/kategoria-produktu/nawiewy-i-klimatyzacja/",
+  "to": "/kategoria/wnetrze-auta?sub=klimatyzacja-i-nawiewy"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/pielegnacja-wnetrza-auta/perfumy-odswiezacze-i-neutralizatory-zapachu/",
+  "to": "/kategoria/wnetrze-auta?sub=zapachy-samochodowe"
+ },
+ {
+  "from": "/kategoria-produktu/perfumy-odswiezacze-i-neutralizatory-zapachu/",
+  "to": "/kategoria/wnetrze-auta?sub=zapachy-samochodowe"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/pielegnacja-zewnetrzna-auta/woski-i-powloki-ceramiczne-do-auta/",
+  "to": "/kategoria/polerowanie-i-ochrona"
+ },
+ {
+  "from": "/kategoria-produktu/woski-i-powloki-ceramiczne-do-auta/",
+  "to": "/kategoria/polerowanie-i-ochrona"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/akcesoria-samochodowe/gabki-szczotki-i-skrobaczki-samochodowe/",
+  "to": "/kategoria/akcesoria-detailingowe"
+ },
+ {
+  "from": "/kategoria-produktu/gabki-szczotki-i-skrobaczki-samochodowe/",
+  "to": "/kategoria/akcesoria-detailingowe"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/akcesoria-samochodowe/mikrofibry-i-irchy/",
+  "to": "/kategoria/akcesoria-detailingowe?sub=mikrofibry-i-reczniki"
+ },
+ {
+  "from": "/kategoria-produktu/mikrofibry-i-irchy/",
+  "to": "/kategoria/akcesoria-detailingowe?sub=mikrofibry-i-reczniki"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/akcesoria-samochodowe/opryskiwacze-do-auta/",
+  "to": "/kategoria/akcesoria-detailingowe?sub=opryskiwacze-i-pianownice"
+ },
+ {
+  "from": "/kategoria-produktu/opryskiwacze-do-auta/",
+  "to": "/kategoria/akcesoria-detailingowe?sub=opryskiwacze-i-pianownice"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/serwis-pojazdu/",
+  "to": "/kategoria/serwis-i-warsztat"
+ },
+ {
+  "from": "/kategoria-produktu/serwis-pojazdu/",
+  "to": "/kategoria/serwis-i-warsztat"
+ },
+ {
+  "from": "/kategoria-produktu/dom-i-ogrod/czyszczenie-domu-wewnatrz/inne-srodki-do-domu/",
+  "to": "/kategoria/dom-i-ogrod"
+ },
+ {
+  "from": "/kategoria-produktu/inne-srodki-do-domu/",
+  "to": "/kategoria/dom-i-ogrod"
+ },
+ {
+  "from": "/kategoria-produktu/dom-i-ogrod/akcesoria-dom-i-ogrod/czysciwa-i-papiery/",
+  "to": "/kategoria/akcesoria-detailingowe?sub=zestawy-i-inne"
+ },
+ {
+  "from": "/kategoria-produktu/czysciwa-i-papiery/",
+  "to": "/kategoria/akcesoria-detailingowe?sub=zestawy-i-inne"
+ },
+ {
+  "from": "/kategoria-produktu/dom-i-ogrod/mydla-i-pasty-do-mycia-rak/",
+  "to": "/kategoria/serwis-i-warsztat?sub=mycie-rak"
+ },
+ {
+  "from": "/kategoria-produktu/mydla-i-pasty-do-mycia-rak/",
+  "to": "/kategoria/serwis-i-warsztat?sub=mycie-rak"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/chemia-do-myjni/",
+  "to": "/kategoria/chemia-do-myjni"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-do-myjni/",
+  "to": "/kategoria/chemia-do-myjni"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/zestawy-prezentowe/",
+  "to": "/kategoria/akcesoria-detailingowe?sub=zestawy-i-inne"
+ },
+ {
+  "from": "/kategoria-produktu/zestawy-prezentowe/",
+  "to": "/kategoria/akcesoria-detailingowe?sub=zestawy-i-inne"
+ },
+ {
+  "from": "/kategoria-produktu/dom-i-ogrod/",
+  "to": "/kategoria/dom-i-ogrod"
+ },
+ {
+  "from": "/kategoria-produktu/dom-i-ogrod/ogrod/",
+  "to": "/kategoria/dom-i-ogrod?sub=ogrod-i-elewacje"
+ },
+ {
+  "from": "/kategoria-produktu/ogrod/",
+  "to": "/kategoria/dom-i-ogrod?sub=ogrod-i-elewacje"
+ },
+ {
+  "from": "/kategoria-produktu/dom-i-ogrod/czyszczenie-domu-wewnatrz/",
+  "to": "/kategoria/dom-i-ogrod"
+ },
+ {
+  "from": "/kategoria-produktu/czyszczenie-domu-wewnatrz/",
+  "to": "/kategoria/dom-i-ogrod"
+ },
+ {
+  "from": "/kategoria-produktu/dom-i-ogrod/czyszczenie-domu-wewnatrz/chemia-do-kuchni/",
+  "to": "/kategoria/dom-i-ogrod?sub=kuchnia"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-do-kuchni/",
+  "to": "/kategoria/dom-i-ogrod?sub=kuchnia"
+ },
+ {
+  "from": "/kategoria-produktu/dom-i-ogrod/czyszczenie-domu-wewnatrz/chemia-do-lazienki/",
+  "to": "/kategoria/dom-i-ogrod?sub=lazienka-i-wc"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-do-lazienki/",
+  "to": "/kategoria/dom-i-ogrod?sub=lazienka-i-wc"
+ },
+ {
+  "from": "/kategoria-produktu/dom-i-ogrod/czyszczenie-domu-wewnatrz/podlogi-srodki-do-czyszczenia-i-pielegnacji-podlog/",
+  "to": "/kategoria/dom-i-ogrod?sub=podlogi-i-posadzki"
+ },
+ {
+  "from": "/kategoria-produktu/podlogi-srodki-do-czyszczenia-i-pielegnacji-podlog/",
+  "to": "/kategoria/dom-i-ogrod?sub=podlogi-i-posadzki"
+ },
+ {
+  "from": "/kategoria-produktu/dom-i-ogrod/czyszczenie-domu-wewnatrz/okna-i-lustra-srodki-do-czyszczenia-szyb-i-szkla/",
+  "to": "/kategoria/dom-i-ogrod?sub=okna-i-lustra"
+ },
+ {
+  "from": "/kategoria-produktu/okna-i-lustra-srodki-do-czyszczenia-szyb-i-szkla/",
+  "to": "/kategoria/dom-i-ogrod?sub=okna-i-lustra"
+ },
+ {
+  "from": "/kategoria-produktu/dom-i-ogrod/czyszczenie-domu-wewnatrz/odswiezacze-powietrza-do-domu/",
+  "to": "/kategoria/dom-i-ogrod?sub=odswiezacze-powietrza"
+ },
+ {
+  "from": "/kategoria-produktu/odswiezacze-powietrza-do-domu/",
+  "to": "/kategoria/dom-i-ogrod?sub=odswiezacze-powietrza"
+ },
+ {
+  "from": "/kategoria-produktu/dom-i-ogrod/akcesoria-dom-i-ogrod/",
+  "to": "/kategoria/dom-i-ogrod?sub=akcesoria-do-sprzatania"
+ },
+ {
+  "from": "/kategoria-produktu/akcesoria-dom-i-ogrod/",
+  "to": "/kategoria/dom-i-ogrod?sub=akcesoria-do-sprzatania"
+ },
+ {
+  "from": "/kategoria-produktu/dom-i-ogrod/akcesoria-dom-i-ogrod/gabki-i-sciereczki/",
+  "to": "/kategoria/dom-i-ogrod?sub=akcesoria-do-sprzatania"
+ },
+ {
+  "from": "/kategoria-produktu/gabki-i-sciereczki/",
+  "to": "/kategoria/dom-i-ogrod?sub=akcesoria-do-sprzatania"
+ },
+ {
+  "from": "/kategoria-produktu/dom-i-ogrod/akcesoria-dom-i-ogrod/opryskiwacze/",
+  "to": "/kategoria/akcesoria-detailingowe?sub=opryskiwacze-i-pianownice"
+ },
+ {
+  "from": "/kategoria-produktu/opryskiwacze/",
+  "to": "/kategoria/akcesoria-detailingowe?sub=opryskiwacze-i-pianownice"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/",
+  "to": "/kategoria/mycie-auta"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/pielegnacja-zewnetrzna-auta/",
+  "to": "/kategoria/mycie-auta"
+ },
+ {
+  "from": "/kategoria-produktu/pielegnacja-zewnetrzna-auta/",
+  "to": "/kategoria/mycie-auta"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/pielegnacja-zewnetrzna-auta/szampony-i-piany-do-auta/",
+  "to": "/kategoria/mycie-auta?sub=szampony-i-piany"
+ },
+ {
+  "from": "/kategoria-produktu/szampony-i-piany-do-auta/",
+  "to": "/kategoria/mycie-auta?sub=szampony-i-piany"
+ },
+ {
+  "from": "/kategoria-produktu/chemia-samochodowa/pielegnacja-zewnetrzna-auta/czyszczenie-opon-i-felg/",
+  "to": "/kategoria/mycie-auta?sub=felgi-i-opony"
+ },
+ {
+  "from": "/kategoria-produktu/czyszczenie-opon-i-felg/",
+  "to": "/kategoria/mycie-auta?sub=felgi-i-opony"
+ },
+ {
+  "from": "/produkt/sonax-profiline-headlight-coating-50ml-276541-zabezpieczenie-reflektorow/",
+  "to": "/produkt/sonax-profiline-headlight-coating-zabezpieczenie-kloszy-reflektorow-12-miesiecy-276541"
+ },
+ {
+  "from": "/produkt/tenzi-boberex-5l-skoncentrat-do-recznego-mycia-naczyn/",
+  "to": "/produkt/tenzi-boberex-5l-skoncentrowany-plyn-do-recznego-mycia-naczyn-2"
+ },
+ {
+  "from": "/produkt/k2-evos-boss-perfumy-50ml-perfumy-samochodowe/",
+  "to": "/produkt/k2-evos-boss-perfumy-do-samochodu-50ml-meski-zapach"
+ },
+ {
+  "from": "/produkt/forclean-czysty-silnik-750-ml/",
+  "to": "/produkt/plak-forclean-czysty-silnik-750-ml-preparat-do-mycia-silnika"
+ },
+ {
+  "from": "/produkt/k2-szczotka-do-mycia-felg-niebieska/",
+  "to": "/produkt/k2-szczotka-do-mycia-felg-niebieska-2"
+ },
+ {
+  "from": "/produkt/kwazar-venus-opryskiwacz-15-l-360/",
+  "to": "/produkt/kwazar-venus-super-acid-opryskiwacz-15-l-wtv-1196"
+ },
+ {
+  "from": "/produkt/royal-wc-cm-1-l-mocny-preparat-do-czyszczenia-sanitariatow/",
+  "to": "/produkt/royal-132-wc-cm-usuwanie-kamienia-rdzy"
+ },
+ {
+  "from": "/produkt/tenzi-brudex-1l-uniwersalny-srodek-do-mycia-i-usuwania-tlustego-brudu/",
+  "to": "/produkt/tenzi-brudex-plyn-odtluszczajacy-do-usuwania-plam-1l"
+ },
+ {
+  "from": "/produkt/tenzi-doczyszczanie-kostki-brukowej-2-1l/",
+  "to": "/produkt/tenzi-doczyszczanie-kostki-brukowej-2-1"
+ },
+ {
+  "from": "/produkt/tenzi-leder-care-gt-600ml-preparat-do-skory-naturalnej-i-sztucznej/",
+  "to": "/produkt/tenzi-leder-care-600ml-preparat-do-pielegnacji-skory-naturalnej-i-sztucznej"
+ },
+ {
+  "from": "/produkt/tenzi-neutral-magic-foam-clear-1l-kolorowa-neutralna-piana-do-mycia-samochodow/",
+  "to": "/produkt/tenzi-neutral-magic-foam-clear-1l-neutralna-piana-do-mycia-samochodow"
+ },
+ {
+  "from": "/produkt/tenzi-neutral-magic-foam-pink-1l-kolorowa-neutralna-piana-do-mycia-samochodow/",
+  "to": "/produkt/tenzi-neutral-magic-foam-pink-1l-kolorowa-neutralna-piana-do-mycia-samochodow-2"
+ },
+ {
+  "from": "/produkt/tenzi-panele-laminowane-1l/",
+  "to": "/produkt/tenzi-panele-laminowane-1l-do-paneli-laminowanych-bezzapachowy-bezpieczny"
+ },
+ {
+  "from": "/produkt/tenzi-textil-1l-szampon-do-prania-dywanow-i-tapicerki/",
+  "to": "/produkt/tenzi-textil-1l-srodek-do-czyszczenia-dywanow-i-wykladzin"
+ },
+ {
+  "from": "/produkt/tenzi-textil-ex-5l-pranie-wykladzin-i-tapicerek-metoda-ekstrakcyjna/",
+  "to": "/produkt/tenzi-textil-ex-5l-plyn-do-prania-dywanow-tapicerki-wykladzin-do-odkurzacza"
+ },
+ {
+  "from": "/produkt/tenzi-textil-wash-5l-koncentrat-do-prania-tapicerki-samochodowej-dywanikow/",
+  "to": "/produkt/tenzi-textil-wash-5l-plyn-do-prania-tapicerek-i-dywanow"
+ },
+ {
+  "from": "/produkt/tenzi-top-efekt-perfume-amore-1l-mycie-posadzek/",
+  "to": "/produkt/tenzi-top-efekt-perfume-amore-1l-plyn-do-mycia-posadzek-zapach-amore"
+ },
+ {
+  "from": "/produkt/tenzi-udrazniacz-rur-1l/",
+  "to": "/produkt/tenzi-udrazniacz-rur-1l-srodek-do-udrazniania-rur"
+ },
+ {
+  "from": "/produkt/sonax-ircha-naturalna-416-300/",
+  "to": "/produkt/sonax-ircha-syntetyczna-417700"
+ },
+ {
+  "from": "/produkt/sonax-klima-power-cleaner-green-lemon/",
+  "to": "/produkt/sonax-klima-power-cleaner-green-lemon-323-941"
+ },
+ {
+  "from": "/produkt/tenzi-rubber-1-l-usuwanie-sladow-oponach-gumie-klejach/",
+  "to": "/produkt/tenzi-rubber-off-1l-usuwanie-sladow-po-oponach-gumie-klejach"
+ },
+ {
+  "from": "/produkt/tenzi-neutral-magic-foam-clear-5l-neutralna-piana-mycia-samochodow/",
+  "to": "/produkt/tenzi-neutral-magic-foam-clear-5l-neutralna-piana-do-mycia-samochodow"
+ },
+ {
+  "from": "/produkt/tenzi-mud-1l-czyszczenie-pielegnacji-motocykli-quadow-samochodow-terenowych/",
+  "to": "/produkt/tenzi-mud-off-1l-czyszczenie-i-pielegnacja-motocykli-quadow-i-samochodow-terenowych"
+ },
+ {
+  "from": "/produkt/tenzi-mosquitos-1l-usuwanie-resztek-owadow-karoserii/",
+  "to": "/produkt/tenzi-mosquitos-1l-usuwanie-resztek-owadow-z-karoserii"
+ },
+ {
+  "from": "/produkt/tenzi-glass-quartz-gt-1l-plyn-mycia-szyb-powloka-ceramiczna/",
+  "to": "/produkt/tenzi-glass-quartz-gt-1l-plyn-hydrofobowy-do-szyb"
+ },
+ {
+  "from": "/produkt/meguiars-gold-class-carnauba-plus-premium-paste-wax-311g-wosk-samochodowy-w-pascie/",
+  "to": "/produkt/meguiars-gold-class-carnauba-plus-premium-paste-wax-311g-wosk-samochodowy-w-pascie-2"
+ },
+ {
+  "from": "/produkt/tenzi-apc-out-5l-czyszczenie-elewacji-dachow/",
+  "to": "/produkt/tenzi-apc-out-plyn-do-mycia-elewacji-5l"
+ },
+ {
+  "from": "/produkt/k2-evos-boss-perfumy-do-samochodu-50ml/",
+  "to": "/produkt/k2-evos-boss-perfumy-do-samochodu-50ml-meski-zapach"
+ },
+ {
+  "from": "/produkt/tenzi-apc-out-1l/",
+  "to": "/produkt/tenzi-apc-out-plyn-do-mycia-elewacji-1l"
+ },
+ {
+  "from": "/produkt/tenzi-nagrobki-czyszczenie-06-l/",
+  "to": "/produkt/tenzi-nagrobki-czyszczenie-600ml-srodek-do-czyszczenia-nagrobkow"
+ },
+ {
+  "from": "/produkt/tenzi-rollex-1l/",
+  "to": "/produkt/tenzi-rollex-nablyszczasz-do-myjni-samochodowych-polimerowy-zabezpieczenie-lakieru-1l"
+ },
+ {
+  "from": "/produkt/plak-sciereczki-do-kokpitu-matowe-grejpfrut-24-szt/",
+  "to": "/produkt/plak-sciereczki-do-szyb-i-luster-cytryna-z-limonka-24-szt-2"
+ },
+ {
+  "from": "/produkt/tenzi-gran-smog-1l-czyszczenie-wedzarni-piekarnikow-kuchenek/",
+  "to": "/produkt/tenzi-gran-smog-1l-czyszczenie-wedzarni-piekarnikow-kuchenek-2"
+ },
+ {
+  "from": "/produkt/odplamiacz-do-tapicerki-i-alcantary-300ml-252200/",
+  "to": "/produkt/sonax-odplamiacz-do-tapicerki-i-alcantary-300ml-252200"
+ },
+ {
+  "from": "/produkt/autobella-1l-szampon-mycia-samochodu/",
+  "to": "/produkt/autobella-szampon-woskiem-1l"
+ }
+]

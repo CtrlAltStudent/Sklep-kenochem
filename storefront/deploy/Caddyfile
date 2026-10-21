@@ -1,0 +1,23 @@
+# Wersja testowa: cała strona za hasłem i ukryta przed wyszukiwarkami.
+# SITE_DOMAIN, BASIC_AUTH_USER i BASIC_AUTH_HASH pochodzą z /opt/sonax/.env
+{$SITE_DOMAIN} {
+	encode zstd gzip
+	header X-Robots-Tag "noindex, nofollow"
+	basic_auth {
+		{$BASIC_AUTH_USER} {$BASIC_AUTH_HASH}
+	}
+	reverse_proxy app:3000
+}
+
+www.{$SITE_DOMAIN} {
+	redir https://{$SITE_DOMAIN}{uri} permanent
+}
+
+# Wejście po samym adresie IP (zanim zadziała DNS) – też za hasłem, bez HTTPS
+:80 {
+	header X-Robots-Tag "noindex, nofollow"
+	basic_auth {
+		{$BASIC_AUTH_USER} {$BASIC_AUTH_HASH}
+	}
+	reverse_proxy app:3000
+}

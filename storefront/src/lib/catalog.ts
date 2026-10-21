@@ -1,0 +1,207 @@
+// Katalog produktów sklepu – czytany z bazy panelu (Payload), TYLKO po stronie serwera.
+// Cały katalog (~3 tys. produktów) trzymamy w pamięci: odświeżany co 60 s
+// i natychmiast po każdej zmianie produktu/kategorii w panelu (lib/catalogCache.ts).
+
+import "server-only";
+import { getCms } from "./cms";
+import { catalogVersion } from "./catalogCache";
+import { brandSlug, mediaPath, usableImages, type Product } from "./data";
+import type { Product as CmsProduct } from "@/payload-types";
+
+const TTL = 60_000;
+const NOT_BRANDS = new Set(["marka niezdefiniowana", "brak danych"]);
+
+type Catalog = {
+  products: Product[];
+  bySlug: Map<string, Product>;
+  index: { p: Product; text: string }[];
+  counts: Record<string, number>;
+};
+
+const g = globalThis as typeof globalThis & { __kcCatalog?: { at: number; version: number; data: Promise<Catalog> } };
+
+const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ł/g, "l");
+
+function saleActive(sale: CmsProduct["sale"], at: number) {
+  return sale?.price != null && sale.price > 0 && (!sale.from || new Date(sale.from).getTime() <= at) && (!sale.to || new Date(sale.to).getTime() >= at);
+}
+
+async function load(): Promise<Catalog> {
+  const payload = await getCms();
+  const [{ docs }, cats] = await Promise.all([
+    payload.find({
+      collection: "products", where: { status: { equals: "active" } }, limit: 0, pagination: false, depth: 0, overrideAccess: true,
+      select: {
+        name: true, slug: true, brand: true, category: true, sku: true, ean: true, vatRate: true, stock: true, unitLabel: true, price: true,
+        oldPrice: true, lowestPrice30d: true, sale: true, images: true, shortDescription: true, badges: true,
+      },
+    }),
+    payload.find({ collection: "categories", limit: 0, pagination: false, depth: 0, overrideAccess: true, select: { slug: true, parent: true } }),
+  ]);
+
+  // id kategorii → [dział, podkategoria, typ] (slugi zgodne z menu sklepu). Produkt może wisieć na dowolnym poziomie.
+  const catById = new Map(cats.docs.map((c) => [c.id, c]));
+  const parentOf = (c: (typeof cats.docs)[number]) => {
+    const id = c.parent == null ? undefined : typeof c.parent === "object" ? c.parent.id : c.parent;
+    return id != null ? catById.get(id) : undefined;
+  };
+  const slugPath = (id: number | undefined): [string, string, string] => {
+    let c = id != null ? catById.get(id) : undefined;
+    const chain: string[] = [];
+    while (c && chain.length < 5) { chain.unshift(c.slug ?? ""); c = parentOf(c); }
+    return [chain[0] ?? "", chain[1] ?? "", chain[2] ?? ""];
+  };
+
+  const now = Date.now();
+  const products: Product[] = [];
+
+  for (const d of docs) {
+    if (!d.slug) continue;
+    const catId = d.category == null ? undefined : typeof d.category === "object" ? d.category.id : d.category;
+    const [category, subcategory, type] = slugPath(catId);
+    const onSale = saleActive(d.sale, now);
+    const price = onSale ? d.sale!.price! : d.price;
+    const crossed = onSale ? d.price : d.oldPrice ?? undefined;
+    const oldPrice = crossed && crossed > price ? crossed : undefined;
+    const images = (d.images ?? [])
+      .map((i) => (typeof i.media === "object" && i.media?.url ? mediaPath(i.media.url) : i.url))
+      .filter((u): u is string => Boolean(u));
+    const badges = [...(d.badges ?? [])] as NonNullable<Product["badges"]>;
+    if (oldPrice && !badges.includes("promocja")) badges.unshift("promocja");
+
+    products.push({
+      id: String(d.id),
+      slug: d.slug,
+      name: d.name,
+      brand: d.brand && !NOT_BRANDS.has(d.brand.toLowerCase()) ? d.brand : "",
+      category,
+      subcategory,
+      type: type || undefined,
+      sku: d.sku ?? "",
+      ean: d.ean ?? "",
+      vat: d.vatRate ?? 23,
+      stock: d.stock ?? 0,
+      variants: [{ id: "1", label: d.unitLabel || "1 szt.", price, oldPrice }],
+      images,
+      short: d.shortDescription ?? "",
+      badges,
+      lowestPrice30d: oldPrice ? d.lowestPrice30d ?? undefined : undefined,
+      saleTo: onSale ? d.sale?.to ?? undefined : undefined,
+    });
+  }
+
+  const counts: Record<string, number> = {};
+  for (const p of products) {
+    counts[p.category] = (counts[p.category] ?? 0) + 1;
+    const k = `${p.category}/${p.subcategory}`;
+    counts[k] = (counts[k] ?? 0) + 1;
+    if (p.type) counts[`${k}/${p.type}`] = (counts[`${k}/${p.type}`] ?? 0) + 1;
+  }
+
+  return {
+    products,
+    bySlug: new Map(products.map((p) => [p.slug, p])),
+    index: products.map((p) => ({ p, text: norm(`${p.name} ${p.brand} ${p.sku} ${p.ean}`) })),
+    counts,
+  };
+}
+
+export function getCatalog(): Promise<Catalog> {
+  const v = catalogVersion();
+  const c = g.__kcCatalog;
+  if (!c || c.version !== v || Date.now() - c.at > TTL) {
+    const data = load();
+    g.__kcCatalog = { at: Date.now(), version: v, data };
+    data.catch(() => { if (g.__kcCatalog?.data === data) g.__kcCatalog = undefined; });
+    return data;
+  }
+  return c.data;
+}
+
+export const getProducts = async () => (await getCatalog()).products;
+export const getProduct = async (slug: string) => (await getCatalog()).bySlug.get(slug);
+export const getCategoryCounts = async () => (await getCatalog()).counts;
+
+// Bezpieczeństwo (CLP/GPSR): karta charakterystyki, piktogramy GHS, hasło ostrzegawcze – z zakładki „Bezpieczeństwo” w panelu
+export type Safety = { sds?: string; pictograms: string[]; signal?: "warning" | "danger"; notes?: string };
+export const getSafety = async (slug: string) => {
+  const payload = await getCms();
+  const d = (await payload.find({ collection: "products", where: { slug: { equals: slug } }, limit: 1, depth: 1, overrideAccess: true, select: { sds: true, hazardPictograms: true, signalWord: true, safetyNotes: true } })).docs[0];
+  if (!d) return undefined;
+  const sdsUrl = typeof d.sds === "object" && d.sds?.url ? mediaPath(d.sds.url) : undefined;
+  if (!sdsUrl && !d.hazardPictograms?.length && (!d.signalWord || d.signalWord === "none") && !d.safetyNotes) return undefined;
+  return { sds: sdsUrl, pictograms: d.hazardPictograms ?? [], signal: d.signalWord && d.signalWord !== "none" ? d.signalWord : undefined, notes: d.safetyNotes ?? undefined };
+};
+
+export async function getDescription(slug: string) {
+  const payload = await getCms();
+  const d = (await payload.find({ collection: "products", where: { slug: { equals: slug } }, limit: 1, depth: 0, overrideAccess: true, select: { descriptionHtml: true, content: true } })).docs[0];
+  return { html: d?.descriptionHtml ?? "", rich: d?.content };
+}
+
+export async function getRelated(slug: string) {
+  const payload = await getCms();
+  const d = (await payload.find({ collection: "products", where: { slug: { equals: slug } }, limit: 1, depth: 0, overrideAccess: true, select: { related: true } })).docs[0];
+  const c = await getCatalog();
+  const slugs = (d?.related ?? []).map((r) => (typeof r === "object" ? r.slug ?? "" : "")).filter(Boolean);
+  return slugs.map((s) => c.bySlug.get(s)).filter((p): p is Product => Boolean(p));
+}
+
+// Wyszukiwanie: wszystkie słowa zapytania muszą wystąpić (bez polskich znaków, bez wielkości liter)
+export async function searchProducts(q: string, limit = Infinity) {
+  const words = norm(q).split(/\s+/).filter(Boolean);
+  if (!words.length) return [];
+  const out: Product[] = [];
+  for (const { p, text } of (await getCatalog()).index) {
+    if (words.every((w) => text.includes(w))) {
+      out.push(p);
+      if (out.length >= limit) break;
+    }
+  }
+  return out;
+}
+
+const withImage = (list: Product[]) => list.filter((p) => usableImages(p.images).length && p.stock > 0);
+
+// Polecane: wybrane w panelu (Wygląd sklepu → Strona główna), a gdy lista jest pusta – produkty SONAX
+const hg = globalThis as typeof globalThis & { __sonaxHome?: { at: number; data: Promise<{ title: string; ids: (number | string)[] }> } };
+async function homepageFeatured() {
+  const cached = hg.__sonaxHome;
+  if (!cached || Date.now() - cached.at > TTL) {
+    const data = (await getCms()).findGlobal({ slug: "homepage", depth: 0 }).then((home) => ({
+      title: home.featuredTitle || "Wybór detailerów – SONAX",
+      ids: (home.featuredProducts ?? []).map((p) => (typeof p === "object" ? p.id : p)).filter((id) => id != null),
+    }));
+    hg.__sonaxHome = { at: Date.now(), data };
+    data.catch(() => { if (hg.__sonaxHome?.data === data) hg.__sonaxHome = undefined; });
+    return data;
+  }
+  return cached.data;
+}
+export async function getFeatured() {
+  const [home, { bySlug, products }] = await Promise.all([homepageFeatured(), getCatalog()]);
+  const chosen = home.ids.map((id) => bySlug.get(String(id)) ?? [...bySlug.values()].find((p) => p.id === String(id))).filter((p) => p !== undefined);
+  return chosen.length ? chosen : withImage(products).filter((p) => /^sonax$/i.test(p.brand)).slice(0, 12);
+}
+export const getFeaturedTitle = async () => (await homepageFeatured()).title;
+export const getNewest = async () => (await getProducts()).filter((p) => p.badges?.includes("nowosc") && usableImages(p.images).length);
+export const getOnSale = async () => (await getProducts()).filter((p) => p.variants.some((v) => v.oldPrice));
+export const getByCategory = async (slug: string) => (await getProducts()).filter((p) => p.category === slug);
+export const pickFrom = async (category: string, n: number) => withImage(await getProducts()).filter((p) => p.category === category).slice(0, n);
+
+// Marki z liczbą produktów i zdjęciem najpopularniejszego produktu (strona /marki)
+export async function getBrands() {
+  const map = new Map<string, { name: string; slug: string; count: number; image?: string; categories: Set<string> }>();
+  for (const p of await getProducts()) {
+    if (!p.brand) continue;
+    const slug = brandSlug(p.brand);
+    const b = map.get(slug) ?? { name: p.brand, slug, count: 0, image: undefined, categories: new Set<string>() };
+    b.count++;
+    b.categories.add(p.category);
+    if (!b.image) b.image = usableImages(p.images)[0];
+    map.set(slug, b);
+  }
+  return [...map.values()].sort((a, b) => b.count - a.count);
+}
+export const getByBrand = async (slug: string) => (await getProducts()).filter((p) => p.brand && brandSlug(p.brand) === slug);
+export const getBestsellers = async () => (await getProducts()).filter((p) => p.badges?.includes("bestseller"));

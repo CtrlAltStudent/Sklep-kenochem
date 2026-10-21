@@ -1,0 +1,10 @@
+import fs from "node:fs";
+const p = JSON.parse(fs.readFileSync("src/data/pages-import.json", "utf8"));
+const h = p["czas-realizacji"].html;
+const i = h.indexOf("Kurier InPost");
+console.log(h.slice(i - 10, i + 200));
+const q = JSON.parse(fs.readFileSync("src/data/posts-import.json", "utf8"));
+const all = q.map((x) => x.html).join("");
+console.log(all.match(/href="\/(szukaj|kategoria)[^"]*"/g)?.slice(0, 15));
+const r = JSON.parse(fs.readFileSync("src/data/redirects.json", "utf8"));
+console.log(r.length, r.filter((x) => /szampony-i-piany-do-auta|\/dom-i-ogrod\/$/.test(x.from)));

@@ -1,0 +1,70 @@
+Import 2026-10-19T10:42:31.146Z – na stronie: 589, zaimportowano: 529
+
+## Na stronie, ale brak w CSV z BaseLinkera (NIE zaimportowane) (24)
+SON000064 | SONAX PROFILINE EXCUT 05-05 pasta polerska 1L – 245300 MOCNA | https://www.sonax.sklep.pl/produkt/sonax-profiline-excut-05-05-pasta-polerska-1-l-245300/
+SON000063 | SONAX PROFILINE EXCUT 05-05 pasta polerska 250 ml.- 245141 | https://www.sonax.sklep.pl/produkt/sonax-profiline-excut-05-05-pasta-polerska-250-ml-245141/
+DET000027 | ADBL PUFFY TOWEL 41×41 840gsm – mikrofibra do docierania wosku | https://www.sonax.sklep.pl/produkt/adbl-neon/
+ADB000038 | ADBL TWISTER SOFT 50MM – szczotka do wkrętarki | https://www.sonax.sklep.pl/produkt/adbl-twister-soft-50mm-szczotka-wkretarki/
+INNE0554 | DOMESTOS 750 ml – Płyn do czyszczenia i dezynfekcji urządzeń sanitarnych | https://www.sonax.sklep.pl/produkt/domestos-750-ml-plyn-do-czyszczenia-i-dezynfekcji-urzadzen-sanitarnych/
+INNE0501 | PRESTONE Zimowy płyn do spryskiwaczy -20°C 4L | https://www.sonax.sklep.pl/produkt/prestone-zimowy-plyn-spryskiwaczy-20c-4l/
+(bez SKU) | PINGI Pochłaniacz wilgoci | https://www.sonax.sklep.pl/produkt/pingi-pochlaniacz-wilgoci/
+(bez SKU) | ROYAL Clean Magic – preparat do mycia posadzek Nektarynka – 1L | https://www.sonax.sklep.pl/produkt/royal-clean-magic-preparat-do-mycia-posadzek-nektaryna-1-l/
+(bez SKU) | AUTOBELLA szampon do mycia ręcznego 25 kg | https://www.sonax.sklep.pl/produkt/autobella-szampon-mycia-recznego-25-kg/
+(bez SKU) | ADBL – CERAMIC QD 1L- SYNTETYCZNY QUICK DETAILER DO LAKIERU | https://www.sonax.sklep.pl/produkt/adbl-ceramic-qd-1l-syntetyczny-quick-detailer-do-lakieru/
+(bez SKU) | K2 MIKROFIBRA FLOSSY PRO | https://www.sonax.sklep.pl/produkt/k2-mikrofibra-flossy-pro/
+(bez SKU) | K2 AKRA 770 ML | https://www.sonax.sklep.pl/produkt/k2-akra-770-ml/
+(bez SKU) | DOMESTOS 750 ml | https://www.sonax.sklep.pl/produkt/domestos-750-ml/
+(bez SKU) | HOLTS ORIGINAL WAX – twardy wosk w puszce 150G | https://www.sonax.sklep.pl/produkt/holts-original-wax-twardy-wosk-puszcze-150g/
+(bez SKU) | K2 EVOS SAMURAI PERFUMY + ZAWIESZKA DREWNIANA | https://www.sonax.sklep.pl/produkt/k2-evos-samurai-perfumy-zawieszka-drewniana/
+(bez SKU) | TOP GLASS – Preparat do mycia szyb i luster | https://www.sonax.sklep.pl/produkt/tenzi-glass-5l/
+(bez SKU) | SONAX PPF + VINYL POLISH 250 ml – 400.100 | https://www.sonax.sklep.pl/produkt/sonax-ppf-vinyl-polish-250-ml-400-100/
+(bez SKU) | TENZI Steel Shine 600ml – Nabłyszczasz do stali nierdzewnej | https://www.sonax.sklep.pl/produkt/tenzi-steel-shine-600ml-nablyszczacz-stali-nierdzewnej/
+(bez SKU) | ADBL – VAMPIRE LIQUID 1L – MYCIE FELG I KAROSERII | https://www.sonax.sklep.pl/produkt/adbl-vampire-liquid-1l-mycie-felg-i-karoserii/
+(bez SKU) | ADBL ROLLER ONE STEP DA 125 pomarańczowy 150/25 | https://www.sonax.sklep.pl/produkt/adbl-roller-one-step-da-125-pomaranczowy/
+(bez SKU) | K2 EVOS BOSS PERFUMY + ZAWIESZKA DREWNIANA | https://www.sonax.sklep.pl/produkt/k2-evos-boss-perfumy-zawieszka-drewniana/
+(bez SKU) | QUIXX ZESTAW NAPRAWCZY DO SKÓRY | https://www.sonax.sklep.pl/produkt/quixx-zestaw-naprawczy-skory/
+(bez SKU) | SONAX PROFILINE CC36 CERAMIC COATING GLOSS COAT 2 210ML – 236241 | https://www.sonax.sklep.pl/produkt/sonax-profiline-cc36-ceramic-coating-gloss-coat-2-210ml-236241/
+(bez SKU) | ROYAL Air Magic 1L – Odświeżacz Powietrza | https://www.sonax.sklep.pl/produkt/royal-air-magic-1l-odswiezacz-powietrza/
+
+## Ten sam produkt dwa razy na stronie (zaimportowany raz) (35)
+SONAX PROFILINE HEADLIGHT COATING 50ml – 276541- zabezpieczenie reflektorów → to samo co /produkt/sonax-profiline-headlight-coating-zabezpieczenie-kloszy-reflektorow-12-miesiecy-276541
+TENZI BOBEREX 5L – koncentrat do ręcznego mycia naczyń → to samo co /produkt/tenzi-boberex-5l-skoncentrowany-plyn-do-recznego-mycia-naczyn-2
+K2 EVOS BOSS PERFUMY 50ml – perfumy samochodowe → to samo co /produkt/k2-evos-boss-perfumy-do-samochodu-50ml-meski-zapach
+FORCLEAN Czysty silnik 750 ml → to samo co /produkt/plak-forclean-czysty-silnik-750-ml-preparat-do-mycia-silnika
+K2 Szczotka do mycia Felg – niebieska → to samo co /produkt/k2-szczotka-do-mycia-felg-niebieska-2
+KWAZAR Opryskiwacz VENUS 360° 1,5 l. WTV.0224 → to samo co /produkt/kwazar-venus-super-acid-opryskiwacz-15-l-wtv-1196
+ROYAL WC CM 1L – Silny preparat do czyszczenia sanitariatów → to samo co /produkt/royal-132-wc-cm-usuwanie-kamienia-rdzy
+TENZI BRUDEX 1L – Uniwersalny środek do mycia i usuwania tłustego brudu → to samo co /produkt/tenzi-brudex-plyn-odtluszczajacy-do-usuwania-plam-1l
+TENZI DOCZYSZCZANIE KOSTKI BRUKOWEJ 2 1L. Środek do czyszczenia kostki brukowej poprzez szorowanie → to samo co /produkt/tenzi-doczyszczanie-kostki-brukowej-2-1
+TENZI LEDER CARE GT 600ML – Preparat do skóry naturalnej i sztucznej → to samo co /produkt/tenzi-leder-care-600ml-preparat-do-pielegnacji-skory-naturalnej-i-sztucznej
+TENZI NEUTRAL MAGIC FOAM CLEAR 1L – Neutralna piana do mycia samochodów → to samo co /produkt/tenzi-neutral-magic-foam-clear-1l-neutralna-piana-do-mycia-samochodow
+TENZI NEUTRAL MAGIC FOAM PINK 1L – Kolorowa neutralna piana do mycia samochodów → to samo co /produkt/tenzi-neutral-magic-foam-pink-1l-kolorowa-neutralna-piana-do-mycia-samochodow-2
+TENZI PANELE LAMINOWANE 1L – do paneli laminowanych, bezzapachowy, bezpieczny → to samo co /produkt/tenzi-panele-laminowane-1l-do-paneli-laminowanych-bezzapachowy-bezpieczny
+TENZI TEXTIL 1L – Środek do czyszczenia dywanów i wykładzin → to samo co /produkt/tenzi-textil-1l-srodek-do-czyszczenia-dywanow-i-wykladzin
+TENZI TEXTIL EX 5L – Płyn do prania dywanów tapicerki wykładzin do odkurzacza → to samo co /produkt/tenzi-textil-ex-5l-plyn-do-prania-dywanow-tapicerki-wykladzin-do-odkurzacza
+TENZI TEXTIL WASH 5L – Płyn do prania tapicerek i dywanów → to samo co /produkt/tenzi-textil-wash-5l-plyn-do-prania-tapicerek-i-dywanow
+TENZI TOP EFEKT PERFUME AMORE 1L – Płyn do mycia posadzek | Zapach Amore → to samo co /produkt/tenzi-top-efekt-perfume-amore-1l-plyn-do-mycia-posadzek-zapach-amore
+TENZI UDRAŻNIACZ RUR 1L – Środek do udrażniania rur → to samo co /produkt/tenzi-udrazniacz-rur-1l-srodek-do-udrazniania-rur
+SONAX Ircha Syntetyczna – 417700 → to samo co /produkt/sonax-ircha-syntetyczna-417700
+SONAX Klima Power Cleaner Green Lemon – 323941 → to samo co /produkt/sonax-klima-power-cleaner-green-lemon-323-941
+TENZI RUBBER OFF 1 L. usuwanie śladów po oponach, gumie, klejach → to samo co /produkt/tenzi-rubber-off-1l-usuwanie-sladow-po-oponach-gumie-klejach
+TENZI NEUTRAL MAGIC FOAM CLEAR 5L – Neutralna piana do mycia samochodów → to samo co /produkt/tenzi-neutral-magic-foam-clear-5l-neutralna-piana-do-mycia-samochodow
+TENZI MUD OFF 1L – Czyszczenie i pielęgnacja motocykli, quadów i samochodów terenowych → to samo co /produkt/tenzi-mud-off-1l-czyszczenie-i-pielegnacja-motocykli-quadow-i-samochodow-terenowych
+TENZI Mosquitos 1L – Usuwanie resztek owadów z karoserii → to samo co /produkt/tenzi-mosquitos-1l-usuwanie-resztek-owadow-z-karoserii
+TENZI Glass Quartz GT 1l. płyn do mycia szyb z powłoką ceramiczną → to samo co /produkt/tenzi-glass-quartz-gt-1l-plyn-hydrofobowy-do-szyb
+MEGUIAR’S Gold Class Carnauba Plus Premium Paste Wax 311g – Wosk samochodowy w paście → to samo co /produkt/meguiars-gold-class-carnauba-plus-premium-paste-wax-311g-wosk-samochodowy-w-pascie-2
+TENZI – APC OUT 5L – Czyszczenie elewacji, dachów → to samo co /produkt/tenzi-apc-out-plyn-do-mycia-elewacji-5l
+K2 EVOS BOSS PERFUMY DO SAMOCHODU 50ml → to samo co /produkt/k2-evos-boss-perfumy-do-samochodu-50ml-meski-zapach
+TENZI – APC OUT 1L – Czyszczenie elewacji, dachów → to samo co /produkt/tenzi-apc-out-plyn-do-mycia-elewacji-1l
+TENZI NAGROBKI CZYSZCZENIE 600ml – Środek Do Czyszczenia Nagrobków → to samo co /produkt/tenzi-nagrobki-czyszczenie-600ml-srodek-do-czyszczenia-nagrobkow
+TENZI ROLLEX – Nabłyszczasz – Do myjni samochodowych – Polimerowy – Zabezpieczenie lakieru – 1L → to samo co /produkt/tenzi-rollex-nablyszczasz-do-myjni-samochodowych-polimerowy-zabezpieczenie-lakieru-1l
+PLAK Ściereczki do kokpitu Matowe Grejpfrut – 24 szt → to samo co /produkt/plak-sciereczki-do-szyb-i-luster-cytryna-z-limonka-24-szt-2
+TENZI GRAN SMOG 1L – Czyszczenie wędzarni, piekarników, kuchenek → to samo co /produkt/tenzi-gran-smog-1l-czyszczenie-wedzarni-piekarnikow-kuchenek-2
+ODPLAMIACZ DO TAPICERKI I ALCANTARY 300ML 252200 → to samo co /produkt/sonax-odplamiacz-do-tapicerki-i-alcantary-300ml-252200
+AUTOBELLA 1L – szampon do mycia samochodu → to samo co /produkt/autobella-szampon-woskiem-1l
+
+## Bez dopasowanej kategorii (trafiły do: Akcesoria › Czyściwa, zestawy i inne) (0)
+
+
+## Pominięte (1)
+TEST PŁATNOŚCI – 2,00 zł (nie kupować)

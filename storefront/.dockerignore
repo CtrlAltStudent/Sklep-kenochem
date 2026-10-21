@@ -1,0 +1,11 @@
+node_modules
+.next
+sonax.db-*
+media
+.git
+scripts
+deploy
+docs
+*.md
+.env*
+!.env.example

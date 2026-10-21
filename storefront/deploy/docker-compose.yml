@@ -1,0 +1,51 @@
+# Sklep testowy Sonax na tym samym VPS co Kenochem.
+# Caddy Kenochem nasłuchuje na 80/443 — tu tylko aplikacja, w sieci kenochem_default.
+# Osobny serwer (własne porty): docker compose --profile solo up -d
+services:
+  sonax:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SERVER_URL: https://sonax.185-193-114-233.sslip.io
+        NEXT_PUBLIC_SKIP_KENOCHEM_IMAGES: "1"
+        PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+    container_name: sonax-app
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: file:/data/sonax.db
+      NODE_OPTIONS: --max-old-space-size=512
+    volumes:
+      - ./data:/data
+      - ./media:/app/media
+    expose:
+      - "3000"
+    networks:
+      - kenochem
+
+  caddy:
+    profiles: ["solo"]
+    image: caddy:2
+    restart: unless-stopped
+    depends_on: [sonax]
+    env_file: .env
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - kenochem
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  kenochem:
+    name: kenochem_default
+    external: true
