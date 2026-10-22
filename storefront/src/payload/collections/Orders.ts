@@ -3,6 +3,7 @@ import { isOrdersTeam, ownOrdersOrStaff } from "../access";
 import { section } from "../fields";
 import { autoSendToBaseLinker } from "@/integrations/baselinker/orders";
 import { orderStatusMailHook } from "@/integrations/mail/events";
+import { orderStockHook } from "@/integrations/checkout/stock";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -38,7 +39,7 @@ export const Orders: CollectionConfig = {
         return data;
       },
     ],
-    afterChange: [autoSendToBaseLinker, orderStatusMailHook],
+    afterChange: [orderStockHook, autoSendToBaseLinker, orderStatusMailHook],
   },
   fields: [
     { name: "orderNumber", label: "Numer zamówienia", type: "text", unique: true, index: true, admin: { readOnly: true, position: "sidebar", description: "Nadawany automatycznie przy zapisie.", components: { Cell: "@/payload/components/Cells#OrderNumberCell" } } },
