@@ -1,7 +1,8 @@
 "use client";
 
 // Konto klienta: logowanie, rejestracja, reset hasła, a po zalogowaniu – zamówienia, dane i adresy, hasło.
-// Logowanie przez API Payload (/api/customers/...) – sesja w ciasteczku HttpOnly.
+// Logowanie przez API sklepu (/api/account/...) – sesja w osobnym ciasteczku HttpOnly „sonax-klient”,
+// więc zalogowanie się jako klient nie wylogowuje z panelu admina.
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -21,26 +22,18 @@ async function api<T = Record<string, unknown>>(path: string, method = "GET", bo
   return { status: res.status, json: (await res.json().catch(() => ({}))) as T };
 }
 
-// Komunikaty Payload po angielsku → po polsku
-function errorText(json: { errors?: { message?: string; data?: { errors?: { message?: string; path?: string }[] } }[]; message?: string }, fallback: string) {
-  const all = [json.message, ...(json.errors ?? []).flatMap((e) => [e.message, ...(e.data?.errors ?? []).map((x) => `${x.path}: ${x.message}`)])].filter(Boolean).join(" ").toLowerCase();
-  if (!all) return fallback;
-  if (all.includes("locked")) return "Konto zablokowane na 10 minut po zbyt wielu próbach. Spróbuj później albo ustaw nowe hasło.";
-  if (all.includes("email or password") || all.includes("incorrect")) return "Nieprawidłowy e-mail lub hasło.";
-  if (all.includes("unique") || all.includes("already")) return "Konto z tym adresem już istnieje – zaloguj się albo ustaw nowe hasło.";
-  if (all.includes("token")) return "Link wygasł albo był już użyty. Poproś o nowy.";
-  return fallback;
-}
+type Res = { ok?: boolean; message?: string };
+const fail = (r: { status: number; json: Res }, fallback: string) => r.json.message || fallback;
 
 export const useMe = () => {
   const [me, setMe] = useState<Me | null | undefined>(undefined);
   const refresh = useCallback(async () => {
-    const { json } = await api<{ user?: Me | null }>("/api/customers/me");
+    const { json } = await api<{ user?: Me | null }>("/api/account/me");
     setMe(json.user ?? null);
   }, []);
   useEffect(() => {
     let alive = true;
-    api<{ user?: Me | null }>("/api/customers/me").then(({ json }) => alive && setMe(json.user ?? null));
+    api<{ user?: Me | null }>("/api/account/me").then(({ json }) => alive && setMe(json.user ?? null));
     return () => { alive = false; };
   }, []);
   return { me, setMe, refresh };
@@ -62,24 +55,23 @@ function Guest({ onLogin }: { onLogin: () => void }) {
     setMsg(null);
     try {
       if (mode === "forgot") {
-        await api("/api/customers/forgot-password", "POST", { email });
+        await api("/api/account/forgot", "POST", { email });
         setMsg({ ok: true, text: "Jeśli konto z tym adresem istnieje, wysłaliśmy link do ustawienia nowego hasła. Sprawdź skrzynkę (także SPAM)." });
         return;
       }
       if (mode === "register") {
         if (password.length < 8) return setMsg({ ok: false, text: "Hasło musi mieć co najmniej 8 znaków." });
         if (password !== f.get("password2")) return setMsg({ ok: false, text: "Hasła nie są takie same." });
-        const now = new Date().toISOString();
-        const newsletter = f.get("newsletter") === "on";
-        const r = await api("/api/customers", "POST", {
-          email, password,
+        // rejestracja od razu loguje (serwer ustawia ciasteczko klienta)
+        const r = await api<Res>("/api/account/register", "POST", {
+          email, password, terms: true, newsletter: f.get("newsletter") === "on",
           firstName: String(f.get("firstName") ?? "").trim(), lastName: String(f.get("lastName") ?? "").trim(), phone: String(f.get("phone") ?? "").trim() || undefined,
-          consents: { termsAcceptedAt: now, newsletter, newsletterAt: newsletter ? now : undefined },
         });
-        if (r.status >= 400) return setMsg({ ok: false, text: errorText(r.json, "Nie udało się założyć konta. Sprawdź dane.") });
+        if (r.status >= 400) return setMsg({ ok: false, text: fail(r, "Nie udało się założyć konta. Sprawdź dane.") });
+      } else {
+        const r = await api<Res>("/api/account/login", "POST", { email, password });
+        if (r.status >= 400) return setMsg({ ok: false, text: fail(r, "Nie udało się zalogować.") });
       }
-      const r = await api("/api/customers/login", "POST", { email, password });
-      if (r.status >= 400) return setMsg({ ok: false, text: errorText(r.json, "Nie udało się zalogować.") });
       onLogin();
     } catch {
       setMsg({ ok: false, text: "Brak połączenia – spróbuj ponownie." });
@@ -247,12 +239,12 @@ function Profile({ me, onSaved }: { me: Me; onSaved: (m: Me) => void }) {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     setBusy(true);
-    const r = await api<{ doc?: Me }>(`/api/customers/${me.id}`, "PATCH", {
+    const r = await api<{ user?: Me }>("/api/account/profile", "POST", {
       firstName: String(f.get("firstName") ?? "").trim(), lastName: String(f.get("lastName") ?? "").trim(), phone: String(f.get("phone") ?? "").trim(),
       addresses: addresses.filter((a) => a.street || a.city).map((a) => ({ ...a, country: a.country || "PL" })),
     });
     setBusy(false);
-    if (r.status < 400 && r.json.doc) { onSaved(r.json.doc); setMsg({ ok: true, text: "Zapisano." }); } else setMsg({ ok: false, text: "Nie udało się zapisać. Sprawdź dane." });
+    if (r.status < 400 && r.json.user) { onSaved(r.json.user); setMsg({ ok: true, text: "Zapisano." }); } else setMsg({ ok: false, text: "Nie udało się zapisać. Sprawdź dane." });
   };
 
   return (
@@ -285,7 +277,7 @@ function Profile({ me, onSaved }: { me: Me; onSaved: (m: Me) => void }) {
   );
 }
 
-function Password({ me }: { me: Me }) {
+function Password() {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const save = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -294,7 +286,7 @@ function Password({ me }: { me: Me }) {
     const password = String(f.get("password") ?? "");
     if (password.length < 8) return setMsg({ ok: false, text: "Hasło musi mieć co najmniej 8 znaków." });
     if (password !== f.get("password2")) return setMsg({ ok: false, text: "Hasła nie są takie same." });
-    const r = await api(`/api/customers/${me.id}`, "PATCH", { password });
+    const r = await api("/api/account/password", "POST", { password });
     if (r.status < 400) { form.reset(); setMsg({ ok: true, text: "Hasło zmienione." }); } else setMsg({ ok: false, text: "Nie udało się zmienić hasła." });
   };
   return (
@@ -311,7 +303,7 @@ const TABS = [["orders", "Zamówienia", Package], ["profile", "Dane i adresy", U
 
 function Dashboard({ me, setMe }: { me: Me; setMe: (m: Me | null) => void }) {
   const [tab, setTab] = useState<(typeof TABS)[number][0]>("orders");
-  const logout = async () => { await api("/api/customers/logout", "POST"); setMe(null); };
+  const logout = async () => { await api("/api/account/logout", "POST"); setMe(null); };
   return (
     <div className="mx-auto max-w-5xl px-4 pt-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -333,7 +325,7 @@ function Dashboard({ me, setMe }: { me: Me; setMe: (m: Me | null) => void }) {
         <section className={card}>
           {tab === "orders" && <Orders />}
           {tab === "profile" && <Profile me={me} onSaved={setMe} />}
-          {tab === "password" && <Password me={me} />}
+          {tab === "password" && <Password />}
         </section>
       </div>
     </div>
@@ -358,10 +350,10 @@ export function ResetPassword({ token }: { token: string }) {
     if (password.length < 8) return setMsg({ ok: false, text: "Hasło musi mieć co najmniej 8 znaków." });
     if (password !== f.get("password2")) return setMsg({ ok: false, text: "Hasła nie są takie same." });
     setBusy(true);
-    const r = await api("/api/customers/reset-password", "POST", { token, password });
+    const r = await api<Res>("/api/account/reset", "POST", { token, password });
     setBusy(false);
     if (r.status < 400) { router.replace("/konto"); return; }
-    setMsg({ ok: false, text: errorText(r.json, "Nie udało się ustawić hasła. Link mógł wygasnąć – poproś o nowy.") });
+    setMsg({ ok: false, text: fail(r, "Nie udało się ustawić hasła. Link mógł wygasnąć – poproś o nowy.") });
   };
   return (
     <div className="mx-auto max-w-md px-4 pt-12">

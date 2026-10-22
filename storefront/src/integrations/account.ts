@@ -5,14 +5,37 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import type { Payload } from "payload";
 import type { Customer, Order } from "@/payload-types";
 
+// Klient ma własne ciasteczko (nie „payload-token” panelu) – logowanie w sklepie nie wylogowuje admina.
+export const CUSTOMER_COOKIE = "sonax-klient";
+const MAX_AGE = 60 * 60 * 24 * 30; // jak tokenExpiration w kolekcji Customers
+
+const cookieValue = (headers: Headers, name: string) =>
+  (headers.get("cookie") ?? "").split(/;\s*/).map((c) => c.split("=")).find(([k]) => k === name)?.slice(1).join("=") ?? "";
+
+export function customerCookie(token: string | null) {
+  const secure = (process.env.NEXT_PUBLIC_SERVER_URL ?? "").startsWith("https") ? "; Secure" : "";
+  return token
+    ? `${CUSTOMER_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${MAX_AGE}${secure}`
+    : `${CUSTOMER_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`;
+}
+
+// Zalogowany klient – tylko z ciasteczka sklepu (sesja admina w „payload-token” jest tu pomijana)
 export async function currentCustomer(payload: Payload, headers: Headers): Promise<Customer | null> {
+  const token = decodeURIComponent(cookieValue(headers, CUSTOMER_COOKIE));
+  if (!token) return null;
   try {
-    const { user } = await payload.auth({ headers });
+    const { user } = await payload.auth({ headers: new Headers({ Authorization: `JWT ${token}` }) });
     return user?.collection === "customers" ? (user as unknown as Customer) : null;
   } catch {
     return null;
   }
 }
+
+// Dane konta wysyłane do przeglądarki
+export const publicCustomer = (c: Customer) => ({
+  id: c.id, email: c.email, firstName: c.firstName ?? "", lastName: c.lastName ?? "", phone: c.phone ?? "",
+  addresses: (c.addresses ?? []).map((a) => ({ id: a.id ?? undefined, label: a.label ?? "", fullName: a.fullName ?? "", company: a.company ?? "", street: a.street ?? "", postcode: a.postcode ?? "", city: a.city ?? "", country: a.country ?? "PL" })),
+});
 
 // Bez danych technicznych (sesja płatności, błędy BaseLinkera) – tylko to, co klient powinien widzieć
 export const publicOrder = (o: Order) => ({
