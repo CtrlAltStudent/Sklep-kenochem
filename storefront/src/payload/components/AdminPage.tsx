@@ -18,6 +18,8 @@ export function AdminPage({ initPageResult, params, searchParams, children }: Ad
       searchParams={searchParams}
       user={req.user ?? undefined}
       visibleEntities={visibleEntities}
+      // pasek akcji w nagłówku (wyszukiwarka, „Dodaj”, motyw, sklep) – jak na pozostałych ekranach panelu
+      viewActions={req.payload.config.admin?.components?.actions ?? []}
       viewType="custom"
     >
       {children}

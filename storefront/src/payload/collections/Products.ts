@@ -1,7 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { anyone, isEditor } from "../access";
 import { seoFields, slugField } from "../fields";
-import { priceHistoryHook, stockAlertHook, invalidateCatalogHook } from "../productHooks";
+import { keepEditedDescription, priceHistoryHook, stockAlertHook, invalidateCatalogHook } from "../productHooks";
 
 // Produkt sklepu. Pola z zakładki „Ceny i magazyn” oraz nazwa/opis/zdjęcia są nadpisywane
 // przez synchronizację z BaseLinkerem – chyba że zaznaczysz „Nie nadpisuj” w zakładce BaseLinker.
@@ -21,11 +21,13 @@ export const Products: CollectionConfig = {
   },
   access: { read: anyone, create: isEditor, update: isEditor, delete: isEditor },
   hooks: {
-    beforeChange: [priceHistoryHook],
+    beforeChange: [priceHistoryHook, keepEditedDescription],
     afterChange: [stockAlertHook, invalidateCatalogHook],
     afterDelete: [invalidateCatalogHook],
   },
   fields: [
+    // Podgląd produktu w kartach; formularz pokazuje się po „Edytuj”
+    { type: "ui", name: "overview", admin: { disableListColumn: true, components: { Field: "@/payload/components/Overview#ProductOverview" } } },
     { name: "name", label: "Nazwa", type: "text", required: true, admin: { components: { Cell: "@/payload/components/Cells#ProductCell" } } },
     {
       type: "tabs",
@@ -38,8 +40,9 @@ export const Products: CollectionConfig = {
               { name: "brand", label: "Marka", type: "text", index: true, admin: { width: "50%" } },
             ] },
             { name: "shortDescription", label: "Krótki opis (pod nazwą)", type: "textarea" },
-            { name: "content", label: "Opis (edytor)", type: "richText", admin: { description: "Jeśli wypełniony – zastępuje opis z BaseLinkera na stronie produktu." } },
-            { name: "descriptionHtml", label: "Opis z BaseLinkera / importu (HTML)", type: "code", admin: { language: "html", description: "Aktualizowany przez synchronizację." } },
+            // Stare pole edytora – sklep go nie używa; widoczne tylko, jeśli ktoś coś w nim zapisał
+            { name: "content", label: "Opis (stary edytor)", type: "richText", admin: { condition: (data) => Boolean(data?.content), description: "Sklep pokazuje „Opis produktu” poniżej – przenieś treść tam." } },
+            { name: "descriptionHtml", label: "Opis produktu", type: "code", admin: { language: "html", components: { Field: "@/payload/components/HtmlEditor#HtmlEditor" }, description: "Synchronizacja z BaseLinkerem może nadpisać opis – zaznacz „Nie nadpisuj opisu” w zakładce BaseLinker, jeśli zmieniasz go tutaj." } },
             { name: "related", label: "Produkty powiązane („Kup razem”)", type: "relationship", relationTo: "products", hasMany: true, admin: { description: "Akcesoria i produkty uzupełniające – pokazywane na stronie produktu." } },
             { name: "badges", label: "Etykiety", type: "select", hasMany: true, options: [
               { label: "Nowość", value: "nowosc" }, { label: "Promocja", value: "promocja" }, { label: "Bestseller", value: "bestseller" },
@@ -158,7 +161,6 @@ export const Products: CollectionConfig = {
         },
       ],
     },
-    { type: "ui", name: "sidebarPreview", admin: { position: "sidebar", disableListColumn: true, components: { Field: "@/payload/components/FormBits#ProductSidebar" } } },
     slugField("name"),
     { name: "status", label: "Widoczność", type: "select", defaultValue: "active", index: true, admin: { position: "sidebar", components: { Cell: "@/payload/components/Cells#ProductStatusCell" } }, options: [
       { label: "Widoczny w sklepie", value: "active" },

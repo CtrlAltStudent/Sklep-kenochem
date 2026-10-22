@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { useFormFields } from "@payloadcms/ui";
-import { ExternalLink, FileText, Package, Plus, Receipt, Search, ShoppingBag, Store, Tag, User } from "lucide-react";
+import { useFormFields, useTheme } from "@payloadcms/ui";
+import { ExternalLink, FileText, Moon, Package, Plus, Receipt, Search, ShoppingBag, Store, Sun, Tag, User } from "lucide-react";
 
 // ---------- Pasek akcji w nagłówku panelu (jak w Shoperze: szukaj + szybkie dodawanie + sklep) ----------
 
@@ -124,10 +124,23 @@ export function AdminActions() {
         )}
       </div>
 
+      <ThemeSwitch />
+
       <a href="/" target="_blank" rel="noreferrer" className="kc-store-link" title="Otwórz sklep w nowej karcie">
         <Store size={16} /> <span>Sklep</span> <ExternalLink size={12} />
       </a>
     </div>
+  );
+}
+
+// Jasny / ciemny motyw panelu (zapamiętywany przez Payload dla tej przeglądarki)
+function ThemeSwitch() {
+  const { theme, setTheme } = useTheme();
+  const dark = theme === "dark";
+  return (
+    <button type="button" className="kc-theme" onClick={() => setTheme(dark ? "light" : "dark")} title={dark ? "Włącz jasny motyw" : "Włącz ciemny motyw"} aria-label={dark ? "Włącz jasny motyw" : "Włącz ciemny motyw"}>
+      {dark ? <Sun size={17} /> : <Moon size={17} />}
+    </button>
   );
 }
 

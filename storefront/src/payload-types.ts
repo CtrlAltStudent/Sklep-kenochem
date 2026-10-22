@@ -276,7 +276,7 @@ export interface Product {
   brand?: string | null;
   shortDescription?: string | null;
   /**
-   * Jeśli wypełniony – zastępuje opis z BaseLinkera na stronie produktu.
+   * Sklep pokazuje „Opis produktu” poniżej – przenieś treść tam.
    */
   content?: {
     root: {
@@ -294,7 +294,7 @@ export interface Product {
     [k: string]: unknown;
   } | null;
   /**
-   * Aktualizowany przez synchronizację.
+   * Synchronizacja z BaseLinkerem może nadpisać opis – zaznacz „Nie nadpisuj opisu” w zakładce BaseLinker, jeśli zmieniasz go tutaj.
    */
   descriptionHtml?: string | null;
   /**

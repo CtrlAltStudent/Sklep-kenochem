@@ -12,8 +12,6 @@ export type NavLinkData = {
   href: string;
   exact?: boolean;
   also?: string[];
-  logo?: string;
-  off?: boolean; // moduł wyłączony
   badge?: { count: number; tone: "red" | "amber" };
 };
 export type NavSectionData = { label: string; items: NavLinkData[] };
@@ -67,13 +65,9 @@ export function NavLinks({ sections }: { sections: NavSectionData[] }) {
                       href={i.href}
                       prefetch={false}
                       aria-current={on ? "page" : undefined}
-                      className={`nav__link ${i.logo ? "kc-nav__mod" : ""} ${i.off ? "is-off" : ""} ${on ? "is-active" : ""}`}
+                      className={`nav__link ${on ? "is-active" : ""}`}
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element -- małe logo modułu */}
-                      {i.logo && <img src={i.logo} alt="" />}
-                      {!i.logo && i.id.startsWith("nav-mod-") && <b className="kc-nav__modmark">{i.label.slice(0, 2).toUpperCase()}</b>}
                       <span className="nav__link-label">{i.label}</span>
-                      {i.off && <small className="kc-nav__state">wył.</small>}
                       {i.badge && <span className={`kc-nav__badge is-${i.badge.tone}`}>{i.badge.count > 99 ? "99+" : i.badge.count}</span>}
                     </Link>
                   );

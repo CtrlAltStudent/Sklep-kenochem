@@ -75,10 +75,9 @@ export const navSections: NavSection[] = [
     ],
   },
   {
-    // + dodane moduły (BaseLinker, Przelewy24…) – wstawiane w Nav.tsx za „Moduły”
     label: "Integracje",
     items: [
-      { id: "nav-integrations", label: "Moduły", href: "/admin/integracje", adminOnly: true, exact: true },
+      { id: "nav-integrations", label: "Moduły", href: "/admin/integracje", adminOnly: true, also: ["/admin/globals/baselinker-settings"] },
       col("integration-logs", "Dziennik integracji"),
     ],
   },

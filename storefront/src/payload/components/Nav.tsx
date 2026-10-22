@@ -1,11 +1,9 @@
 // Menu boczne panelu – własny układ działów zamiast domyślnego menu Payload.
-// Dział „Integracje” pokazuje dodane moduły (BaseLinker, Przelewy24…) z ich stanem.
+// Moduły integracji są w zakładce Integracje → Moduły (nie w menu – menu zostaje krótkie).
 
 import { NavHamburger, NavWrapper } from "@payloadcms/next/client";
 import { Logout } from "@payloadcms/ui";
 import type { Payload, SanitizedPermissions, Where } from "payload";
-import { providers } from "@/integrations/registry";
-import { getModule } from "@/integrations/vault";
 import { navSections, type NavItem } from "@/payload/nav";
 import { NavBrand } from "./Branding";
 import { NavLinks, type NavLinkData, type NavSectionData } from "./NavLinks";
@@ -38,21 +36,6 @@ export async function Nav({ payload, permissions, user }: Props) {
     for (const item of section.items) {
       if (!canSee(item, permissions, isAdmin)) continue;
       items.push({ id: item.id, label: item.label, href: item.href, exact: item.exact, also: item.also, badge: await badge(payload, item) });
-      // Dodane moduły zaraz pod „Moduły”
-      if (item.id === "nav-integrations") {
-        for (const p of providers) {
-          const m = getModule(p.id);
-          if (!m.installed) continue;
-          items.push({
-            id: `nav-mod-${p.id}`,
-            label: p.name,
-            href: `/admin/integracje/${p.id}`,
-            logo: p.logo,
-            off: !m.enabled,
-            also: p.id === "baselinker" ? ["/admin/globals/baselinker-settings"] : undefined,
-          });
-        }
-      }
     }
     if (items.length) sections.push({ label: section.label, items });
   }

@@ -185,9 +185,11 @@ body {
   box-shadow: inset 0 -2px 0 var(--kc-green-500) !important;
 }
 html[data-theme="dark"] .tabs-field__tab-button--active {
-  color: var(--kc-lime) !important;
+  color: #ff8a8a !important;
   box-shadow: inset 0 -2px 0 var(--kc-lime) !important;
 }
+// Zakładki formularza (pigułki) – biały napis na czerwonym, w obu motywach
+html .document-fields .tabs-field__tab-button--active { color: #fff !important; box-shadow: 0 4px 12px -4px rgba(211, 46, 46, .45) !important; }
 
 .pill--style-success {
   background: var(--color-success-100) !important;
@@ -1028,7 +1030,7 @@ html[data-theme="dark"] {
 .document-fields, .drawer {
   .field-label { font-size: 13px; font-weight: 600; color: var(--theme-elevation-800); margin-bottom: 6px; }
   .field-description { font-size: 12px; line-height: 1.45; color: var(--kc-muted, var(--theme-elevation-500)); margin-top: 6px; }
-  .field-type input:not([type="checkbox"]):not([type="radio"]),
+  .field-type input:not([type="checkbox"]):not([type="radio"]):not(.rs__input),
   .field-type textarea,
   .rs__control,
   .react-datepicker__input-container input {
@@ -1036,7 +1038,7 @@ html[data-theme="dark"] {
     background: var(--kc-field-bg) !important; box-shadow: none !important; transition: border-color .15s, box-shadow .15s;
     &:hover { border-color: color-mix(in srgb, var(--kc-green-500) 45%, var(--kc-field-border)) !important; }
   }
-  .field-type input:not([type="checkbox"]):not([type="radio"]):focus,
+  .field-type input:not([type="checkbox"]):not([type="radio"]):not(.rs__input):focus,
   .field-type textarea:focus,
   .rs__control--is-focused,
   .react-datepicker__input-container input:focus {
@@ -1496,3 +1498,138 @@ html[data-theme="dark"] .kc-summary__total b { color: var(--kc-lime); }
   span { font-size: 12px; color: var(--kc-muted); }
 }
 .kc-prodside__sale { color: var(--kc-green-700) !important; s { margin-left: 6px; font-weight: 400; font-size: 12px; color: var(--kc-muted); } }
+
+// Ukryte pole wpisywania w listach wyboru (react-select) – bez ramki i tła (inaczej widać „kreskę” przed wartością)
+.rs__input, .rs__input:focus { border: 0 !important; background: transparent !important; box-shadow: none !important; min-height: 0 !important; padding: 0 !important; }
+
+// Przełącznik jasny / ciemny motyw w nagłówku
+.kc-theme {
+  display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; cursor: pointer;
+  border: 1px solid var(--kc-border); background: var(--kc-surface); color: var(--theme-text);
+  &:hover { border-color: var(--kc-green-500); }
+}
+
+// Edytor opisu produktu (HtmlEditor.tsx): wizualny / HTML / podgląd
+.kc-html { display: flex; flex-direction: column; gap: 8px; }
+.kc-html__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; .field-label { margin: 0; } }
+.kc-html__modes {
+  display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--kc-card-head); border: 1px solid var(--kc-card-border);
+  button { border: 0; background: none; padding: 6px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--kc-muted); cursor: pointer; }
+  button.is-active { background: var(--kc-card-bg); color: var(--theme-text); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+}
+.kc-html__frame { border: 1px solid var(--kc-field-border); border-radius: 12px; background: var(--kc-field-bg); overflow: hidden; }
+.kc-html__bar {
+  display: flex; flex-wrap: wrap; gap: 2px; padding: 6px; border-bottom: 1px solid var(--kc-field-border); background: var(--kc-card-head);
+  button { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 8px; background: none; color: var(--theme-text); cursor: pointer; }
+  button:hover:not(:disabled) { background: var(--kc-card-bg); color: var(--kc-green-700); }
+  button:disabled { opacity: .4; }
+}
+.kc-html__area { min-height: 260px; max-height: 620px; overflow: auto; padding: 16px 18px; outline: none; }
+.kc-html__area:focus { box-shadow: inset 0 0 0 2px rgba(211, 46, 46, .25); }
+.kc-html__code {
+  min-height: 320px; width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--kc-field-border); background: var(--kc-field-bg);
+  color: var(--theme-text); font: 12.5px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace; resize: vertical;
+}
+.kc-html__empty { margin: 0; padding: 18px; color: var(--kc-muted); }
+// Treść opisu – zbliżona do wyglądu na stronie produktu
+.kc-desc {
+  font-size: 14px; line-height: 1.65; color: var(--theme-text);
+  h2 { font-size: 19px; margin: 18px 0 8px; } h3 { font-size: 16px; margin: 14px 0 6px; }
+  p { margin: 0 0 10px; } ul, ol { margin: 0 0 10px; padding-left: 22px; } li { margin: 2px 0; }
+  a { color: var(--kc-green-700); } img { max-width: 100%; height: auto; border-radius: 8px; }
+  table { border-collapse: collapse; } td, th { border: 1px solid var(--kc-card-border); padding: 4px 8px; }
+}
+
+// =====================================================================
+// PODGLĄD ZAMÓWIENIA / PRODUKTU (Overview.tsx) – karty jak w BaseLinkerze, edycja po kliknięciu
+// =====================================================================
+// W trybie podglądu chowamy formularz (zakładki i nazwę produktu); pokazuje się po „Edytuj”
+html[data-kc-view]:not([data-kc-edit]) .document-fields__main .tabs-field { display: none !important; }
+html[data-kc-view="product"]:not([data-kc-edit]) .document-fields__main .render-fields > .field-type:has(input#field-name) { display: none !important; }
+html[data-kc-view]:not([data-kc-edit]) .document-fields__main .render-fields { row-gap: 0; }
+
+.kc-ov { display: flex; flex-direction: column; gap: 16px; margin-bottom: 8px; }
+.kc-ov__head {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  padding: 18px 20px; border-radius: 16px; background: var(--kc-card-bg); border: 1px solid var(--kc-card-border);
+  p { margin: 4px 0 0; font-size: 13px; color: var(--kc-muted); }
+}
+.kc-ov__title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 20px; font-weight: 800; color: var(--theme-text); svg { color: var(--kc-green-700); } }
+.kc-ov__total { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; b { font-size: 24px; font-weight: 900; color: var(--theme-text); } }
+.kc-ov__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.kc-ov__btn {
+  display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; cursor: pointer; text-decoration: none;
+  border: 1px solid var(--kc-card-border); background: var(--kc-card-bg); color: var(--theme-text) !important; font-size: 13px; font-weight: 600;
+  &.is-primary { background: var(--kc-green-700); border-color: var(--kc-green-700); color: #fff !important; }
+}
+.kc-ov__grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(280px, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 1100px) { .kc-ov__grid { grid-template-columns: 1fr; } }
+.kc-ov__col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.kc-ov__card {
+  border-radius: 16px; background: var(--kc-card-bg); border: 1px solid var(--kc-card-border); overflow: hidden;
+  > header {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 11px 16px;
+    background: var(--kc-card-head); border-bottom: 1px solid var(--kc-card-border);
+    h3 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 13px; font-weight: 800; letter-spacing: .02em; color: var(--theme-text); }
+    h3 svg { color: var(--kc-green-700); }
+  }
+}
+html[data-theme="dark"] .kc-ov__card > header h3 svg, html[data-theme="dark"] .kc-ov__title svg { color: #ff8a8a; }
+.kc-ov__edit {
+  display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--kc-card-border); background: var(--kc-card-bg); color: var(--theme-text); font-size: 12px; font-weight: 600;
+  &:hover { border-color: var(--kc-green-500); color: var(--kc-green-700); }
+}
+.kc-ov__body { padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; color: var(--theme-text);
+  a { color: var(--theme-text); text-decoration: none; &:hover { text-decoration: underline; } }
+}
+.kc-ov__row { display: flex; justify-content: space-between; gap: 12px; span { color: var(--kc-muted); } b { font-weight: 600; text-align: right; } }
+.kc-ov__row.is-total { padding-top: 8px; margin-top: 4px; border-top: 1px dashed var(--kc-card-border); font-size: 15px; b { font-size: 18px; font-weight: 900; color: var(--kc-green-700); } }
+html[data-theme="dark"] .kc-ov__row.is-total b { color: #ff8a8a; }
+.kc-ov__strong { margin: 0; font-weight: 700; font-size: 14.5px; }
+.kc-ov__muted { margin: 0; color: var(--kc-muted); font-size: 13px; }
+.kc-ov__warn { margin: 4px 0 0; padding: 8px 10px; border-radius: 8px; background: rgba(197, 48, 48, .1); color: var(--kc-red); font-size: 12.5px; }
+.kc-ov__note { margin: 0; white-space: pre-line; span { display: block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--kc-muted); margin-bottom: 2px; } }
+.kc-ov__table {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+  th { text-align: left; padding: 6px 8px; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--kc-muted); border-bottom: 1px solid var(--kc-card-border); }
+  td { padding: 9px 8px; border-bottom: 1px solid var(--kc-card-border); vertical-align: top; white-space: nowrap; }
+  td:first-child { white-space: normal; width: 100%; }
+  td small { display: block; margin-top: 2px; color: var(--kc-muted); font-size: 12px; }
+  th:not(:first-child), td:not(:first-child) { text-align: right; }
+}
+.kc-ov__sum { margin-left: auto; width: min(100%, 280px); display: flex; flex-direction: column; gap: 4px; padding-top: 8px; }
+.kc-ov__ship { display: flex; align-items: center; gap: 10px;
+  img { width: 44px; height: 30px; object-fit: contain; border-radius: 6px; background: #fff; border: 1px solid var(--kc-card-border); padding: 2px; }
+  span { display: flex; flex-direction: column; } small { color: var(--kc-muted); }
+}
+.kc-ov__addr { display: flex; gap: 6px; margin: 4px 0 0; color: var(--theme-text); svg { flex-shrink: 0; margin-top: 3px; color: var(--kc-muted); } }
+.kc-ov__parcel {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--kc-card-border);
+  span { flex: 1; } small { display: block; color: var(--kc-muted); }
+}
+.kc-ov__editbar {
+  position: sticky; top: 60px; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 14px; padding: 10px 14px; border-radius: 12px; background: #fef3c7; color: #78350f; font-size: 13px;
+  span { display: inline-flex; align-items: center; gap: 8px; }
+  button { height: 32px; padding: 0 14px; border-radius: 9px; border: 0; background: #78350f; color: #fff; font-weight: 700; cursor: pointer; }
+}
+// Produkt
+.kc-ov__gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px;
+  img { width: 100%; aspect-ratio: 1; object-fit: contain; border-radius: 10px; background: #fff; border: 1px solid var(--kc-card-border); padding: 4px; }
+  img.is-main { grid-column: span 2; grid-row: span 2; }
+}
+.kc-ov__lead { margin: 0 0 6px; font-weight: 600; }
+.kc-ov__desc { max-height: 220px; overflow: hidden; position: relative; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent);
+  &.is-open { max-height: none; -webkit-mask-image: none; mask-image: none; }
+}
+.kc-ov__more { align-self: flex-start; padding: 0; border: 0; background: none; color: var(--kc-green-700); font-weight: 600; font-size: 13px; cursor: pointer; }
+.kc-ov__price { display: flex; align-items: baseline; gap: 10px; b { font-size: 24px; font-weight: 900; } b.is-sale { color: var(--kc-green-700); } s { color: var(--kc-muted); } }
+.kc-ov__ghs { display: flex; gap: 6px; flex-wrap: wrap; img { width: 44px; height: 44px; } }
+.kc-ov__seo-title { margin: 0; color: #1a0dab; font-size: 15px; }
+html[data-theme="dark"] .kc-ov__seo-title { color: #8ab4f8; }
+
+// Znak modułu bez oficjalnego logo (np. BaseLinker „BL”, Poczta – ikona): czytelny w obu motywach
+.kc-ih__logo:not(:has(img)) { background: var(--kc-card-head); border-color: var(--kc-card-border); color: var(--kc-green-700); }
+.kc-ih__logo:not(:has(img)) b { color: var(--kc-green-700); letter-spacing: .02em; }
+html[data-theme="dark"] .kc-ih__logo:not(:has(img)), html[data-theme="dark"] .kc-ih__logo:not(:has(img)) b { color: #ff8a8a; }

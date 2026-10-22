@@ -53,6 +53,15 @@ export const stockAlertHook: CollectionAfterChangeHook = async ({ doc, previousD
   return doc;
 };
 
+// Opis zmieniony ręcznie w panelu → zaznacz „Nie nadpisuj opisu”, żeby synchronizacja z BaseLinkerem go nie skasowała
+export const keepEditedDescription: CollectionBeforeChangeHook = ({ data, originalDoc, req, operation }) => {
+  if (operation !== "update" || req.user?.collection !== "users") return data;
+  if (data.descriptionHtml !== undefined && data.descriptionHtml !== originalDoc?.descriptionHtml) {
+    data.keep = { ...(originalDoc?.keep ?? {}), ...(data.keep ?? {}), description: true };
+  }
+  return data;
+};
+
 // Sklep czyta katalog z pamięci podręcznej – po każdej zmianie odświeżamy ją od razu
 export const invalidateCatalogHook: CollectionAfterChangeHook & CollectionAfterDeleteHook = ({ doc }) => {
   invalidateCatalog();

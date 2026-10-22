@@ -1,6 +1,6 @@
+import { OrderOverview as OrderOverview_d07e8134a53d54990dc42c054addb52f } from '@/payload/components/Overview'
 import { OrderNumberCell as OrderNumberCell_1b8cf5de8925c41d03933531ab1821cf } from '@/payload/components/Cells'
 import { OrderStatusCell as OrderStatusCell_1b8cf5de8925c41d03933531ab1821cf } from '@/payload/components/Cells'
-import { OrderSidebar as OrderSidebar_52e2685fd19bb93faef620376e8d90c1 } from '@/payload/components/FormBits'
 import { ProductAutofill as ProductAutofill_52e2685fd19bb93faef620376e8d90c1 } from '@/payload/components/FormBits'
 import { OrderItemLabel as OrderItemLabel_52e2685fd19bb93faef620376e8d90c1 } from '@/payload/components/FormBits'
 import { OrderTotalCell as OrderTotalCell_1b8cf5de8925c41d03933531ab1821cf } from '@/payload/components/Cells'
@@ -18,6 +18,7 @@ import { ReturnTabs as ReturnTabs_afa28513a8d00beaf48c0ca97ce608d6 } from '@/pay
 import { SubmissionStatusCell as SubmissionStatusCell_1b8cf5de8925c41d03933531ab1821cf } from '@/payload/components/Cells'
 import { AlertStatusCell as AlertStatusCell_1b8cf5de8925c41d03933531ab1821cf } from '@/payload/components/Cells'
 import { AddressLabel as AddressLabel_52e2685fd19bb93faef620376e8d90c1 } from '@/payload/components/FormBits'
+import { ProductOverview as ProductOverview_d07e8134a53d54990dc42c054addb52f } from '@/payload/components/Overview'
 import { ProductCell as ProductCell_1b8cf5de8925c41d03933531ab1821cf } from '@/payload/components/Cells'
 import { CategoryCell as CategoryCell_1b8cf5de8925c41d03933531ab1821cf } from '@/payload/components/Cells'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -43,10 +44,10 @@ import { StrikethroughFeatureClient as StrikethroughFeatureClient_e70f5e05f09f93
 import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { HtmlEditor as HtmlEditor_54196c74e5d51cd5fa17b655c5b2b3cc } from '@/payload/components/HtmlEditor'
 import { ProductPriceCell as ProductPriceCell_1b8cf5de8925c41d03933531ab1821cf } from '@/payload/components/Cells'
 import { StockCell as StockCell_1b8cf5de8925c41d03933531ab1821cf } from '@/payload/components/Cells'
 import { ThumbCell as ThumbCell_1b8cf5de8925c41d03933531ab1821cf } from '@/payload/components/Cells'
-import { ProductSidebar as ProductSidebar_52e2685fd19bb93faef620376e8d90c1 } from '@/payload/components/FormBits'
 import { ProductStatusCell as ProductStatusCell_1b8cf5de8925c41d03933531ab1821cf } from '@/payload/components/Cells'
 import { ProductTabs as ProductTabs_afa28513a8d00beaf48c0ca97ce608d6 } from '@/payload/components/StatusTabs'
 import { ViewProductInStore as ViewProductInStore_ac8b49a3f101aca2fea9a6701d416f1e } from '@/payload/components/AdminClient'
@@ -74,9 +75,9 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 
 /** @type import('payload').ImportMap */
 export const importMap = {
+  "@/payload/components/Overview#OrderOverview": OrderOverview_d07e8134a53d54990dc42c054addb52f,
   "@/payload/components/Cells#OrderNumberCell": OrderNumberCell_1b8cf5de8925c41d03933531ab1821cf,
   "@/payload/components/Cells#OrderStatusCell": OrderStatusCell_1b8cf5de8925c41d03933531ab1821cf,
-  "@/payload/components/FormBits#OrderSidebar": OrderSidebar_52e2685fd19bb93faef620376e8d90c1,
   "@/payload/components/FormBits#ProductAutofill": ProductAutofill_52e2685fd19bb93faef620376e8d90c1,
   "@/payload/components/FormBits#OrderItemLabel": OrderItemLabel_52e2685fd19bb93faef620376e8d90c1,
   "@/payload/components/Cells#OrderTotalCell": OrderTotalCell_1b8cf5de8925c41d03933531ab1821cf,
@@ -94,6 +95,7 @@ export const importMap = {
   "@/payload/components/Cells#SubmissionStatusCell": SubmissionStatusCell_1b8cf5de8925c41d03933531ab1821cf,
   "@/payload/components/Cells#AlertStatusCell": AlertStatusCell_1b8cf5de8925c41d03933531ab1821cf,
   "@/payload/components/FormBits#AddressLabel": AddressLabel_52e2685fd19bb93faef620376e8d90c1,
+  "@/payload/components/Overview#ProductOverview": ProductOverview_d07e8134a53d54990dc42c054addb52f,
   "@/payload/components/Cells#ProductCell": ProductCell_1b8cf5de8925c41d03933531ab1821cf,
   "@/payload/components/Cells#CategoryCell": CategoryCell_1b8cf5de8925c41d03933531ab1821cf,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -119,10 +121,10 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#UnderlineFeatureClient": UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@/payload/components/HtmlEditor#HtmlEditor": HtmlEditor_54196c74e5d51cd5fa17b655c5b2b3cc,
   "@/payload/components/Cells#ProductPriceCell": ProductPriceCell_1b8cf5de8925c41d03933531ab1821cf,
   "@/payload/components/Cells#StockCell": StockCell_1b8cf5de8925c41d03933531ab1821cf,
   "@/payload/components/Cells#ThumbCell": ThumbCell_1b8cf5de8925c41d03933531ab1821cf,
-  "@/payload/components/FormBits#ProductSidebar": ProductSidebar_52e2685fd19bb93faef620376e8d90c1,
   "@/payload/components/Cells#ProductStatusCell": ProductStatusCell_1b8cf5de8925c41d03933531ab1821cf,
   "@/payload/components/StatusTabs#ProductTabs": ProductTabs_afa28513a8d00beaf48c0ca97ce608d6,
   "@/payload/components/AdminClient#ViewProductInStore": ViewProductInStore_ac8b49a3f101aca2fea9a6701d416f1e,

@@ -42,6 +42,8 @@ export const Orders: CollectionConfig = {
     afterChange: [orderStockHook, autoSendToBaseLinker, orderStatusMailHook],
   },
   fields: [
+    // Podgląd zamówienia w kartach (jak w BaseLinkerze); formularz pokazuje się po „Edytuj”
+    { type: "ui", name: "overview", admin: { disableListColumn: true, components: { Field: "@/payload/components/Overview#OrderOverview" } } },
     { name: "orderNumber", label: "Numer zamówienia", type: "text", unique: true, index: true, admin: { readOnly: true, position: "sidebar", description: "Nadawany automatycznie przy zapisie.", components: { Cell: "@/payload/components/Cells#OrderNumberCell" } } },
     { name: "status", label: "Status w sklepie", type: "select", defaultValue: "new", index: true, admin: { position: "sidebar", components: { Cell: "@/payload/components/Cells#OrderStatusCell" } }, options: [
       { label: "Nowe", value: "new" },
@@ -51,7 +53,6 @@ export const Orders: CollectionConfig = {
       { label: "Wysłane do klienta", value: "shipped" },
       { label: "Anulowane", value: "cancelled" },
     ] },
-    { type: "ui", name: "sidebarSummary", admin: { position: "sidebar", disableListColumn: true, components: { Field: "@/payload/components/FormBits#OrderSidebar" } } },
     {
       type: "tabs",
       tabs: [

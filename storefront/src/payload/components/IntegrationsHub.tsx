@@ -4,6 +4,7 @@
 // Pełnych haseł nigdy nie pobieramy z serwera – widać tylko końcówkę („••••a1b2”).
 
 import Link from "next/link";
+import { Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { moduleById, providers, upcoming, type AutoSettings, type JobId, type JobRun, type ModuleCategory, type Provider } from "@/integrations/registry";
@@ -313,7 +314,7 @@ function ModuleLogo({ provider, size = "md" }: { provider: Provider; size?: "md"
   return (
     <div className={`kc-ih__logo kc-ih__logo--${size}`}>
       {/* eslint-disable-next-line @next/next/no-img-element -- małe logo z public/marks */}
-      {provider.logo ? <img src={provider.logo} alt="" /> : <b>{provider.name.slice(0, 2).toUpperCase()}</b>}
+      {provider.logo ? <img src={provider.logo} alt="" /> : provider.id === "poczta" ? <Mail size={size === "lg" ? 28 : 20} /> : <b>{(provider.name.match(/[A-Z]/g) ?? []).slice(0, 2).join("")}</b>}
     </div>
   );
 }
@@ -383,7 +384,7 @@ export function ModulesOverview() {
           <div className="kc-ih__tiles">
             {available.map((p) => (
               <article key={p.id} className="kc-ih__tile">
-                <div className="kc-ih__tilehead"><ModuleLogo provider={p} /><div><b>{p.name}</b><small>{p.category}</small></div></div>
+                <div className="kc-ih__tilehead"><ModuleLogo provider={p} /><div><b>{p.name}</b></div></div>
                 <p>{p.what}</p>
                 <div className="kc-ih__tilefoot"><button type="button" className="kc-ih__btn is-primary" onClick={() => add(p)}>Dodaj do sklepu</button></div>
               </article>
@@ -413,7 +414,7 @@ export function ModulesOverview() {
                   <article key={p.id} className={`kc-ih__tile ${row.enabled ? "" : "is-off"}`}>
                     <div className="kc-ih__tilehead">
                       <ModuleLogo provider={p} />
-                      <div><b>{p.name}</b><small>{p.category}</small></div>
+                      <div><b>{p.name}</b></div>
                       <Status provider={p} st={row} />
                     </div>
                     <p>{p.what}</p>
