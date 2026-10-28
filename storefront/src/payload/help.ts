@@ -50,7 +50,7 @@ export const HELP: HelpSection[] = [
       "Etykiety kurierskie (InPost, ORLEN Paczka, GLS) robisz w BaseLinkerze – tak jak dotąd.",
       "Gdy w BaseLinkerze zamówienie dostanie status „wysłane” i numer paczki, sklep sam zmieni status na Wysłane i wyśle klientowi maila z linkiem do śledzenia.",
       "Integracja „Inny sklep”: BaseLinker sam pobiera zamówienia ze sklepu co kilka minut (także „za pobraniem” i „odbiór osobisty”). Po pobraniu zamówienie ma w panelu status BaseLinker „Wysłane”, a w historii wpis „Pobrane przez BaseLinkera”. Kiedy ostatnio pobierał – Integracje → BaseLinker → Synchronizacja.",
-      "Ceny dostaw i próg darmowej dostawy: [Ustawienia sklepu → Dostawa](/admin/globals/store-settings). Zmiana działa w koszyku od razu.",
+      "Kwota darmowej dostawy (to, co na stronie widać jako np. 399 zł) i ceny kurierów: [Ustawienia sklepu → Dostawa](/admin/globals/store-settings). Na górze zakładki jest kwota dla całego sklepu. Przy kurierze pole „Darmowa od” — puste znaczy tę samą kwotę, wpisana liczba to własny próg (np. InPost taniej, GLS drożej). Odznacz „Może być darmowa”, żeby metoda nigdy nie była gratis (pobranie).",
       "Połączenie z BaseLinkerem, synchronizacja stanów i statusów: [Integracje → Moduły](/admin/integracje).",
     ],
     tips: ["Jeśli zamówienie nie dotarło do BaseLinkera, w zakładce „Błąd BaseLinkera” zobaczysz powód; sklep ponawia wysyłkę sam co kilkanaście minut."],
@@ -108,6 +108,7 @@ export const HELP: HelpSection[] = [
     steps: [
       "[Układ strony](/admin/uklad) – zakładki: Strona główna, Karta produktu, Widok kategorii, Menu i stopka. Przeciągnij sekcję (albo strzałki), żeby zmienić kolejność; oko – pokaż / ukryj; „Edytuj treść” – zmiana zawartości sekcji. Po prawej podgląd strony. Na koniec „Zapisz układ”.",
       "Baner główny: w Układzie strony przy „Baner główny” → Edytuj treść → Banery – kilka banerów w karuzeli, każdy z tytułem, przyciskiem i datami „pokazuj od – do”. Zdjęcie 1920 × 625 px.",
+      "[Strona główna](/admin/globals/homepage): etykiety pod banerem, loga marek i siatki produktów. Pasek na samej górze: [Menu i stopka](/admin/globals/navigation). Telefon i godziny: [Ustawienia sklepu](/admin/globals/store-settings).",
       "[Strona główna](/admin/globals/homepage) → „Siatki produktów”: wyszukaj produkt po nazwie albo SKU, ułóż strzałkami. Puste pole: polecane = SONAX, promocje = obniżona cena, nowości = data dodania, bestsellery = etykieta „Bestseller”.",
       "SEO produktu i podstrony: zakładka „SEO i Google” albo „Wygląd w Google”. Wpisz jedną frazę kluczową. Ocena pokazuje, co poprawić – tytuł, opis, zdjęcia, EAN – i podaje gotowe zdanie do wklejenia.",
       "[Podstrony](/admin/collections/pages) – nad listą „Nowa podstrona z gotowego schematu” (promocja, informacyjna, marka, poradnik) → podmień teksty i zdjęcia → „Opublikuj”.",
@@ -146,7 +147,7 @@ export const HELP: HelpSection[] = [
       "Asystenci AI: pozwól lub zablokuj ChatGPT/Claude/Perplexity; pliki llms.txt opisują sklep dla AI.",
       "Przerwa techniczna: wyłącza sklep dla klientów z komunikatem – Ty (zalogowany) nadal widzisz sklep.",
       "„Odśwież sklep teraz” – gdy zmiana z panelu nie jest jeszcze widoczna w sklepie.",
-      "Pracownicy: [Pracownicy](/admin/collections/users) – role: Administrator (wszystko), Obsługa zamówień, Redaktor treści i produktów.",
+      "Pracownicy: [Pracownicy](/admin/collections/users). Role: Administrator (wszystko), Redaktor (produkty i strony), Obsługa zamówień, Marketing (kody, opinie, newsletter), Magazyn (produkty i stany). Kolor panelu każdy ustawia u siebie.",
     ],
   },
   {

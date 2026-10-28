@@ -65,9 +65,20 @@ export function CookieConsent() {
     setOpen(false);
   };
 
-  if (!open) return null;
   return (
-    <div className="fixed inset-x-3 bottom-3 z-[70] mx-auto max-w-3xl animate-fade-in rounded-3xl bg-white p-5 shadow-2xl ring-1 shadow-brand-900/20 ring-brand-100 sm:p-6" role="dialog" aria-label="Ustawienia plików cookies">
+    <>
+      {!open && (
+        <button
+          type="button"
+          onClick={openCookieSettings}
+          className="fixed bottom-4 left-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-white text-brand-700 shadow-lg ring-1 ring-brand-100 hover:bg-brand-50"
+          aria-label="Ustawienia cookies"
+          title="Ustawienia cookies"
+        >
+          <Cookie className="h-6 w-6" />
+        </button>
+      )}
+    {open && <div className="fixed inset-x-3 bottom-3 z-[70] mx-auto max-w-3xl animate-fade-in rounded-3xl bg-white p-5 shadow-2xl ring-1 shadow-brand-900/20 ring-brand-100 sm:p-6" role="dialog" aria-label="Ustawienia plików cookies">
       <div className="flex gap-4">
         <span className="hidden h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-700 sm:grid"><Cookie className="h-6 w-6" /></span>
         <div className="flex-1">
@@ -100,7 +111,8 @@ export function CookieConsent() {
           </div>
         </div>
       </div>
-    </div>
+    </div>}
+    </>
   );
 }
 

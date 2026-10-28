@@ -3,7 +3,7 @@
 
 import { z } from "zod";
 import type { Payload } from "payload";
-import { freeShippingFrom } from "@/lib/data";
+import { freeShippingFrom, isShippingFree } from "@/lib/data";
 import { carrierFromShipping, findPickupPoint } from "../pickup";
 import { p24Mode, registerP24 } from "../przelewy24";
 import type { Order } from "@/payload-types";
@@ -122,7 +122,7 @@ export async function placeOrder(payload: Payload, raw: CheckoutInput, client: B
     coupon = { code: c.code, discount, freeShipping: c.type === "free_shipping" };
   }
 
-  const shipFree = ship.price === 0 || coupon?.freeShipping || (ship.freeAboveThreshold !== false && subtotal >= freeFrom);
+  const shipFree = isShippingFree(ship, subtotal, freeFrom, Boolean(coupon?.freeShipping));
   const shipCost = shipFree ? 0 : ship.price;
   const discount = Math.min(coupon?.discount ?? 0, subtotal);
   const total = round2(Math.max(0, subtotal - discount) + shipCost);

@@ -1005,7 +1005,10 @@ export interface IntegrationLog {
 export interface User {
   id: number;
   name?: string | null;
-  roles: ('admin' | 'editor' | 'orders')[];
+  jobTitle?: string | null;
+  phone?: string | null;
+  roles: ('admin' | 'editor' | 'orders' | 'marketing' | 'warehouse')[];
+  panelTheme?: ('czerwony' | 'zielen' | 'granat' | 'grafit') | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1856,7 +1859,10 @@ export interface IntegrationLogsSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  jobTitle?: T;
+  phone?: T;
   roles?: T;
+  panelTheme?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1991,6 +1997,14 @@ export interface Homepage {
         id?: string | null;
       }[]
     | null;
+  brandLogos?:
+    | {
+        logo: number | Media;
+        name: string;
+        link?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   featuredTitle?: string | null;
   /**
    * Puste = automatycznie produkty marki SONAX.
@@ -2070,6 +2084,7 @@ export interface StoreSetting {
         requiresPoint?: boolean | null;
         enabled?: boolean | null;
         freeAboveThreshold?: boolean | null;
+        freeFrom?: number | null;
         id?: string | null;
       }[]
     | null;
@@ -2235,6 +2250,7 @@ export interface StoreSettingsSelect<T extends boolean = true> {
         requiresPoint?: T;
         enabled?: T;
         freeAboveThreshold?: T;
+        freeFrom?: T;
         id?: T;
       };
   paymentMethods?:

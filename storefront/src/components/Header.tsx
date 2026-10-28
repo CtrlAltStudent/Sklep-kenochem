@@ -12,8 +12,6 @@ import { resolveCart } from "@/lib/cart";
 import { actions, useStore } from "@/lib/store";
 import { CatIcon } from "./CatIcon";
 import { ProductImage } from "./ProductImage";
-import { useFreeShipping } from "@/lib/shopConfig";
-
 export type CategoryCounts = Record<string, number>; // "kategoria" i "kategoria/podkategoria" → liczba produktów
 
 export function Logo({ className = "h-11 w-auto" }: { className?: string }) {
@@ -269,8 +267,13 @@ function MobileMenu({ onClose, counts }: { onClose: () => void; counts: Category
   );
 }
 
-export function Header({ counts }: { counts: CategoryCounts }) {
-  const freeShipping = useFreeShipping();
+export function Header({ counts, bar, phone = "+48 500 021 705", hours = "Pn–Pt 8:00–16:00" }: {
+  counts: CategoryCounts;
+  bar?: { text: string; href?: string } | null;
+  phone?: string;
+  hours?: string;
+}) {
+  const tel = phone.replace(/[^\d+]/g, "");
   const { cart, wishlist } = useStore();
   const { count, subtotal } = resolveCart(cart);
   const [active, setActive] = useState<string | null>(null);
@@ -297,12 +300,14 @@ export function Header({ counts }: { counts: CategoryCounts }) {
       <div className="bg-kc-gradient-deep text-sm text-brand-100">
         <div className="mx-auto flex max-w-shop items-center justify-between gap-4 px-4 py-3">
           <div className="flex items-center gap-5">
-            <a href="tel:+48500021705" className="flex items-center gap-1.5 hover:text-white"><Phone className="h-4 w-4" /> +48 500 021 705</a>
-            <span className="hidden items-center gap-1.5 sm:flex"><Clock className="h-4 w-4" /> Pn–Pt 8:00–16:00</span>
+            <a href={`tel:${tel}`} className="flex items-center gap-1.5 hover:text-white"><Phone className="h-4 w-4" /> {phone}</a>
+            <span className="hidden items-center gap-1.5 sm:flex"><Clock className="h-4 w-4" /> {hours}</span>
           </div>
-          <span className="hidden items-center gap-1.5 font-medium text-white md:flex">
-            <Truck className="h-4 w-4 text-accent" /> Darmowa dostawa od {formatPrice(freeShipping)} · wysyłka zwykle w 1 dzień roboczy
-          </span>
+          {bar && (
+            bar.href
+              ? <a href={bar.href} className="hidden items-center gap-1.5 font-medium text-white hover:underline md:flex"><Truck className="h-4 w-4 text-accent" /> {bar.text}</a>
+              : <span className="hidden items-center gap-1.5 font-medium text-white md:flex"><Truck className="h-4 w-4 text-accent" /> {bar.text}</span>
+          )}
         </div>
       </div>
 
@@ -315,9 +320,9 @@ export function Header({ counts }: { counts: CategoryCounts }) {
           <Logo className="h-10 w-auto sm:h-12" />
           <div className="hidden flex-1 md:block"><SearchBox /></div>
           <div className="ml-auto flex items-center gap-1 md:ml-0">
-            <a href="tel:+48500021705" className="bg-kc-gradient-deep mr-2 hidden items-center gap-2 rounded-xl py-2 pr-3.5 pl-2.5 text-white shadow-md shadow-brand-900/20 transition hover:brightness-125 xl:flex">
+            <a href={`tel:${tel}`} className="bg-kc-gradient-deep mr-2 hidden items-center gap-2 rounded-xl py-2 pr-3.5 pl-2.5 text-white shadow-md shadow-brand-900/20 transition hover:brightness-125 xl:flex">
               <span className="bg-kc-gradient grid h-8 w-8 place-items-center rounded-lg"><Headset className="h-4.5 w-4.5" /></span>
-              <span className="text-left text-[11px] leading-tight">Doradzimy w wyborze<br /><b className="text-sm">500 021 705</b></span>
+              <span className="text-left text-[11px] leading-tight">Doradzimy w wyborze<br /><b className="text-sm">{phone.replace(/^\+48\s*/, "")}</b></span>
             </a>
             <Link href="/konto" className="hidden flex-col items-center rounded-xl px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-brand-50 sm:flex">
               <User className="h-5.5 w-5.5 text-brand-800" /> Konto

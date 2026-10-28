@@ -16,7 +16,7 @@ export default async function CheckoutPage() {
   const s = await getStoreSettings();
   const shipping: ShipMethod[] = (s.shippingMethods ?? [])
     .filter(shippingAvailable)
-    .map((m) => ({ code: m.code, label: m.label, price: m.price, requiresPoint: Boolean(m.requiresPoint), freeAboveThreshold: m.freeAboveThreshold !== false }));
+    .map((m) => ({ code: m.code, label: m.label, price: m.price, requiresPoint: Boolean(m.requiresPoint), freeAboveThreshold: m.freeAboveThreshold !== false, freeFrom: m.freeFrom }));
   // Pobranie wybiera się przełącznikiem przy dostawie, a płatności B2B wymagają konta firmowego
   const payments: PayMethod[] = (s.paymentMethods ?? [])
     .filter((m) => paymentAvailable(m) && m.provider !== "cod" && !m.b2bOnly)

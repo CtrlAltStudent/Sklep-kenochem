@@ -104,9 +104,24 @@ export const toCard = (p: Product): ProductCardData => ({
 });
 
 export const FREE_SHIPPING = 249.99;
-// Próg darmowej dostawy z panelu (Ustawienia sklepu → Dostawa); stała FREE_SHIPPING tylko gdy pole puste
+// Kwota pokazywana na stronie (pasek, etykieta, koszyk). Ustawienia sklepu → Dostawa.
 export const freeShippingFrom = (s: { freeShippingThreshold?: number | null }) =>
   typeof s.freeShippingThreshold === "number" && s.freeShippingThreshold >= 0 ? s.freeShippingThreshold : FREE_SHIPPING;
+
+type ShipFree = { price: number; freeAboveThreshold?: boolean | null; freeFrom?: number | null };
+
+// Od ilu złotych ta metoda jest gratis. null = nigdy (np. pobranie). Puste „Darmowa od” = kwota sklepu.
+export const methodFreeFrom = (m: ShipFree, shopDefault: number): number | null => {
+  if (m.freeAboveThreshold === false) return null;
+  if (typeof m.freeFrom === "number" && m.freeFrom >= 0) return m.freeFrom;
+  return shopDefault;
+};
+
+export const isShippingFree = (m: ShipFree, subtotal: number, shopDefault: number, couponFree = false) => {
+  if (m.price === 0 || couponFree) return true;
+  const from = methodFreeFrom(m, shopDefault);
+  return from != null && subtotal >= from;
+};
 
 // Payload podaje pliki z pełnym adresem serwera (serverURL) – w sklepie używamy ścieżki, żeby działało na każdej domenie
 export const mediaPath = (url?: string | null) => (url ? url.replace(/^https?:\/\/[^/]+(?=\/api\/media\/)/, "") : undefined);

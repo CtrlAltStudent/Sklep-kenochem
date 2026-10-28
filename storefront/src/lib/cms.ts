@@ -15,6 +15,7 @@ export const getPage = cache(async (slug: string) => {
 
 export const getStoreSettings = cache(async () => (await getCms()).findGlobal({ slug: "store-settings" }));
 export const getHomepage = cache(async () => (await getCms()).findGlobal({ slug: "homepage", depth: 1 }).catch(() => null));
+export const getNavigation = cache(async () => (await getCms()).findGlobal({ slug: "navigation", depth: 0 }).catch(() => null));
 
 export const getFooterPages = cache(async () => {
   const payload = await getCms();

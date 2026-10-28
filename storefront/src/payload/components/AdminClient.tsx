@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { useFormFields, useTheme } from "@payloadcms/ui";
+import { useAuth, useFormFields, useTheme } from "@payloadcms/ui";
 import { ExternalLink, FileText, Moon, Package, Plus, Receipt, Search, ShoppingBag, Store, Sun, Tag, User } from "lucide-react";
 
 // ---------- Pasek akcji w nagłówku panelu (jak w Shoperze: szukaj + szybkie dodawanie + sklep) ----------
@@ -50,6 +50,14 @@ const quickAdd = [
 ];
 
 export function AdminActions() {
+  const { user } = useAuth();
+  useEffect(() => {
+    const theme = (user as { panelTheme?: string | null } | null)?.panelTheme;
+    const root = document.documentElement;
+    if (theme && theme !== "czerwony") root.dataset.kcAccent = theme;
+    else delete root.dataset.kcAccent;
+  }, [user]);
+
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
   const [q, setQ] = useState("");

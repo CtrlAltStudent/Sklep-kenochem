@@ -2,8 +2,8 @@ import { Fragment } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Headset, ShieldCheck, Store, Truck } from "lucide-react";
-import { categories, freeShippingFrom, formatPrice, mediaPath, toCard, usableImages } from "@/lib/data";
-import { getBrands, getCategoryCounts, getDeals, getFeatured, getFeaturedTitle, getNewest, getProducts } from "@/lib/catalog";
+import { brandSlug, categories, freeShippingFrom, formatPrice, mediaPath, toCard, usableImages } from "@/lib/data";
+import { getBrands, getCategoryCounts, getDeals, getFeatured, getFeaturedTitle, getNewest, getProductTotal, getProducts } from "@/lib/catalog";
 import { CatIcon } from "@/components/CatIcon";
 import { categoryPhoto } from "@/lib/photos";
 import { ProductGrid, Reveal } from "@/components/home/HomeBits";
@@ -41,23 +41,23 @@ const activeNow = (from?: string | null, to?: string | null) => {
   return (!from || new Date(from).getTime() <= now) && (!to || new Date(to).getTime() + 86_400_000 > now);
 };
 
-const perks = (freeShipping: number) => [
+const perks = (freeShipping: number, phone: string, hours: string) => [
   { icon: Truck, title: "Wysyłka w 1 dzień roboczy", text: "InPost i ORLEN Paczka" },
   { icon: Store, title: "Odbiór w Białymstoku", text: "ul. Gen. Andersa 40" },
   { icon: ShieldCheck, title: `Darmowa dostawa od ${formatPrice(freeShipping)}`, text: "BLIK, karta, przelew" },
-  { icon: Headset, title: "Doradztwo Pn–Pt 8–16", text: "500 021 705" },
+  { icon: Headset, title: `Doradztwo ${hours}`, text: phone.replace(/^\+48\s*/, "") },
 ];
 
 export default async function Home() {
-  const [counts, featured, featuredTitle, newest, dealsAll, products, reviews, brands, posts, store, home] = await Promise.all([
-    getCategoryCounts(), getFeatured(), getFeaturedTitle(), getNewest(), getDeals(), getProducts(), getLatestReviews(), getBrands(), getPosts(), getStoreSettings(), getHomepage(),
+  const [counts, featured, featuredTitle, newest, dealsAll, products, productTotal, reviews, brands, posts, store, home] = await Promise.all([
+    getCategoryCounts(), getFeatured(), getFeaturedTitle(), getNewest(), getDeals(), getProducts(), getProductTotal(), getLatestReviews(), getBrands(), getPosts(), getStoreSettings(), getHomepage(),
   ]);
   const slides: Slide[] = (home?.slides ?? [])
     .filter((s) => activeNow(s.activeFrom, s.activeTo))
     .map((s) => ({ image: mediaSrc(s.image) ?? "", kicker: s.kicker ?? undefined, title: s.title ?? undefined, text: s.text ?? undefined, ctaLabel: s.ctaLabel ?? undefined, link: s.link }))
     .filter((s) => s.image);
   // Atuty pod banerem: z panelu (do 4), a gdy puste – domyślne
-  const defaultPerks = perks(freeShippingFrom(store));
+  const defaultPerks = perks(freeShippingFrom(store), store.phone || "+48 500 021 705", store.hours || "Pn–Pt 8–16");
   const perkList = home?.perks?.length
     ? home.perks.map((p, i) => ({ icon: defaultPerks[i % 4].icon, image: mediaSrc(p.icon, "thumb"), title: p.title, text: p.text ?? "" }))
     : defaultPerks.map((p) => ({ ...p, image: undefined as string | undefined }));
@@ -66,7 +66,12 @@ export default async function Home() {
   const withImg = (list: typeof products) => list.filter((p) => usableImages(p.images).length);
   const deals = withImg(dealsAll).slice(0, 8);
   const featuredCards = withImg(featured.length ? featured : products).slice(0, 8);
-  const total = products.length;
+  const total = productTotal;
+  const brandLogos = (home?.brandLogos ?? []).flatMap((b) => {
+    const src = mediaSrc(b.logo, "thumb");
+    if (!src || !b.name) return [];
+    return [{ name: b.name, src, href: b.link?.trim() || `/marki/${brandSlug(b.name)}` }];
+  });
   const articles = posts.filter((p) => p.tag !== "poradnik").slice(0, 3);
 
   // Sekcje strony – kolejność i widoczność z panelu (Treści i wygląd → Układ strony, src/lib/layoutSections.ts)
@@ -160,18 +165,29 @@ export default async function Home() {
       <ProductGrid products={newest.slice(0, 8).map(toCard)} />
     </>),
 
-    brands: brands.length > 0 && (
+    brands: (brandLogos.length > 0 || brands.length > 0) && (
       <section className="my-8 border-y border-brand-100 bg-white py-10">
         <div className="mx-auto max-w-shop px-4">
           <p className="mb-5 text-center text-xs font-bold tracking-widest text-slate-400 uppercase">Marki w sklepie</p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {brands.slice(0, 16).map((b) => (
-              <Link key={b.slug} href={`/marki/${b.slug}`}
-                className="rounded-lg bg-slate-50 px-4 py-2 text-sm font-bold text-slate-600 ring-1 ring-brand-100 hover:text-accent hover:ring-accent">
-                {b.name}
-              </Link>
-            ))}
-          </div>
+          {brandLogos.length > 0 ? (
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {brandLogos.map((b) => (
+                <Link key={b.name} href={b.href} className="grid h-16 w-36 place-items-center rounded-xl bg-white px-3 ring-1 ring-brand-100 hover:ring-accent" title={b.name}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={b.src} alt={b.name} className="max-h-10 max-w-full object-contain" />
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-wrap justify-center gap-2">
+              {brands.slice(0, 16).map((b) => (
+                <Link key={b.slug} href={`/marki/${b.slug}`}
+                  className="rounded-lg bg-slate-50 px-4 py-2 text-sm font-bold text-slate-600 ring-1 ring-brand-100 hover:text-accent hover:ring-accent">
+                  {b.name}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     ),

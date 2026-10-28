@@ -1,5 +1,5 @@
 import type { CollectionConfig } from "payload";
-import { anyone, isEditor } from "../access";
+import { anyone, isCatalog, isEditor } from "../access";
 import { productList, seoFields, slugField } from "../fields";
 import { VARIANT_DISPLAY, VARIANT_NAV } from "@/lib/data";
 import { keepEditedDescription, priceHistoryHook, stockAlertHook, invalidateCatalogHook, variantParentHook, uniqueSkuHook, unlinkVariantsHook } from "../productHooks";
@@ -20,7 +20,7 @@ export const Products: CollectionConfig = {
       edit: { beforeDocumentControls: ["@/payload/components/AdminClient#ViewProductInStore"] },
     },
   },
-  access: { read: anyone, create: isEditor, update: isEditor, delete: isEditor },
+  access: { read: anyone, create: isEditor, update: isCatalog, delete: isEditor },
   hooks: {
     beforeChange: [uniqueSkuHook, priceHistoryHook, keepEditedDescription, variantParentHook],
     afterChange: [stockAlertHook, invalidateCatalogHook],

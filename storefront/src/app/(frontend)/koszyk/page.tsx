@@ -10,7 +10,7 @@ export default async function CartPage() {
   const s = await getStoreSettings();
   const shipping = (s.shippingMethods ?? [])
     .filter(shippingAvailable)
-    .map((m) => ({ code: m.code, label: m.label, price: m.price, freeAboveThreshold: m.freeAboveThreshold !== false }));
+    .map((m) => ({ code: m.code, label: m.label, price: m.price, freeAboveThreshold: m.freeAboveThreshold !== false, freeFrom: m.freeFrom }));
   const prices = shipping.filter((m) => m.price > 0).map((m) => m.price);
   return <CartView minShip={prices.length ? Math.min(...prices) : 0} shipping={shipping} />;
 }

@@ -9,7 +9,7 @@ import { LegalDrafts } from "./LegalDrafts";
 
 // Tylko ustawienia sklepu – integracje, maile, pracownicy, przekierowania i wygląd mają własne miejsca w menu
 const CARDS = [
-  { icon: Building2, title: "Dane sklepu, dostawa i płatności", text: "Nazwa, kontakt, adres, godziny, GPSR · metody i ceny dostawy, darmowa dostawa · metody płatności.", href: "/admin/globals/store-settings" },
+  { icon: Building2, title: "Dane sklepu, dostawa i płatności", text: "Nazwa, kontakt, adres, godziny. Zakładka Dostawa: kwota darmowej dostawy (np. 399 zł) i osobny próg dla każdego kuriera.", href: "/admin/globals/store-settings" },
 ];
 
 export function SettingsHub(props: AdminViewServerProps) {

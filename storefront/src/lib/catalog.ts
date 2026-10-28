@@ -17,6 +17,7 @@ type Catalog = {
   bySlug: Map<string, Product>;
   index: { p: Product; text: string }[];
   counts: Record<string, number>;
+  total: number;
 };
 
 const g = globalThis as typeof globalThis & { __kcCatalog?: { at: number; version: number; data: Promise<Catalog> } };
@@ -175,9 +176,13 @@ async function load(): Promise<Catalog> {
     }
   }
 
+  // Liczymy każdy aktywny produkt z panelu, także wariant przypięty do innej karty.
   const counts: Record<string, number> = {};
-  for (const p of products) {
+  for (const r of rows) {
+    const p = r.product;
+    if (!p.category) continue;
     counts[p.category] = (counts[p.category] ?? 0) + 1;
+    if (!p.subcategory) continue;
     const k = `${p.category}/${p.subcategory}`;
     counts[k] = (counts[k] ?? 0) + 1;
     if (p.type) counts[`${k}/${p.type}`] = (counts[`${k}/${p.type}`] ?? 0) + 1;
@@ -194,6 +199,7 @@ async function load(): Promise<Catalog> {
     bySlug,
     index: products.map((p) => ({ p, text: norm(`${p.name} ${p.brand} ${p.sku} ${p.ean} ${p.variants.map((v) => `${v.sku ?? ""} ${v.ean ?? ""} ${v.label}`).join(" ")}`) })),
     counts,
+    total: rows.length,
   };
 }
 
@@ -212,6 +218,7 @@ export function getCatalog(): Promise<Catalog> {
 export const getProducts = async () => (await getCatalog()).products;
 export const getProduct = async (slug: string) => (await getCatalog()).bySlug.get(slug);
 export const getCategoryCounts = async () => (await getCatalog()).counts;
+export const getProductTotal = async () => (await getCatalog()).total;
 
 // Bezpieczeństwo (CLP/GPSR): karta charakterystyki, piktogramy GHS, hasło ostrzegawcze – z zakładki „Bezpieczeństwo” w panelu
 export type Safety = { sds?: string; pictograms: string[]; signal?: "warning" | "danger"; notes?: string };

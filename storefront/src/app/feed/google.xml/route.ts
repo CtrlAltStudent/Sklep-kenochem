@@ -1,7 +1,7 @@
 import { categories } from "@/lib/data";
 import { getProducts } from "@/lib/catalog";
 import { getCms, getStoreSettings } from "@/lib/cms";
-import { freeShippingFrom } from "@/lib/data";
+import { freeShippingFrom, methodFreeFrom } from "@/lib/data";
 import { shippingAvailable } from "@/integrations/availability";
 import { absUrl, siteBase } from "@/lib/site";
 import { getSite } from "@/integrations/vault";
@@ -58,7 +58,8 @@ export async function GET() {
       const regular = v.oldPrice ?? v.price;
       const saleTo = row?.sale?.to ? new Date(row.sale.to) : null;
       const saleFrom = row?.sale?.from ? new Date(row.sale.from) : new Date(Date.now() - 86_400_000);
-      const shipPrice = cheapest ? (v.price >= free && cheapest.freeAboveThreshold !== false ? 0 : cheapest.price) : null;
+      const shipFrom = cheapest ? methodFreeFrom(cheapest, free) : null;
+      const shipPrice = cheapest ? (shipFrom != null && v.price >= shipFrom ? 0 : cheapest.price) : null;
       items.push([
         "<item>",
         `<g:id>${xml(id)}</g:id>`,

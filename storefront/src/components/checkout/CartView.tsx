@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { cartItem, track } from "@/lib/track";
 import { ArrowLeft, ArrowRight, Lock, RotateCcw, ShieldCheck, ShoppingBag, Truck } from "lucide-react";
-import { formatPrice } from "@/lib/data";
+import { formatPrice, isShippingFree } from "@/lib/data";
 import { resolveCart } from "@/lib/cart";
 import { actions, useStore, type CartLine } from "@/lib/store";
 import { CartLineRow, FreeShippingBar } from "@/components/CartDrawer";
@@ -12,7 +12,7 @@ import { BrandMark, carrierFromCode } from "@/components/checkout/BrandMarks";
 import { CheckoutSteps } from "@/components/checkout/CheckoutSteps";
 import { useFreeShipping } from "@/lib/shopConfig";
 
-type CartShip = { code: string; label: string; price: number; freeAboveThreshold: boolean };
+type CartShip = { code: string; label: string; price: number; freeAboveThreshold: boolean; freeFrom?: number | null };
 
 // Krok 1 – koszyk: przegląd produktów i przejście do dostawy i płatności
 export function CartView({ minShip, shipping }: { minShip: number; shipping: CartShip[] }) {
@@ -87,7 +87,7 @@ export function CartView({ minShip, shipping }: { minShip: number; shipping: Car
             <p className="mt-1 text-xs text-slate-500">Kod rabatowy wpiszesz w następnym kroku.</p>
             <ul className="mt-4 space-y-2 border-t border-brand-100 pt-4">
               {shipping.filter((s) => !s.code.endsWith("-cod")).map((s) => {
-                const gratis = s.price === 0 || (missing === 0 && s.freeAboveThreshold);
+                const gratis = isShippingFree(s, subtotal, freeShipping);
                 return (
                   <li key={s.code} className="flex items-center gap-2">
                     <BrandMark name={carrierFromCode(s.code)} compact />

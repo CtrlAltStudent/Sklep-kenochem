@@ -16,6 +16,7 @@
   --kc-navy: #15191e;
   --kc-amber: #c27a0e;
   --kc-red: #c53030;
+  --kc-accent-soft: #fde8e8;
 
   // Zielone akcenty zamiast domyślnych (komunikaty sukcesu, przełączniki)
   --color-success-50: #f3f8ec;
@@ -37,6 +38,28 @@
   --color-success-850: #1e4f13;
   --color-success-900: #1a4510;
   --color-success-950: #102d09;
+}
+
+html[data-kc-accent="zielen"] {
+  --kc-green-800: #1e4f13;
+  --kc-green-700: #2b6e1a;
+  --kc-green-500: #6cb00c;
+  --kc-lime: #8bc53f;
+  --kc-accent-soft: #e4f0d6;
+}
+html[data-kc-accent="granat"] {
+  --kc-green-800: #16324f;
+  --kc-green-700: #1d4e89;
+  --kc-green-500: #3b82c4;
+  --kc-lime: #5aa0d6;
+  --kc-accent-soft: #e3eef8;
+}
+html[data-kc-accent="grafit"] {
+  --kc-green-800: #374151;
+  --kc-green-700: #4b5563;
+  --kc-green-500: #6b7280;
+  --kc-lime: #9ca3af;
+  --kc-accent-soft: #eceff1;
 }
 
 html[data-theme="light"] {
@@ -375,7 +398,7 @@ textarea:focus,
   height: 26px;
   border-radius: 3px;
 }
-.kc-icon--green { background: #fde8e8; color: var(--kc-green-700); }
+.kc-icon--green { background: var(--kc-accent-soft); color: var(--kc-green-700); }
 .kc-icon--lime { background: #fdf2f2; color: #b3201f; }
 .kc-icon--navy { background: #e3ebf2; color: var(--kc-navy); }
 .kc-icon--amber { background: #fdf0d7; color: var(--kc-amber); }

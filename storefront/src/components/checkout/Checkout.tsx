@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CheckCircle2, ChevronDown, Lock, MapPin, MessageSquareText, Pencil, ShoppingBag, Wallet } from "lucide-react";
-import { formatPrice } from "@/lib/data";
+import { formatPrice, isShippingFree } from "@/lib/data";
 import { resolveCart } from "@/lib/cart";
 import { actions, useRemind, useStore } from "@/lib/store";
 import { ProductImage } from "@/components/ProductImage";
@@ -14,7 +14,7 @@ import { InpostMap, type InpostPoint } from "./InpostMap";
 import { useMe, type Me } from "@/components/account/Account";
 import { cartItem, track, trackPurchaseOnce } from "@/lib/track";
 
-export type ShipMethod = { code: string; label: string; price: number; requiresPoint: boolean; freeAboveThreshold: boolean };
+export type ShipMethod = { code: string; label: string; price: number; requiresPoint: boolean; freeAboveThreshold: boolean; freeFrom?: number | null };
 export type PayMethod = { code: string; label: string; provider: string };
 
 const isCod = (code: string) => code.endsWith("-cod");
@@ -104,7 +104,7 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", 
   useEffect(() => { if (me) fillFrom(me, 0); }, [me, fillFrom]);
 
   const method = shipping.find((s) => s.code === ship);
-  const free = (s: ShipMethod) => s.price === 0 || coupon?.freeShipping || (s.freeAboveThreshold && subtotal >= freeThreshold);
+  const free = (s: ShipMethod) => isShippingFree(s, subtotal, freeThreshold, Boolean(coupon?.freeShipping));
   const shipCost = method && !free(method) ? method.price : 0;
   const discount = Math.min(coupon?.discount ?? 0, subtotal);
   const total = Math.max(0, subtotal - discount) + shipCost;

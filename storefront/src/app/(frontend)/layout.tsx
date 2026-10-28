@@ -4,8 +4,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CartDrawer } from "@/components/CartDrawer";
 import { getCatalog } from "@/lib/catalog";
-import { getStoreSettings } from "@/lib/cms";
-import { freeShippingFrom } from "@/lib/data";
+import { getNavigation, getStoreSettings } from "@/lib/cms";
+import { formatPrice, freeShippingFrom } from "@/lib/data";
 import { ShopConfigProvider } from "@/lib/shopConfig";
 import { CookieConsent } from "@/components/CookieConsent";
 import { JsonLd, organizationLd } from "@/components/JsonLd";
@@ -31,7 +31,12 @@ export const generateMetadata = (): Metadata => ({
 export const revalidate = 60;
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const [{ counts, products }, store] = await Promise.all([getCatalog(), getStoreSettings()]);
+  const [{ counts, total }, store, nav] = await Promise.all([getCatalog(), getStoreSettings(), getNavigation()]);
+  const customBar = nav?.announcement?.text?.trim();
+  const bar = nav?.announcement?.enabled === false ? null : {
+    text: customBar || `Darmowa dostawa od ${formatPrice(freeShippingFrom(store))} · wysyłka zwykle w 1 dzień roboczy`,
+    href: customBar ? nav?.announcement?.link || undefined : undefined,
+  };
   const tags = marketingConfig();
   return (
     <html lang="pl" className={`${inter.variable} ${barlow.variable} h-full antialiased`}>
@@ -39,9 +44,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       {tags && <head><script dangerouslySetInnerHTML={{ __html: tagsBootstrap(tags) }} /></head>}
       <body className="flex min-h-full flex-col font-sans">
         <ShopConfigProvider value={{ freeShipping: freeShippingFrom(store) }}>
-        <Header counts={counts} />
+        <Header counts={counts} bar={bar} phone={store.phone || "+48 500 021 705"} hours={store.hours || "Pn–Pt 8:00–16:00"} />
         <main className="flex-1">{children}</main>
-        <Footer productCount={products.length} />
+        <Footer productCount={total} />
         <CartDrawer />
         <CookieConsent />
         <JsonLd data={organizationLd} />

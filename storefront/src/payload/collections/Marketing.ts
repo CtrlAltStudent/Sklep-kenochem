@@ -1,5 +1,5 @@
 import type { CollectionConfig } from "payload";
-import { anyone, isAdmin, isEditor, isOrdersTeam, hasRole } from "../access";
+import { anyone, isAdmin, isEditor, isOrdersTeam, isPromo, canReadCoupons, isStockTeam, hasRole } from "../access";
 import { section } from "../fields";
 import { returnStatusMailHook } from "@/integrations/mail/events";
 
@@ -15,7 +15,7 @@ export const Coupons: CollectionConfig = {
     defaultColumns: ["code", "type", "value", "validTo", "usedCount", "active"],
     description: "Kody, które klient wpisuje w koszyku. Liczba użyć zwiększa się przy złożeniu zamówienia.",
   },
-  access: { read: isOrdersTeam, create: isEditor, update: isEditor, delete: isEditor },
+  access: { read: canReadCoupons, create: isPromo, update: isPromo, delete: isPromo },
   hooks: { beforeValidate: [({ data }) => (data?.code ? { ...data, code: String(data.code).trim().toUpperCase().replace(/\s+/g, "") } : data)] },
   fields: [
     section("Kod rabatowy", "Kod, który klient wpisze w koszyku. Wielkość liter nie ma znaczenia.", "tag", [
@@ -57,8 +57,8 @@ export const Reviews: CollectionConfig = {
   access: {
     read: ({ req }) => (req.user?.collection === "users" ? true : { status: { equals: "approved" } }),
     create: () => false,
-    update: ({ req }) => hasRole(req, "editor", "orders"),
-    delete: ({ req }) => hasRole(req, "editor", "orders"),
+    update: ({ req }) => hasRole(req, "editor", "orders", "marketing"),
+    delete: ({ req }) => hasRole(req, "editor", "orders", "marketing"),
   },
   defaultSort: "-createdAt",
   fields: [
@@ -87,7 +87,7 @@ export const Newsletter: CollectionConfig = {
   slug: "newsletter",
   labels: { singular: "Subskrybent", plural: "Newsletter" },
   admin: { group: "Marketing", useAsTitle: "email", defaultColumns: ["email", "status", "source", "createdAt"], description: "Adresy zapisane przez formularz w stopce sklepu (z datą zgody – RODO)." },
-  access: { read: isEditor, create: () => false, update: isEditor, delete: isEditor },
+  access: { read: isPromo, create: () => false, update: isPromo, delete: isPromo },
   fields: [
     { name: "email", label: "E-mail", type: "email", required: true, unique: true, index: true },
     { type: "row", fields: [
@@ -198,7 +198,7 @@ export const StockAlerts: CollectionConfig = {
     defaultColumns: ["email", "product", "status", "createdAt"],
     description: "Klienci czekający na produkty bez stanu. Gdy produkt wróci na magazyn, status zmienia się na „Do powiadomienia”.",
   },
-  access: { read: isOrdersTeam, create: () => false, update: isOrdersTeam, delete: isOrdersTeam },
+  access: { read: isStockTeam, create: () => false, update: isStockTeam, delete: isOrdersTeam },
   defaultSort: "-createdAt",
   fields: [
     { name: "product", label: "Produkt", type: "relationship", relationTo: "products", required: true, index: true },

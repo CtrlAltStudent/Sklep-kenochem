@@ -1,11 +1,11 @@
 import type { CollectionConfig } from "payload";
-import { anyone, isEditor } from "../access";
+import { anyone, isCatalog, isEditor } from "../access";
 
 export const Media: CollectionConfig = {
   slug: "media",
   labels: { singular: "Plik", plural: "Media" },
   admin: { group: "Treści", defaultColumns: ["filename", "alt", "updatedAt"] },
-  access: { read: anyone, create: isEditor, update: isEditor, delete: isEditor },
+  access: { read: anyone, create: isCatalog, update: isCatalog, delete: isEditor },
   upload: {
     staticDir: "media",
     mimeTypes: ["image/*", "application/pdf"],

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Banknote, CreditCard, PackageCheck, RotateCcw, Smartphone } from "lucide-react";
-import { formatPrice, freeShippingFrom } from "@/lib/data";
+import { formatPrice, freeShippingFrom, methodFreeFrom } from "@/lib/data";
 import { getStoreSettings } from "@/lib/cms";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { BrandMark, carrierFromCode } from "@/components/checkout/BrandMarks";
@@ -49,7 +49,7 @@ export default async function DeliveryPage() {
                 <p className="mt-auto pt-3 text-lg font-extrabold text-brand-800">
                   {m.price > 0 ? formatPrice(m.price) : m.code.includes("palet") ? "wycena indywidualna" : "bezpłatnie"}
                 </p>
-                {m.freeAboveThreshold && m.price > 0 && <p className="text-xs text-green-700">gratis od {formatPrice(free)}</p>}
+                {methodFreeFrom(m, free) != null && m.price > 0 && <p className="text-xs text-green-700">gratis od {formatPrice(methodFreeFrom(m, free)!)}</p>}
               </div>
             );
           })}

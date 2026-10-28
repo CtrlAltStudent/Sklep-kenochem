@@ -49,10 +49,17 @@ export const Homepage: GlobalConfig = {
         ] },
       ],
     },
-    { name: "perks", label: "Atuty pod banerem", type: "array", maxRows: 4, fields: [
+    { name: "perks", label: "Etykiety pod banerem", type: "array", maxRows: 4, admin: { description: "Cztery hasła pod banerem (wysyłka, odbiór, płatność, telefon). Pusta lista = teksty domyślne." }, fields: [
       { name: "icon", label: "Ikona", type: "upload", relationTo: "media" },
       { name: "title", label: "Tytuł", type: "text", required: true },
       { name: "text", label: "Opis", type: "text" },
+    ] },
+    { name: "brandLogos", label: "Loga marek na stronie głównej", type: "array", labels: { singular: "Logo", plural: "Loga" }, admin: { description: "Wgraj logo. Kolejność na liście = kolejność na stronie. Puste = nazwy marek z produktów." }, fields: [
+      { name: "logo", label: "Logo", type: "upload", relationTo: "media", required: true },
+      { type: "row", fields: [
+        { name: "name", label: "Nazwa marki", type: "text", required: true, admin: { width: "50%" } },
+        { name: "link", label: "Link", type: "text", admin: { width: "50%", placeholder: "/marki/sonax", description: "Puste = strona marki z nazwy." } },
+      ] },
     ] },
     {
       type: "collapsible",
@@ -91,10 +98,10 @@ export const Navigation: GlobalConfig = {
   access: { read: anyone, update: isEditor },
   hooks: { afterChange: [refreshShop] },
   fields: [
-    { name: "announcement", label: "Pasek ogłoszeń (na samej górze)", type: "group", fields: [
-      { name: "enabled", label: "Pokaż", type: "checkbox" },
-      { name: "text", label: "Tekst", type: "text" },
-      { name: "link", label: "Link", type: "text" },
+    { name: "announcement", label: "Pasek informacyjny (czarny, na samej górze)", type: "group", fields: [
+      { name: "enabled", label: "Pokaż pasek", type: "checkbox", defaultValue: true },
+      { name: "text", label: "Tekst", type: "text", admin: { description: "Puste = „Darmowa dostawa od … · wysyłka zwykle w 1 dzień roboczy”. Kwota darmowej dostawy jest w Ustawieniach sklepu → Dostawa." } },
+      { name: "link", label: "Link (opcjonalnie)", type: "text" },
     ] },
     { name: "headerLinks", label: "Linki w pasku menu (obok kategorii)", type: "array", fields: link },
     { name: "footerColumns", label: "Kolumny stopki", type: "array", maxRows: 4, fields: [
@@ -130,8 +137,9 @@ export const StoreSettings: GlobalConfig = {
         },
         {
           label: "Dostawa",
+          description: "Tu zmieniasz kwotę darmowej dostawy (to jest to 399 zł na stronie) i ceny kurierów.",
           fields: [
-            { name: "freeShippingThreshold", label: "Darmowa dostawa od (zł brutto)", type: "number", defaultValue: 249.99 },
+            { name: "freeShippingThreshold", label: "Darmowa dostawa od (zł brutto)", type: "number", defaultValue: 249.99, admin: { description: "Ta kwota jest na czarnym pasku u góry, na etykiecie pod banerem, w koszyku i przy produkcie. Wpisz np. 399 albo 249. Przy kurierze niżej możesz ustawić inną kwotę — puste pole kuriera znaczy: użyj tej." } },
             {
               name: "shippingMethods",
               label: "Metody dostawy",
@@ -149,7 +157,10 @@ export const StoreSettings: GlobalConfig = {
                   { name: "requiresPoint", label: "Wymaga wyboru punktu (paczkomat)", type: "checkbox", admin: { width: "25%" } },
                   { name: "enabled", label: "Aktywna", type: "checkbox", defaultValue: true, admin: { width: "25%" } },
                 ] },
-                { name: "freeAboveThreshold", label: "Darmowa powyżej progu", type: "checkbox", defaultValue: true },
+                { type: "row", fields: [
+                  { name: "freeAboveThreshold", label: "Może być darmowa", type: "checkbox", defaultValue: true, admin: { width: "30%" } },
+                  { name: "freeFrom", label: "Darmowa od (zł)", type: "number", min: 0, admin: { width: "35%", step: 0.01, placeholder: "jak kwota sklepu", description: "Puste = kwota sklepu z góry. Np. InPost od 199, GLS od 399.", condition: (_, row) => row?.freeAboveThreshold !== false } },
+                ] },
               ],
             },
           ],

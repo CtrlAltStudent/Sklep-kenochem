@@ -26,7 +26,7 @@ export const SECTIONS: Record<PageKind, SectionDef[]> = {
     { id: "deals", label: "Promocje", desc: "Własna grupa albo, gdy pusta, produkty z obniżoną ceną.", edit: { href: HOMEPAGE, label: "Promocje" }, size: "m" },
     { id: "promo", label: "Baner promocyjny", desc: "Szeroki baner akcji. Tło 1600 × 500 px. Widoczny, gdy ma tytuł.", edit: { href: HOMEPAGE, label: "Baner promocyjny" }, size: "m" },
     { id: "newest", label: "Nowości", desc: "Własna grupa albo, gdy pusta, najnowsze produkty dodane w panelu.", edit: { href: HOMEPAGE, label: "Nowości" }, size: "m" },
-    { id: "brands", label: "Marki w sklepie", desc: "Lista marek z linkami.", size: "s" },
+    { id: "brands", label: "Marki w sklepie", desc: "Loga marek. Bez logo = nazwy marek z produktów.", edit: { href: "/admin/globals/homepage", label: "Loga marek" }, size: "s" },
     { id: "reviews", label: "Opinie klientów", desc: "Ostatnie zatwierdzone opinie.", edit: { href: "/admin/collections/reviews", label: "Opinie" }, size: "m" },
     { id: "about", label: "O nas", desc: "Krótko o sklepie ze zdjęciem i linkiem do strony „O nas”.", size: "m" },
     { id: "blog", label: "Poradniki z bloga", desc: "3 najnowsze wpisy.", edit: { href: "/admin/collections/posts", label: "Blog" }, size: "m" },
