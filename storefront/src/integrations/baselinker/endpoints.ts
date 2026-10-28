@@ -6,7 +6,7 @@ import { hasRole } from "@/payload/access";
 import { integrationMode, isMock } from "./client";
 import { buildAddOrder, sendOrderToBaseLinker } from "./orders";
 import { orderPackages } from "./shipping";
-import { linkBySku, syncProducts, syncStock, testConnection } from "./sync";
+import { linkBySku, searchCatalog, syncProducts, syncStock, testConnection } from "./sync";
 
 const deny = () => Response.json({ ok: false, message: "Brak uprawnień" }, { status: 403 });
 const body = async (req: PayloadRequest) => {
@@ -44,8 +44,23 @@ export const baselinkerEndpoints: Endpoint[] = [
     method: "post",
     handler: async (req) => {
       if (!hasRole(req, "admin")) return deny();
-      const { dryRun, limit } = await body(req);
-      return Response.json(await syncProducts(req.payload, { dryRun: Boolean(dryRun), limit: limit ? Number(limit) : undefined }));
+      const { dryRun, limit, ids, picks } = await body(req);
+      const chosen = Array.isArray(picks)
+        ? picks.map((p: { id?: number; inventoryId?: number }) => ({ id: Number(p?.id), inventoryId: Number(p?.inventoryId) || undefined })).filter((p) => p.id > 0).slice(0, 100)
+        : undefined;
+      const legacy = Array.isArray(ids) ? ids.map(Number).filter((n) => n > 0).slice(0, 100) : undefined;
+      return Response.json(await syncProducts(req.payload, { dryRun: Boolean(dryRun), limit: limit ? Number(limit) : undefined, ids: legacy, picks: chosen }));
+    },
+  },
+  {
+    path: "/baselinker/product-search",
+    method: "post",
+    handler: async (req) => {
+      if (!hasRole(req, "admin")) return deny();
+      const { q, field, inventoryId, kind } = await body(req);
+      const by = (["all", "name", "sku", "ean"] as const).find((f) => f === field) ?? "all";
+      const what = (["all", "product", "bundle"] as const).find((f) => f === kind) ?? "all";
+      return Response.json(await searchCatalog(req.payload, String(q ?? ""), { field: by, inventoryId: Number(inventoryId) || undefined, kind: what }));
     },
   },
   {

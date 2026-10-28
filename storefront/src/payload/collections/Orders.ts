@@ -4,6 +4,7 @@ import { section } from "../fields";
 import { autoSendToBaseLinker } from "@/integrations/baselinker/orders";
 import { orderStatusMailHook } from "@/integrations/mail/events";
 import { orderStockHook } from "@/integrations/checkout/stock";
+import { orderHistoryHook } from "@/integrations/history";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -12,26 +13,26 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 export const Orders: CollectionConfig = {
   slug: "orders",
   labels: { singular: "Zamówienie", plural: "Zamówienia" },
+  defaultSort: "-createdAt",
   admin: {
     group: "Sprzedaż",
     useAsTitle: "orderNumber",
     defaultColumns: ["orderNumber", "listCustomer", "total", "status", "listDelivery", "listIntegration"],
-    listSearchableFields: ["orderNumber", "email", "shipping.fullName", "invoice.nip"],
-    components: { beforeListTable: ["@/payload/components/StatusTabs#OrderTabs"] },
+    // Szukajka listy; numer przesyłki i ID BaseLinkera znajdzie wyszukiwarka Ctrl+K (/api/order-bulk/search)
+    listSearchableFields: ["orderNumber", "email", "phone", "shipping.fullName", "shipping.company", "invoice.company", "invoice.nip", "shipping.point.code"],
+    components: { beforeListTable: ["@/payload/components/StatusTabs#OrderTabs", "@/payload/components/OrderBulkBar#OrderBulkBar", "@/payload/components/SidebarActions#ExportOrders"] },
   },
   access: { read: ownOrdersOrStaff, create: isOrdersTeam, update: isOrdersTeam, delete: isOrdersTeam },
   hooks: {
     beforeChange: [
       async ({ data, operation, req }) => {
         if (operation === "create" && !data.orderNumber) {
-          // Kolejny numer w roku liczony od ostatniego istniejącego (odporne na usunięte zamówienia)
-          const prefix = `SX/${new Date().getFullYear()}/`;
+          // Prosty numer SX00001 – kolejny po ostatnim zamówieniu (także starym formacie SX/2026/00006)
           const last = await req.payload.find({
-            collection: "orders", req, limit: 1, depth: 0, sort: "-orderNumber", overrideAccess: true,
-            where: { orderNumber: { like: prefix } }, select: { orderNumber: true },
+            collection: "orders", req, limit: 1, depth: 0, sort: "-createdAt", overrideAccess: true, select: { orderNumber: true },
           });
-          const lastNo = Number(last.docs[0]?.orderNumber?.slice(prefix.length) ?? 0);
-          data.orderNumber = `${prefix}${String(lastNo + 1).padStart(5, "0")}`;
+          const lastNo = Number(last.docs[0]?.orderNumber?.match(/(\d+)$/)?.[1] ?? 0);
+          data.orderNumber = `SX${String(lastNo + 1).padStart(5, "0")}`;
         }
         const items = (data.items ?? []) as { priceGross?: number; quantity?: number }[];
         data.subtotal = round2(items.reduce((s, i) => s + (i.priceGross ?? 0) * (i.quantity ?? 0), 0));
@@ -39,7 +40,7 @@ export const Orders: CollectionConfig = {
         return data;
       },
     ],
-    afterChange: [orderStockHook, autoSendToBaseLinker, orderStatusMailHook],
+    afterChange: [orderStockHook, orderHistoryHook, autoSendToBaseLinker, orderStatusMailHook],
   },
   fields: [
     // Podgląd zamówienia w kartach (jak w BaseLinkerze); formularz pokazuje się po „Edytuj”
@@ -53,6 +54,7 @@ export const Orders: CollectionConfig = {
       { label: "Wysłane do klienta", value: "shipped" },
       { label: "Anulowane", value: "cancelled" },
     ] },
+    { type: "ui", name: "quickActions", admin: { position: "sidebar", disableListColumn: true, components: { Field: "@/payload/components/SidebarActions#OrderActions" } } },
     {
       type: "tabs",
       tabs: [

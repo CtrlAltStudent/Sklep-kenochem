@@ -1,7 +1,8 @@
 "use client";
 
+import { toItem, track } from "@/lib/track";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDownUp, ArrowRight, BookOpen, Check, ChevronDown, LayoutGrid, List, Search, SlidersHorizontal, X } from "lucide-react";
 import { categories, findType, minPrice, type Category, type ProductCardData } from "@/lib/data";
 import { productForm, sizeBucket, sizeBuckets } from "@/lib/facets";
@@ -198,6 +199,15 @@ export function Listing({ products, category, counts, params = {} }: {
   const draftCount = dirty ? products.filter((p) => match(p, draft)).length : 0;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const filtered = useMemo(() => products.filter((p) => match(p, applied)).sort(by[sort]), [products, applied, sort, meta]);
+  // Analityka: lista produktów widoczna po filtrach (pierwsze 20) – ponownie tylko po zmianie listy
+  const listKey = filtered.slice(0, 20).map((p) => p.slug).join(",");
+  const lastList = useRef("");
+  useEffect(() => {
+    if (!listKey || lastList.current === listKey) return;
+    lastList.current = listKey;
+    track("view_item_list", { item_list_name: category?.name ?? "Wyniki wyszukiwania", items: filtered.slice(0, 20).map((p, i) => toItem(p, 1, undefined, i)) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listKey]);
 
   const allBrands = useMemo(() => {
     const m = new Map<string, number>();

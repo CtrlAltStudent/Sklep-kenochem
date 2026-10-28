@@ -15,6 +15,7 @@ const map = {
   "nav-form-submissions": "inbox",
   "nav-customers": "users",
   "nav-products": "package",
+  "nav-import": "arrow-down-up",
   "nav-categories": "folder-tree",
   "nav-coupons": "ticket-percent",
   "nav-reviews": "star",
@@ -32,6 +33,11 @@ const map = {
   "nav-reports": "chart-column",
   "nav-integrations": "blocks",
   "nav-stock-alerts": "bell-ring",
+  "nav-content": "layout-panel-top",
+  "nav-settings": "sliders-horizontal",
+  "nav-help": "book-open",
+  "nav-mails": "mail-check",
+  "nav-carts": "shopping-cart",
 };
 
 const toSvg = (node) =>

@@ -1,5 +1,6 @@
 // Endpointy ekranu Integracje → Połączenia (pod /api/integrations/...). Tylko administrator.
 
+import { testMarketing } from "./marketing";
 import { revalidatePath } from "next/cache";
 import type { Endpoint, PayloadRequest } from "payload";
 import { hasRole } from "@/payload/access";
@@ -109,6 +110,8 @@ export const integrationEndpoints: Endpoint[] = [
           return Response.json(testInpostToken());
         case "poczta":
           return Response.json(await testMail(req.payload));
+        case "google":
+          return Response.json(testMarketing());
         default:
           return Response.json({ ok: false, message: "Tej integracji nie da się sprawdzić automatycznie" });
       }

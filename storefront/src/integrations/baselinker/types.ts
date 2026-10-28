@@ -48,6 +48,8 @@ export type BLProductData = {
   text_fields: Record<string, unknown>;
   images: Record<string, string>;
   variants?: Record<string, { name: string; sku: string; ean: string; prices: Record<string, number>; stock: Record<string, number> }>;
+  // Klucz = ID produktu w BaseLinkerze, wartość = liczba sztuk (albo { quantity }).
+  bundle_products?: Record<string, number | { quantity?: number }>;
 };
 
 export type BLStockItem = { product_id: number; stock: Record<string, number>; variants?: Record<string, Record<string, number>> };

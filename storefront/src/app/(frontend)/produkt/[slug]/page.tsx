@@ -1,13 +1,15 @@
+import { Fragment } from "react";
 import { notFound, permanentRedirect, redirect } from "next/navigation";
+import { getLayout } from "@/integrations/vault";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowDown, BookOpen, Download, FileText, Headset, ShieldAlert, Star, TriangleAlert } from "lucide-react";
-import { brandSlug, getCategory, toCard, usableImages } from "@/lib/data";
+import { brandSlug, freeShippingFrom, getCategory, toCard, usableImages, variantDisplayOf } from "@/lib/data";
 import { getDescription, getProduct, getProducts, getSafety } from "@/lib/catalog";
-import { findRedirect, getReviews } from "@/lib/cms";
+import { findRedirect, getReviews, getStoreSettings } from "@/lib/cms";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { ProductBuy } from "@/components/ProductBuy";
+import { ProductStage } from "@/components/ProductBuy";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductGallery } from "@/components/ProductGallery";
 import { ProductTabs } from "@/components/ProductTabs";
@@ -26,8 +28,21 @@ export function generateStaticParams() {
 export async function generateMetadata(props: PageProps<"/produkt/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
   const p = await getProduct(slug);
-  return { title: p?.name, description: p?.short, openGraph: p?.images[0] ? { images: [p.images[0]] } : undefined };
+  if (!p) return {};
+  // Zakładka „SEO i Google” w panelu; puste pola → nazwa i krótki opis (przycięty do długości wyniku Google)
+  const description = (p.seo?.description || p.short || `${p.name} – oryginalny produkt ${p.brand || "SONAX"}. Sklep Sonax Białystok, wysyłka w 24 h.`).replace(/\s+/g, " ").slice(0, 160);
+  return {
+    title: p.seo?.title || p.name,
+    description,
+    alternates: { canonical: p.seo?.canonical || `/produkt/${slug}` },
+    robots: p.seo?.noindex ? { index: false, follow: true } : undefined,
+    openGraph: { type: "website", title: p.seo?.title || p.name, description, images: p.images.slice(0, 1) },
+  };
 }
+
+// Zakładki w kolejności z panelu (Układ strony → Zakładki produktu); ukryte pomijamy
+const orderTabs = <T extends { id: string }>(tabs: T[]) =>
+  getLayout("productTabs").filter((l) => l.visible).map((l) => tabs.find((t) => t.id === l.id)).filter((t): t is T => Boolean(t));
 
 // Opisy piktogramów GHS (pliki w public/ghs – domena publiczna, ONZ)
 const ghsLabel: Record<string, string> = {
@@ -53,7 +68,9 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
     if (r) (r.permanent ? permanentRedirect : redirect)(r.to);
     notFound();
   }
-  const [desc, reviews, products, safety] = await Promise.all([getDescription(slug), getReviews(slug), getProducts(), getSafety(slug)]);
+  const selected = product.variants.find((v) => v.slug === slug) ?? product.variants[0];
+  const [desc, reviews, products, safetyOwn] = await Promise.all([getDescription(product.slug), getReviews(product.slug), getProducts(), getSafety(slug)]);
+  const safety = safetyOwn ?? (slug !== product.slug ? await getSafety(product.slug) : undefined);
   const description = desc.html;
   // Produkt bez kategorii (albo z kategorią spoza menu) też musi się otworzyć – wtedy bez okruszków działu
   const category = getCategory(product.category);
@@ -66,58 +83,89 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
         ...(sub && type ? [{ label: type.name, href: `/kategoria/${category.slug}?sub=${sub.slug}&typ=${type.slug}` }] : []),
       ]
     : [];
+  const groupSlugs = new Set(product.variants.map((v) => v.slug).filter(Boolean));
   const related = products
-    .filter((p) => (product.subcategory ? p.subcategory === product.subcategory : p.category === product.category && Boolean(p.category)) && p.slug !== product.slug && usableImages(p.images).length)
+    .filter((p) => (product.subcategory ? p.subcategory === product.subcategory : p.category === product.category && Boolean(p.category)) && p.slug !== product.slug && !groupSlugs.has(p.slug) && usableImages(p.images).length)
     .slice(0, 4);
 
   const spec = [
     ["Marka", product.brand],
     ["Kategoria", [category?.name, sub?.name, type?.name].filter(Boolean).join(" › ")],
-    ["Pojemność / wariant", product.variants[0].label],
-    ["Kod SKU", product.sku],
-    ["EAN", product.ean],
+    [variantDisplayOf(product.variantDisplay).label, selected.label],
+    ["Kod SKU", selected.sku || product.sku],
+    ["EAN", selected.ean || product.ean],
     ["Stawka VAT", `${product.vat}%`],
-    ["Dostępność", product.stock > 0 ? `${product.stock} szt. w magazynie` : "na zamówienie"],
+    ["Dostępność", (selected.stock ?? product.stock) > 0 ? `${selected.stock ?? product.stock} szt. w magazynie` : "na zamówienie"],
   ].filter(([, v]) => v);
-  const meta = [product.brand, product.variants[0].label, product.sku && `SKU ${product.sku}`].filter(Boolean).join(" · ");
+  const meta = [product.brand, selected.label, (selected.sku || product.sku) && `SKU ${selected.sku || product.sku}`].filter(Boolean).join(" · ");
+  // najtańsza płatna dostawa i próg darmowej – do danych dla Google (koszt dostawy przy wyniku)
+  const store = await getStoreSettings();
+  const paidShip = (store.shippingMethods ?? []).filter((m) => m.enabled !== false && m.price > 0 && !m.code.endsWith("-cod"));
+  const shipLd = paidShip.length ? { price: Math.min(...paidShip.map((m) => m.price)), freeFrom: freeShippingFrom(store) } : undefined;
 
-  return (
-    <div className="mx-auto max-w-shop px-4 pt-6">
-      <JsonLd data={productLd(product, [
-        { name: "Strona główna", url: "/" },
-        ...crumbs.map((c) => ({ name: c.label, url: c.href })),
-        { name: product.name, url: `/produkt/${product.slug}` },
-      ], reviews)} />
-      <Breadcrumbs items={[
-        ...crumbs,
-        { label: product.name },
-      ]} />
-
-      <div className="mt-5 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(300px,360px)] lg:gap-8">
-        <ProductGallery images={usableImages(product.images)} alt={product.name} />
-
-        <div className="min-w-0">
+  // Bloki karty produktu – kolejność i widoczność z panelu (Treści i wygląd → Układ strony)
+  const sameBrand = product.brand ? products.filter((p) => p.brand === product.brand && p.slug !== product.slug && !groupSlugs.has(p.slug) && p.stock > 0 && usableImages(p.images).length).slice(0, 4) : [];
+  const blocks: Record<string, React.ReactNode> = {
+    main: (
+      <ProductStage
+        product={product}
+        initialVariantId={selected.id}
+        gallery={<ProductGallery images={usableImages(product.images)} alt={product.name} />}
+        lead={<>
           {product.brand && <Link href={`/marki/${brandSlug(product.brand)}`} className="text-xs font-bold tracking-wide text-accent uppercase hover:underline">{product.brand}</Link>}
           <h1 className="mt-1 text-[1.65rem] leading-snug font-extrabold tracking-tight text-navy">{product.name}</h1>
-          <a href="#opinie" className="mt-2 flex w-fit items-center gap-2 text-sm hover:underline">
-            <Stars value={reviews.average} />
-            {reviews.count ? <span><b>{reviews.average.toFixed(1)}</b> · {reviews.count} opinii</span> : <span className="text-slate-500">Brak opinii – bądź pierwszy</span>}
-          </a>
+          {reviews.count > 0 && (
+            <a href="#opinie" className="mt-2 flex w-fit items-center gap-2 text-sm hover:underline">
+              <Stars value={reviews.average} />
+              <span><b>{reviews.average.toFixed(1)}</b> · {reviews.count} {reviews.count === 1 ? "opinia" : "opinii"}</span>
+            </a>
+          )}
           {meta && <p className="mt-3 text-sm text-slate-500">{meta}</p>}
           {product.short && <p className="mt-4 text-[15px] leading-relaxed text-slate-600">{product.short}</p>}
+        </>}
+        extra={<>
+          {!!product.bundleParts?.length && (
+            <details className="group mt-5 rounded-xl bg-white ring-1 ring-brand-100" open>
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-bold text-navy">
+                W zestawie ({product.bundleParts.length})
+                <span className="text-lg leading-none text-accent transition group-open:rotate-45">＋</span>
+              </summary>
+              <ul className="divide-y divide-brand-100 border-t border-brand-100">
+                {product.bundleParts.map((part) => {
+                  const inner = (
+                    <>
+                      {part.image ? (
+                        <Image src={part.image} alt="" width={48} height={48} className="h-12 w-12 shrink-0 rounded-md bg-white object-contain ring-1 ring-brand-100" />
+                      ) : <span className="h-12 w-12 shrink-0 rounded-md bg-brand-50 ring-1 ring-brand-100" />}
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-semibold text-navy">{part.name}</span>
+                        <span className="text-xs text-slate-500">{part.sku ? `SKU ${part.sku}` : "bez kodu"}{part.qty > 1 ? ` · ${part.qty} szt.` : ""}</span>
+                      </span>
+                    </>
+                  );
+                  return (
+                    <li key={`${part.sku}:${part.slug ?? part.name}`}>
+                      {part.slug ? (
+                        <Link href={`/produkt/${part.slug}`} className="flex items-center gap-3 px-4 py-3 hover:bg-brand-50">{inner}</Link>
+                      ) : <span className="flex items-center gap-3 px-4 py-3">{inner}</span>}
+                    </li>
+                  );
+                })}
+              </ul>
+            </details>
+          )}
           <a href="#opis" className="mt-2 inline-flex w-fit items-center gap-1 text-sm font-semibold text-accent hover:underline">Pełny opis <ArrowDown className="h-4 w-4" /></a>
           <div className="mt-6 flex flex-col gap-2 text-sm font-semibold text-slate-600">
             <a href={safety?.sds ?? "#bezpieczenstwo"} {...(safety?.sds ? { target: "_blank", rel: "noreferrer" } : {})} className="inline-flex items-center gap-1.5 hover:text-accent"><FileText className="h-4 w-4" /> {safety?.sds ? "Karta charakterystyki (PDF)" : "Karta charakterystyki"}</a>
             <a href="tel:+48500021705" className="inline-flex items-center gap-1.5 hover:text-accent"><Headset className="h-4 w-4" /> Porada: 500 021 705</a>
             <Link href="/blog" className="inline-flex items-center gap-1.5 hover:text-accent"><BookOpen className="h-4 w-4" /> Jak używać</Link>
           </div>
-        </div>
-
-        <div className="lg:sticky lg:top-28"><ProductBuy product={product} /></div>
-      </div>
-
+        </>}
+      />
+    ),
+    tabs: (
       <div className="mt-12 min-w-0">
-          <ProductTabs tabs={[
+          <ProductTabs tabs={orderTabs([
             { id: "opis", label: "Opis produktu", content: (<>
           <h2 className="sr-only">Opis produktu – {product.name}</h2>
           {description ? (
@@ -176,10 +224,10 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
           {safety?.notes && <p className="mt-4 text-sm leading-relaxed whitespace-pre-line text-slate-600">{safety.notes}</p>}
           <p className="mt-5 flex gap-2 text-sm text-slate-600"><TriangleAlert className="h-5 w-5 shrink-0 text-amber-500" /> Przed użyciem przeczytaj etykietę i kartę charakterystyki. Przechowuj w miejscu niedostępnym dla dzieci, stosuj rękawice ochronne.</p>
         </>) },
-            { id: "opinie", label: `Opinie (${reviews.count})`, content: (<>
+            { id: "opinie", label: reviews.count ? `Opinie (${reviews.count})` : "Opinie", content: (<>
           <h2 className="sr-only">Opinie klientów</h2>
-          <div className="grid gap-8 lg:grid-cols-[300px_1fr]">
-            <div className="rounded-2xl bg-brand-50 p-6 text-center lg:self-start">
+          <div className={`grid gap-8 ${reviews.count ? "lg:grid-cols-[300px_1fr]" : ""}`}>
+            {reviews.count > 0 && <div className="rounded-2xl bg-brand-50 p-6 text-center lg:self-start">
               <p className="text-5xl font-black text-navy">{reviews.count ? reviews.average.toFixed(1) : "–"}</p>
               <div className="mt-2 flex justify-center"><Stars value={reviews.average} className="h-5 w-5" /></div>
               <p className="mt-1 text-sm text-slate-500">{reviews.count} {reviews.count === 1 ? "opinia" : "opinii"}</p>
@@ -192,7 +240,7 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
                   </div>
                 ))}
               </div>
-            </div>
+            </div>}
             <div className="space-y-4">
               {reviews.reviews.map((r) => (
                 <article key={r.id} className="rounded-2xl p-5 ring-1 ring-brand-100">
@@ -215,18 +263,41 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
             </div>
           </div>
         </>) },
-          ]} />
+          ])} />
       </div>
-
-      {related.length > 0 && (
+    ),
+    related: related.length > 0 && (
         <section className="mt-14">
           <h2 className="mb-6 text-2xl font-extrabold text-navy">Podobne produkty</h2>
           <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-4">
             {related.map((p) => <ProductCard key={p.slug} product={toCard(p)} />)}
           </div>
         </section>
-      )}
-      <RecentlyViewed current={toCard(product)} />
+      ),
+    brandMore: sameBrand.length > 0 && (
+      <section className="mt-14">
+        <h2 className="mb-6 text-2xl font-extrabold text-navy">Więcej od {product.brand}</h2>
+        <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-4">
+          {sameBrand.map((p) => <ProductCard key={p.slug} product={toCard(p)} />)}
+        </div>
+      </section>
+    ),
+    recent: <RecentlyViewed current={toCard(product)} />,
+  };
+
+  return (
+    <div className="mx-auto max-w-shop px-4 pt-6">
+      <JsonLd data={productLd(product, [
+        { name: "Strona główna", url: "/" },
+        ...crumbs.map((c) => ({ name: c.label, url: c.href })),
+        { name: product.name, url: `/produkt/${slug}` },
+      ], reviews, shipLd, slug)} />
+      <Breadcrumbs items={[
+        ...crumbs,
+        { label: product.name },
+      ]} />
+
+      {getLayout("product").filter((s) => s.visible).map((s) => <Fragment key={s.id}>{blocks[s.id] || null}</Fragment>)}
     </div>
   );
 }

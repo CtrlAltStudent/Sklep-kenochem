@@ -13,7 +13,7 @@ export default async function NewPage() {
       <Breadcrumbs items={[{ label: "Nowości" }]} />
       <div className="mt-4 mb-8 rounded-3xl bg-gradient-to-r from-brand-700 to-accent p-8 text-white">
         <h1 className="text-3xl font-black sm:text-4xl">Nowości w ofercie</h1>
-        <p className="mt-1 text-white/90">Najnowsze produkty dodane do sklepu.</p>
+        <p className="mt-1 text-white/90">Najnowsze produkty dodane do sklepu. Własną listę ustawisz w panelu, w siatkach strony głównej.</p>
       </div>
       <Listing products={newest.map(toCard)} counts={counts} />
     </div>

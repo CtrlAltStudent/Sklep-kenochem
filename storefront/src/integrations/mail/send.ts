@@ -46,7 +46,8 @@ function transport(c: MailConfig) {
   return cached.t;
 }
 
-export type Mail = { to: string | string[]; subject: string; html: string; text: string; replyTo?: string; order?: number | string };
+// skip = mail wyłączony w konfiguratorze maili (panel) – nie wysyłamy, chyba że to test (force)
+export type Mail = { to: string | string[]; subject: string; html: string; text: string; replyTo?: string; order?: number | string; skip?: boolean };
 
 async function log(payload: Payload, status: "success" | "error", message: string, startedAt: number, order?: number | string, details?: unknown) {
   try {
@@ -62,6 +63,7 @@ async function log(payload: Payload, status: "success" | "error", message: strin
 
 export async function sendMail(payload: Payload, m: Mail, opts: { force?: boolean } = {}): Promise<{ ok: boolean; message: string }> {
   if (!opts.force && !moduleEnabled("poczta")) return { ok: false, message: "Moduł Poczta jest wyłączony" };
+  if (!opts.force && m.skip) return { ok: false, message: "Ten mail jest wyłączony w panelu (Maile do klientów)" };
   const c = mailConfig();
   if (!c) return { ok: false, message: "Poczta nie jest skonfigurowana (serwer, login, hasło)" };
   const startedAt = Date.now();

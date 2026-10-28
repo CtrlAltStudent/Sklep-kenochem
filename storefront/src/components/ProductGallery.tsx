@@ -61,10 +61,10 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
         )}
       </div>
       {many && (
-        <div className="mt-3 flex gap-2 overflow-x-auto">
+        <div className="mt-3 flex gap-2 overflow-x-auto px-1 py-1">
           {images.map((s, i) => (
             <button key={s} type="button" onClick={() => setActive(i)} aria-label={`Zdjęcie ${i + 1}`}
-              className={`w-16 shrink-0 overflow-hidden rounded-md bg-[#f6f7f8] ring-2 ${i === active ? "ring-accent" : "ring-transparent opacity-70 hover:opacity-100"}`}>
+              className={`w-16 shrink-0 overflow-hidden rounded-md border-2 bg-[#f6f7f8] ${i === active ? "border-accent" : "border-transparent opacity-70 hover:opacity-100"}`}>
               <ProductImage src={s} alt="" sizes="64px" className="aspect-square !bg-transparent" />
             </button>
           ))}

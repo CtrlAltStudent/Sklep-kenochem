@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Check, CircleCheck, Clock3, Heart, ShoppingCart } from "lucide-react";
-import { formatPrice, minPrice, unitPrice, type ProductCardData } from "@/lib/data";
+import { cardVariant, formatPrice, minPrice, showFromPrice, unitPrice, type ProductCardData } from "@/lib/data";
+import { qtyDealText } from "@/lib/qtyDeal";
 import { actions, useStore } from "@/lib/store";
 import { ProductImage } from "./ProductImage";
 
@@ -19,24 +20,28 @@ export function ProductCard({ product, priority }: { product: ProductCardData; p
   const { wishlist } = useStore();
   const [added, setAdded] = useState(false);
   const liked = wishlist.some((p) => p.slug === product.slug);
-  const cheapest = product.variants.reduce((a, b) => (b.price < a.price ? b : a));
-  const multi = product.variants.length > 1;
-  const inStock = product.stock > 0;
+  const cheapest = cardVariant(product);
+  const multi = showFromPrice(product);
+  const inStock = (cheapest.stock ?? product.stock) > 0;
   const href = `/produkt/${product.slug}`;
 
   const add = () => {
+    if (!inStock) return;
     actions.add(product, cheapest.id);
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
   };
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-xl bg-white ring-1 ring-brand-100 transition hover:shadow-lg hover:ring-brand-200">
+    <article className={`group flex h-full flex-col overflow-hidden rounded-xl bg-white ring-1 ring-brand-100 transition hover:shadow-lg hover:ring-brand-200 ${inStock ? "" : "is-soldout"}`}>
       <div className="relative">
-        <Link href={href} className="block bg-[#f6f7f8]" tabIndex={-1}>
+        <Link href={href} className={`block bg-[#f6f7f8] ${inStock ? "" : "opacity-50 grayscale"}`} tabIndex={-1}>
           <ProductImage src={product.image} alt={product.name} className="aspect-square !bg-transparent" priority={priority}
             sizes="(min-width: 1280px) 22vw, (min-width: 768px) 30vw, 50vw" />
         </Link>
+        {!inStock && (
+          <span className="absolute inset-x-0 bottom-3 mx-auto w-fit rounded-full bg-slate-700/90 px-3 py-1 text-[11px] font-bold tracking-wide text-white uppercase">Chwilowo niedostępny</span>
+        )}
         {!!product.badges?.length && (
           <div className="absolute top-2 left-2 flex flex-col gap-1">
             {product.badges.map((b) => (
@@ -58,21 +63,30 @@ export function ProductCard({ product, priority }: { product: ProductCardData; p
 
         <div className="mt-auto pt-2">
           {cheapest.oldPrice && <p className="text-xs text-slate-400 line-through">{formatPrice(cheapest.oldPrice)}</p>}
-          <p className={`text-lg leading-none ${cheapest.oldPrice ? "text-accent" : "text-navy"}`}>
+          <p className={`text-lg leading-none ${!inStock ? "text-slate-400" : cheapest.oldPrice ? "text-accent" : "text-navy"}`}>
             {multi && <span className="mr-1 text-xs font-medium text-slate-500">od</span>}
-            <b className="font-extrabold tabular-nums">{formatPrice(minPrice(product))}</b>
+            <b className="font-extrabold tabular-nums">{formatPrice(multi ? minPrice(product) : cheapest.price)}</b>
           </p>
           {unitPrice(cheapest.price, cheapest.label) && <p className="mt-0.5 text-[11px] text-slate-500">{unitPrice(cheapest.price, cheapest.label)}</p>}
+          {cheapest.qtyDeal?.[0] && (
+            <p className="mt-1 text-[11px] font-semibold text-green-700">{qtyDealText(cheapest.qtyDeal[0])}</p>
+          )}
           {cheapest.oldPrice && product.lowestPrice30d != null && (
             <p className="mt-0.5 text-[10px] leading-tight text-slate-400">Najniższa z 30 dni: {formatPrice(product.lowestPrice30d)}</p>
           )}
           <p className={`mt-2 flex items-center gap-1 text-[11px] font-medium ${inStock ? "text-green-700" : "text-amber-700"}`}>
-            {inStock ? <><CircleCheck className="h-3.5 w-3.5" /> wysyłka 24 h</> : <><Clock3 className="h-3.5 w-3.5" /> na zamówienie</>}
+            {inStock ? <><CircleCheck className="h-3.5 w-3.5" /> wysyłka 24 h</> : <><Clock3 className="h-3.5 w-3.5" /> brak w magazynie</>}
           </p>
-          <button type="button" onClick={add} aria-label={`Dodaj do koszyka: ${product.name}`}
-            className={`mt-3 flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-bold text-white transition active:scale-[.98] ${added ? "bg-green-600" : "bg-accent hover:bg-accent-dark"}`}>
-            {added ? <><Check className="h-4 w-4" /> Dodano</> : <><ShoppingCart className="h-4 w-4" /> Do koszyka</>}
-          </button>
+          {inStock ? (
+            <button type="button" onClick={add} aria-label={`Dodaj do koszyka: ${product.name}`}
+              className={`mt-3 flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-bold text-white transition active:scale-[.98] ${added ? "bg-green-600" : "bg-accent hover:bg-accent-dark"}`}>
+              {added ? <><Check className="h-4 w-4" /> Dodano</> : <><ShoppingCart className="h-4 w-4" /> Do koszyka</>}
+            </button>
+          ) : (
+            <Link href={href} className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-slate-100 py-2.5 text-sm font-bold text-slate-500 ring-1 ring-slate-200 hover:bg-slate-200">
+              <Clock3 className="h-4 w-4" /> Powiadom o dostępności
+            </Link>
+          )}
         </div>
       </div>
     </article>

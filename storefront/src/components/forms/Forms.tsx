@@ -6,7 +6,7 @@ import { Consent, Field, SmartForm } from "./FormKit";
 
 const subjects = ["Zapytanie o produkt", "Zamówienie i dostawa", "Zwrot lub reklamacja", "Oferta hurtowa", "Inne"] as const;
 
-export function ContactForm({ product }: { product?: string }) {
+export function ContactForm({ product, productSlug }: { product?: string; productSlug?: string }) {
   return (
     <SmartForm
       schema={contactSchema}
@@ -20,6 +20,7 @@ export function ContactForm({ product }: { product?: string }) {
             <Field name="name" label="Imię i nazwisko" required autoComplete="name" error={e.name} />
             <Field name="email" label="E-mail" type="email" required autoComplete="email" error={e.email} />
           </div>
+          {productSlug && <input type="hidden" name="productSlug" value={productSlug} />}
           <div className="grid gap-4 sm:grid-cols-2">
             <Field name="phone" label="Telefon" type="tel" autoComplete="tel" inputMode="tel" error={e.phone} hint="Opcjonalnie – oddzwonimy" />
             <Field name="subject" label="Temat" required error={e.subject}>
@@ -93,7 +94,7 @@ export function ReturnForm() {
             ))}
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field name="orderNumber" label="Numer zamówienia" required error={e.orderNumber} hint="np. SX/2026/00123 – znajdziesz go w e-mailu" />
+            <Field name="orderNumber" label="Numer zamówienia" required error={e.orderNumber} hint="np. SX00123 – znajdziesz go w e-mailu" />
             <Field name="name" label="Imię i nazwisko" required autoComplete="name" error={e.name} />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">

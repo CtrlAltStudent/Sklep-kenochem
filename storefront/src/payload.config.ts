@@ -1,7 +1,7 @@
 // Konfiguracja panelu sklepu (Payload CMS) – dostępny pod /admin
 import path from "path";
 import { fileURLToPath } from "url";
-import { buildConfig } from "payload";
+import { buildConfig, type CollectionConfig } from "payload";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { sqliteAdapter } from "@payloadcms/db-sqlite";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
@@ -16,13 +16,27 @@ import { Orders } from "./payload/collections/Orders";
 import { Customers } from "./payload/collections/Customers";
 import { IntegrationLogs, Pages, Posts } from "./payload/collections/Content";
 import { FormSubmissions } from "./payload/collections/FormSubmissions";
+import { Carts } from "./payload/collections/Carts";
 import { Coupons, Newsletter, Redirects, Returns, Reviews, StockAlerts } from "./payload/collections/Marketing";
 import { BaseLinkerSettings, Homepage, Navigation, StoreSettings } from "./payload/globals";
 import { baselinkerEndpoints } from "./integrations/baselinker/endpoints";
 import { integrationEndpoints } from "./integrations/endpoints";
+import { adminToolEndpoints } from "./integrations/adminTools";
+import { mailStudioEndpoints } from "./integrations/mail/studio";
+import { orderBulkEndpoints } from "./integrations/orderBulk";
+import { productBulkEndpoints } from "./integrations/productBulk";
+import { variantEndpoints } from "./integrations/variants";
+import { bundleEndpoints } from "./integrations/bundles";
+import { productPickerEndpoints } from "./integrations/productPicker";
 import { shopEmailAdapter } from "./integrations/mail/payloadAdapter";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Listy w panelu: 50 pozycji na stronę (domyślnie Payload pokazuje 10 – wyglądało, jakby brakowało zamówień), do wyboru do 200
+const withListSize = (c: CollectionConfig): CollectionConfig => ({
+  ...c,
+  admin: { ...c.admin, pagination: { defaultLimit: 50, limits: [25, 50, 100, 200], ...c.admin?.pagination } },
+});
 
 export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000",
@@ -35,6 +49,11 @@ export default buildConfig({
       views: {
         dashboard: { Component: "@/payload/components/Dashboard#Dashboard" },
         reports: { Component: "@/payload/components/Reports#Reports", path: "/raporty", meta: { title: "Raporty sprzedaży" } },
+        layout: { Component: "@/payload/components/LayoutView#LayoutView", path: "/uklad", meta: { title: "Układ strony" } },
+        mails: { Component: "@/payload/components/MailView#MailView", path: "/maile", meta: { title: "Maile do klientów" } },
+        importExport: { Component: "@/payload/components/ImportView#ImportView", path: "/import", meta: { title: "Import / eksport" } },
+        settings: { Component: "@/payload/components/SettingsHub#SettingsHub", path: "/ustawienia", meta: { title: "Ustawienia sklepu" } },
+        help: { Component: "@/payload/components/HelpView#HelpView", path: "/pomoc", meta: { title: "Instrukcja panelu" } },
         integrations: { Component: "@/payload/components/IntegrationsPanel#IntegrationsView", path: "/integracje", exact: true, meta: { title: "Integracje" } },
         integrationModule: { Component: "@/payload/components/IntegrationsPanel#ModuleView", path: "/integracje/:module", exact: true, meta: { title: "Moduł integracji" } },
       },
@@ -44,9 +63,9 @@ export default buildConfig({
     dateFormat: "dd.MM.yyyy HH:mm",
   },
   i18n: { supportedLanguages: { pl }, fallbackLanguage: "pl" },
-  collections: [Orders, Returns, FormSubmissions, StockAlerts, Customers, Products, Categories, Coupons, Reviews, Newsletter, Pages, Posts, Media, IntegrationLogs, Users, Redirects],
+  collections: [Orders, Returns, FormSubmissions, Carts, StockAlerts, Customers, Products, Categories, Coupons, Reviews, Newsletter, Pages, Posts, Media, IntegrationLogs, Users, Redirects].map(withListSize),
   globals: [Homepage, Navigation, StoreSettings, BaseLinkerSettings],
-  endpoints: [...baselinkerEndpoints, ...integrationEndpoints],
+  endpoints: [...baselinkerEndpoints, ...integrationEndpoints, ...adminToolEndpoints, ...mailStudioEndpoints, ...orderBulkEndpoints, ...productBulkEndpoints, ...variantEndpoints, ...bundleEndpoints, ...productPickerEndpoints],
   editor: lexicalEditor(),
   email: shopEmailAdapter,
   secret: process.env.PAYLOAD_SECRET || "",

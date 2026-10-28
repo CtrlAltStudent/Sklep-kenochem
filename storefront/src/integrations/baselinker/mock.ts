@@ -42,7 +42,14 @@ export function mockCall(method: string, params: Record<string, unknown>): Recor
     case "getInventoryProductsList": {
       const page = Number(params.page ?? 1);
       if (page > 1) return ok({ products: {} });
-      return ok({ products: Object.fromEntries(sample.map((p) => [p.id, {
+      const name = String(params.filter_name ?? "").toLowerCase();
+      const sku = String(params.filter_sku ?? "").toLowerCase();
+      const ean = String(params.filter_ean ?? "");
+      const rows = sample.filter((p) =>
+        (name ? p.name.toLowerCase().includes(name) : true) &&
+        (sku ? p.sku.toLowerCase() === sku : true) &&
+        (ean ? p.ean === ean : true));
+      return ok({ products: Object.fromEntries(rows.map((p) => [p.id, {
         id: Number(p.id), ean: p.ean, sku: p.sku, name: p.name,
         prices: { "101": p.variants[0].price }, stock: { bl_201: p.stock },
       }])) });

@@ -1,6 +1,7 @@
-import type { CollectionAfterChangeHook, CollectionAfterDeleteHook, CollectionBeforeChangeHook } from "payload";
+import { APIError, type CollectionAfterChangeHook, type CollectionAfterDeleteHook, type CollectionBeforeChangeHook } from "payload";
 import { invalidateCatalog } from "@/lib/catalogCache";
 import { backInStockMails } from "@/integrations/mail/events";
+import { relId, unlinkDeletedParent } from "@/integrations/variants";
 
 const DAY = 24 * 60 * 60 * 1000;
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -66,4 +67,51 @@ export const keepEditedDescription: CollectionBeforeChangeHook = ({ data, origin
 export const invalidateCatalogHook: CollectionAfterChangeHook & CollectionAfterDeleteHook = ({ doc }) => {
   invalidateCatalog();
   return doc;
+};
+
+// Nie można wskazać samego siebie jako karty; wariant wariantu spłaszczamy do głównej karty
+export const variantParentHook: CollectionBeforeChangeHook = async ({ data, originalDoc, req }) => {
+  if (!("variantOf" in (data ?? {}))) return data;
+  const self = Number(originalDoc?.id ?? data?.id);
+  const parent = relId(data?.variantOf);
+  if (!parent) {
+    data.variantOf = null;
+    return data;
+  }
+  if (self && parent === self) {
+    data.variantOf = null;
+    return data;
+  }
+  const p = await req.payload.findByID({ collection: "products", id: parent, depth: 0, overrideAccess: true }).catch(() => null);
+  const grand = relId(p?.variantOf);
+  if (grand && grand !== parent) data.variantOf = grand;
+  return data;
+};
+
+const normSku = (v: unknown) => String(v ?? "").trim().toLowerCase();
+
+// Kod SKU jest kluczem zestawów i importu – drugi produkt nie może dostać tego samego kodu.
+export const uniqueSkuHook: CollectionBeforeChangeHook = async ({ data, originalDoc, req }) => {
+  if (!data || !("sku" in data)) return data;
+  const sku = String(data.sku ?? "").trim();
+  data.sku = sku || null;
+  if (!sku || normSku(originalDoc?.sku) === normSku(sku)) return data;
+  const self = Number(originalDoc?.id || 0);
+  const { docs } = await req.payload.find({
+    collection: "products",
+    where: { and: [{ sku: { like: sku } }, ...(self ? [{ id: { not_equals: self } }] : [])] } as never,
+    limit: 20,
+    depth: 0,
+    overrideAccess: true,
+    req,
+    select: { name: true, sku: true },
+  });
+  const other = docs.find((d) => normSku(d.sku) === normSku(sku));
+  if (other) throw new APIError(`SKU „${sku}” jest już przy produkcie „${other.name}”. Kod SKU musi być unikalny.`, 400);
+  return data;
+};
+
+export const unlinkVariantsHook: CollectionAfterDeleteHook = async ({ id, req }) => {
+  await unlinkDeletedParent(req.payload, Number(id));
+  invalidateCatalog();
 };

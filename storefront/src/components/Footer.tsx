@@ -19,7 +19,7 @@ const columns: { title: string; links: [string, string][] }[] = [
   },
   {
     title: "Sklep Sonax",
-    links: [["O nas", "/o-nas"], ["Sklep stacjonarny", "/o-nas#sklep"], ["Moje konto", "/konto"], ["Kontakt", "/kontakt"]],
+    links: [["O nas", "/o-nas"], ["Sklep stacjonarny", "/o-nas#sklep"], ["Dla firm (B2B)", "/b2b"], ["Moje konto", "/konto"], ["Kontakt", "/kontakt"]],
   },
 ];
 

@@ -11,8 +11,9 @@ export const Customers: CollectionConfig = {
   admin: {
     group: "Sprzedaż",
     useAsTitle: "email",
-    defaultColumns: ["email", "firstName", "lastName", "accountType", "b2bStatus", "createdAt"],
+    defaultColumns: ["email", "firstName", "lastName", "phone", "createdAt"],
     listSearchableFields: ["email", "lastName", "company", "nip"],
+    components: { beforeListTable: ["@/payload/components/SidebarActions#ExportCustomers"] },
   },
   auth: {
     tokenExpiration: 60 * 60 * 24 * 30, maxLoginAttempts: 10, lockTime: 10 * 60 * 1000, verify: false,
@@ -35,13 +36,15 @@ export const Customers: CollectionConfig = {
     admin: () => false, // klienci nie mają wstępu do panelu
   },
   fields: [
-    section("Dane osobowe", "Imię, nazwisko, telefon i rodzaj konta. E-mail i hasło są powyżej.", "user", [
+    { type: "ui", name: "view", admin: { disableListColumn: true, components: { Field: "@/payload/components/RecordView#CustomerView" } } },
+    { type: "ui", name: "quickActions", admin: { position: "sidebar", disableListColumn: true, components: { Field: "@/payload/components/SidebarActions#CustomerActions" } } },
+    section("Dane osobowe", "Imię, nazwisko i telefon. E-mail i hasło są powyżej.", "user", [
     { type: "row", fields: [
       { name: "firstName", label: "Imię", type: "text", admin: { width: "50%" } },
       { name: "lastName", label: "Nazwisko", type: "text", admin: { width: "50%" } },
     ] },
     { name: "phone", label: "Telefon", type: "text", admin: { placeholder: "+48 …" } },
-    { name: "accountType", label: "Typ konta", type: "radio", defaultValue: "individual", admin: { layout: "horizontal" }, options: [
+    { name: "accountType", label: "Typ konta", type: "radio", defaultValue: "individual", admin: { layout: "horizontal", condition: () => false }, options: [
       { label: "Klient indywidualny", value: "individual" }, { label: "Firma (B2B)", value: "business" },
     ] },
     ]),
@@ -71,7 +74,7 @@ export const Customers: CollectionConfig = {
         ] },
       ],
     },
-    ], { condition: (d) => d?.accountType === "business" }),
+    ], { condition: () => false }), // B2B nie jest używane w sklepie Sonax – dane zostają, sekcja ukryta
     section("Adresy dostaw", "Zapisane adresy – klient wybiera je w koszyku.", "pin", [
     {
       name: "addresses",

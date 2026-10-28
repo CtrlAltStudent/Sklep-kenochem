@@ -14,8 +14,8 @@ export type KeyField = {
 
 export type ModeOption = { value: string; label: string };
 
-export type ModuleId = "baselinker" | "przelewy24" | "inpost" | "orlen" | "poczta";
-export type ModuleCategory = "Sprzedaż i magazyn" | "Płatności" | "Dostawa" | "Komunikacja";
+export type ModuleId = "baselinker" | "przelewy24" | "inpost" | "orlen" | "poczta" | "google";
+export type ModuleCategory = "Sprzedaż i magazyn" | "Płatności" | "Dostawa" | "Komunikacja" | "Marketing i analityka";
 
 export type Provider = {
   id: ModuleId;
@@ -165,6 +165,42 @@ export const providers: Provider[] = [
       options: [
         { value: "ssl", label: "SSL/TLS (zwykle port 465)" },
         { value: "starttls", label: "STARTTLS (zwykle port 587)" },
+      ],
+    },
+    testable: true,
+  },
+  {
+    id: "google",
+    name: "Google i marketing",
+    category: "Marketing i analityka",
+    what: "Google Tag Manager, Google Analytics 4, Google Ads (konwersje), Meta Pixel i Microsoft Clarity – z banerem zgód (Consent Mode v2) i zdarzeniami sprzedaży: obejrzenie produktu, koszyk, zamówienie, zakup z wartością.",
+    whenOff: "Sklep nie ładuje żadnych skryptów analitycznych ani reklamowych. Baner cookies dalej zapisuje wybór klienta. Plik produktów dla Merchant Center i mapa strony działają niezależnie.",
+    where: "tagmanager.google.com (GTM-…), analytics.google.com → Administracja → Strumienie danych (G-…), ads.google.com → Cele → Konwersje (AW-… i etykieta), business.facebook.com → Menedżer zdarzeń (Pixel), clarity.microsoft.com → Ustawienia (ID projektu).",
+    guide: [
+      "Najprościej: wpisz tylko Google Tag Manager (GTM-…) i resztę narzędzi (GA4, Ads, Meta) ustaw w GTM. Sklep wysyła do GTM gotowe zdarzenia e-commerce (view_item, add_to_cart, begin_checkout, purchase…) w standardzie GA4.",
+      "Bez GTM: wpisz identyfikator GA4 (G-…) i/lub Google Ads (AW-…) – sklep podepnie je sam. Nie wpisuj tego samego narzędzia w obu miejscach, bo zakupy policzą się podwójnie.",
+      "Zgody (RODO): nic nie startuje bez zgody z banera cookies. Tryb „Zaawansowany” pozwala Google zbierać anonimowe sygnały bez cookies (lepsze szacowanie konwersji), „Podstawowy” – narzędzia ładują się dopiero po zgodzie.",
+      "Search Console: wybierz weryfikację „Tag HTML”, skopiuj samą wartość content=\"…\" i wklej obok. Mapa strony: /sitemap.xml.",
+      "Merchant Center (Zakupy Google): dodaj źródło danych „Plik zaplanowany” z adresem /feed/google.xml – sklep aktualizuje go co godzinę (ceny, promocje, stany). Darmową dostawę od progu ustaw też w Merchant Center → Dostawa.",
+      "Po wpisaniu kliknij „Zapisz i sprawdź”, a potem w GTM użyj „Podgląd”, żeby zobaczyć zdarzenia na żywo.",
+    ],
+    fields: [
+      { key: "google.gtmId", label: "Google Tag Manager – ID kontenera", env: ["NEXT_PUBLIC_GTM_ID", "GTM_ID"], optional: true, placeholder: "GTM-XXXXXXX" },
+      { key: "google.ga4Id", label: "Google Analytics 4 – identyfikator pomiaru", env: ["GA4_ID"], optional: true, placeholder: "G-XXXXXXXXXX", hint: "Tylko jeśli nie konfigurujesz GA4 w Tag Managerze." },
+      { key: "google.adsId", label: "Google Ads – identyfikator konwersji", env: ["GOOGLE_ADS_ID"], optional: true, placeholder: "AW-123456789", hint: "Tylko jeśli nie konfigurujesz Ads w Tag Managerze." },
+      { key: "google.adsLabel", label: "Google Ads – etykieta konwersji „Zakup”", env: ["GOOGLE_ADS_LABEL"], optional: true, placeholder: "AbCdEfGhIjk", hint: "Część po ukośniku z „send_to”: AW-123456789/AbCdEfGhIjk." },
+      { key: "google.verification", label: "Google Search Console – kod weryfikacji", env: ["GOOGLE_SITE_VERIFICATION"], optional: true, placeholder: "wartość content z tagu HTML" },
+      { key: "bing.verification", label: "Bing Webmaster – kod weryfikacji", env: ["BING_SITE_VERIFICATION"], optional: true, placeholder: "wartość content z msvalidate.01" },
+      { key: "meta.pixelId", label: "Meta Pixel (Facebook / Instagram) – ID", env: ["META_PIXEL_ID"], optional: true, placeholder: "np. 123456789012345", hint: "Ładuje się tylko po zgodzie na cookies marketingowe." },
+      { key: "clarity.id", label: "Microsoft Clarity – ID projektu", env: ["CLARITY_ID"], optional: true, placeholder: "np. abcd1234ef", hint: "Nagrania sesji i mapy kliknięć – tylko po zgodzie na analityczne." },
+    ],
+    mode: {
+      key: "google.consentMode",
+      env: () => undefined,
+      fallback: "basic",
+      options: [
+        { value: "basic", label: "Podstawowy – narzędzia ładują się dopiero po zgodzie (najbezpieczniej)" },
+        { value: "advanced", label: "Zaawansowany – Google dostaje anonimowe sygnały bez cookies, pełne dane po zgodzie" },
       ],
     },
     testable: true,

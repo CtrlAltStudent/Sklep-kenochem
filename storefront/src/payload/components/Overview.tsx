@@ -4,13 +4,15 @@
 // Każda karta ma „Edytuj” – wtedy pokazujemy zwykły formularz Payload na właściwej zakładce.
 // Tryb widoku ustawiamy atrybutami na <html> (data-kc-view / data-kc-edit) – CSS chowa formularz (custom.scss).
 
-import { useDocumentInfo, useFormFields } from "@payloadcms/ui";
+import { useDocumentInfo, useForm, useFormFields, useFormModified, useFormProcessing } from "@payloadcms/ui";
 import { useCallback, useEffect, useState } from "react";
 import {
-  Banknote, ExternalLink, FileText, ImageIcon, MapPin, MessageSquareText, Package, Pencil, Receipt, ShieldAlert, Store, Tag, Truck, User,
+  Banknote, CircleAlert, CircleDot, ExternalLink, FileText, History, ImageIcon, Mail, MapPin, MessageSquareText, Package, Pencil, Receipt, ShieldAlert, Store, Tag, Truck, User,
 } from "lucide-react";
+import { variantDisplayOf, variantNavOf } from "@/lib/data";
 
 type Fields = Record<string, { value?: unknown } | undefined>;
+type HistoryEvent = { at: string; type: string; status: string; message: string; by: string };
 const pln = (n: unknown) => `${Number(n ?? 0).toFixed(2).replace(".", ",")} zł`;
 const when = (d: unknown) => (d ? new Date(String(d)).toLocaleString("pl-PL", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "");
 const str = (f: Fields, k: string) => (f[k]?.value == null ? "" : String(f[k]!.value));
@@ -75,11 +77,42 @@ const Row = ({ k, children }: { k: string; children: React.ReactNode }) =>
   children === "" || children == null ? null : <div className="kc-ov__row"><span>{k}</span><b>{children}</b></div>;
 
 function EditBar({ onDone, what }: { onDone: () => void; what: string }) {
+  const modified = useFormModified();
+  const processing = useFormProcessing();
+  const { submit } = useForm();
   return (
     <div className="kc-ov__editbar">
-      <span><Pencil size={15} /> Edytujesz {what}. Zmiany zapisz przyciskiem <b>Zapisz</b> u góry.</span>
-      <button type="button" onClick={onDone}>Zakończ edycję</button>
+      <span><Pencil size={15} /> Edytujesz {what}. {modified ? "Są niezapisane zmiany." : "Wszystko zapisane."}</span>
+      <div className="kc-ov__editbar-act">
+        <button type="button" className="is-save" disabled={!modified || processing} onClick={() => void submit()}>{processing ? "Zapisuję…" : "Zapisz"}</button>
+        <button type="button" onClick={onDone}>Zakończ edycję</button>
+      </div>
     </div>
+  );
+}
+
+function VariantPreview({ id }: { id: number | string }) {
+  const [info, setInfo] = useState<{ ok?: boolean; display?: string; nav?: string; isChild?: boolean; mainName?: string; members?: { id: number; unitLabel: string; name: string; isMain: boolean }[] } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetch(`/api/product-tools/${id}/variants`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((j) => { if (alive) setInfo(j); })
+      .catch(() => { if (alive) setInfo({ ok: false }); });
+    return () => { alive = false; };
+  }, [id]);
+  if (!info) return <p className="kc-ov__muted">Wczytuję warianty…</p>;
+  const members = info.members ?? [];
+  if (!info.ok || members.length < 2) {
+    return <p className="kc-ov__muted">Połącz wersje towaru w zakładce Warianty. Możesz trzymać jedną kartę albo dać każdemu wariantowi własną stronę w sklepie.</p>;
+  }
+  return (
+    <>
+      {info.isChild && <p className="kc-ov__muted">Należy do karty „{info.mainName}”.</p>}
+      <Row k="Strony">{variantNavOf(info.nav).label}</Row>
+      <Row k="Wybór w sklepie">{variantDisplayOf(info.display).label}</Row>
+      <p className="kc-ov__muted">{members.map((m) => m.unitLabel || m.name).join(" · ")}</p>
+    </>
   );
 }
 
@@ -128,6 +161,18 @@ export function OrderOverview() {
   const labels = useLabels();
   const [parcels, setParcels] = useState<Parcel[] | null>(null);
   const blId = num(f, "baselinker.orderId");
+  const [events, setEvents] = useState<HistoryEvent[] | null>(null);
+  const updatedAt = String(f.updatedAt?.value ?? "");
+
+  useEffect(() => {
+    if (!id) return;
+    let alive = true;
+    fetch(`/api/order-tools/${id}/history`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((j) => alive && setEvents(j.events ?? []))
+      .catch(() => alive && setEvents([]));
+    return () => { alive = false; };
+  }, [id, updatedAt]);
 
   useEffect(() => {
     if (!id || !blId) return;
@@ -194,6 +239,23 @@ export function OrderOverview() {
               </>
             ) : <p className="kc-ov__muted">Brak uwag.</p>}
           </Card>
+          {id && (
+            <Card title="Historia zamówienia" icon={<History size={16} />}>
+              {events?.length ? (
+                <ol className="kc-ov__timeline">
+                  {[...events].reverse().map((e, n) => {
+                    const Icon = e.status === "error" ? CircleAlert : e.type === "email" ? Mail : e.type === "history" ? CircleDot : Package;
+                    return (
+                      <li key={n} className={e.status === "error" ? "is-bad" : ""}>
+                        <Icon size={15} />
+                        <span>{e.message}<small>{when(e.at)}{e.by ? ` · ${e.by}` : ""}{e.type === "email" ? " · e-mail" : e.type === "order" ? " · BaseLinker" : ""}</small></span>
+                      </li>
+                    );
+                  })}
+                </ol>
+              ) : <p className="kc-ov__muted">{events ? "Brak wpisów – historia zapisuje się od teraz." : "Wczytuję…"}</p>}
+            </Card>
+          )}
         </div>
 
         <div className="kc-ov__col">
@@ -348,6 +410,9 @@ export function ProductOverview() {
             <Row k="Wariant">{str(f, "unitLabel")}</Row>
             <Row k="Waga">{num(f, "weight") ? `${num(f, "weight")} kg` : ""}</Row>
           </Card>
+          <Card title="Warianty" icon={<Store size={16} />} onEdit={() => edit("Warianty")}>
+            {id ? <VariantPreview id={id} /> : <p className="kc-ov__muted">Zapisz produkt, potem połączysz warianty.</p>}
+          </Card>
           <Card title="Bezpieczeństwo (CLP)" icon={<ShieldAlert size={16} />} onEdit={() => edit("Bezpieczeństwo (CLP/GPSR)")}>
             {picto.length ? (
               <div className="kc-ov__ghs">
@@ -363,9 +428,12 @@ export function ProductOverview() {
             <Row k="Ostatnia synchronizacja">{when(f.lastSyncedAt?.value)}</Row>
             <Row k="Nie nadpisuj">{keep.length ? keep.map((k) => ({ name: "nazwy", description: "opisu", images: "zdjęć", category: "kategorii", price: "ceny" } as Record<string, string>)[k]).join(", ") : ""}</Row>
           </Card>
-          <Card title="SEO" icon={<FileText size={16} />} onEdit={() => edit("SEO")}>
+          <Card title="SEO i Google" icon={<FileText size={16} />} onEdit={() => edit("SEO i Google")}>
             <p className="kc-ov__seo-title">{str(f, "seo.title") || str(f, "name")}</p>
             <p className="kc-ov__muted">{str(f, "seo.description") || str(f, "shortDescription") || "Brak opisu dla Google."}</p>
+            <Row k="Fraza kluczowa">{str(f, "seoExtra.focusKeyword") || "—"}</Row>
+            <Row k="Zakupy Google">{f["merchant.exclude"]?.value ? "wyłączony" : "w pliku produktów"}</Row>
+            {f["seo.noindex"]?.value ? <p className="kc-ov__warn">Ukryty przed wyszukiwarkami</p> : null}
           </Card>
         </div>
       </div>

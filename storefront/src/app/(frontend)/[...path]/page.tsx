@@ -5,6 +5,7 @@ import { extractHeadings, findRedirect, getPage } from "@/lib/cms";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { LegalToc } from "@/components/LegalToc";
 import { RichContent } from "@/components/RichContent";
+import { PageBlocks } from "@/components/PageBlocks";
 
 // Wszystkie adresy, które nie pasują do innych stron sklepu:
 //  1) strona z panelu (Treści → Strony) – np. /regulamin
@@ -62,11 +63,15 @@ export default async function CmsPage(props: PageProps<"/[...path]">) {
             <LegalToc headings={headings} />
           </aside>
         )}
-        <article className="min-w-0 rounded-3xl bg-white p-6 ring-1 ring-brand-100 sm:p-10 print:p-0 print:ring-0">
-          {(page.layout ?? []).map((block, i) =>
-            block.blockType === "richText" ? <RichContent key={block.id ?? i} data={block.content} className={legal ? "prose-p:text-[15px] prose-li:text-[15px]" : ""} /> : null,
-          )}
-        </article>
+        {legal ? (
+          <article className="min-w-0 rounded-3xl bg-white p-6 ring-1 ring-brand-100 sm:p-10 print:p-0 print:ring-0">
+            {(page.layout ?? []).map((block, i) =>
+              block.blockType === "richText" ? <RichContent key={block.id ?? i} data={block.content} className="prose-p:text-[15px] prose-li:text-[15px]" /> : null,
+            )}
+          </article>
+        ) : (
+          <div className="min-w-0"><PageBlocks blocks={page.layout} /></div>
+        )}
       </div>
     </div>
   );

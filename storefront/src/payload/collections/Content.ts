@@ -1,6 +1,7 @@
+import { revalidatePath } from "next/cache";
 import type { Block, CollectionConfig } from "payload";
 import { isAdmin, isEditor, publishedOrStaff } from "../access";
-import { section, seoFields, slugField } from "../fields";
+import { productList, section, seoFields, slugField } from "../fields";
 
 // Bloki do budowania stron (regulamin, o nas, landing page promocji…)
 const blocks: Block[] = [
@@ -32,7 +33,7 @@ const blocks: Block[] = [
     labels: { singular: "Siatka produktów", plural: "Siatki produktów" },
     fields: [
       { name: "title", label: "Tytuł sekcji", type: "text" },
-      { name: "products", label: "Wybrane produkty", type: "relationship", relationTo: "products", hasMany: true },
+      productList("products", "Wybrane produkty", "Wyszukaj po nazwie albo SKU. Kolejność strzałkami."),
       { name: "category", label: "…albo wszystkie z kategorii", type: "relationship", relationTo: "categories" },
       { name: "limit", label: "Ile pokazać", type: "number", defaultValue: 8 },
     ],
@@ -50,9 +51,11 @@ const blocks: Block[] = [
 export const Pages: CollectionConfig = {
   slug: "pages",
   labels: { singular: "Strona", plural: "Strony" },
-  admin: { group: "Treści", useAsTitle: "title", defaultColumns: ["title", "slug", "_status", "updatedAt"], components: { edit: { beforeDocumentControls: ["@/payload/components/AdminClient#ViewPageInStore"] } } },
+  admin: { group: "Treści", useAsTitle: "title", defaultColumns: ["title", "slug", "_status", "updatedAt"], components: { beforeListTable: ["@/payload/components/ContentTemplates#PageTemplates"], edit: { beforeDocumentControls: ["@/payload/components/AdminClient#ViewPageInStore"] } } },
   versions: { drafts: true, maxPerDoc: 20 },
   access: { read: publishedOrStaff, create: isEditor, update: isEditor, delete: isEditor },
+  // po zapisie strona w sklepie odświeża się od razu
+  hooks: { afterChange: [({ doc }) => { try { revalidatePath("/", "layout"); } catch { /* skrypt poza Next */ } return doc; }] },
   fields: [
     section("Nagłówek strony", "Tytuł i wstęp wyświetlane na górze strony.", "text", [
       { name: "title", label: "Tytuł", type: "text", required: true },
@@ -61,7 +64,10 @@ export const Pages: CollectionConfig = {
     section("Zawartość strony", "Układaj stronę z bloków: tekst, zdjęcie z tekstem, produkty, FAQ…", "sparkles", [
       { name: "layout", label: "Bloki", type: "blocks", blocks },
     ]),
-    section("Wygląd w Google", "Opcjonalne – puste pola uzupełnią się z tytułu.", "seo", [seoFields], { collapsed: true }),
+    section("Wygląd w Google", "Ocena i podpowiedzi, co poprawić, żeby strona lepiej się pozycjonowała.", "seo", [
+      { type: "ui", name: "pageSeo", admin: { components: { Field: { path: "@/payload/components/SeoPanel#SeoPanel", clientProps: { kind: "page" } } } } },
+      seoFields,
+    ], { collapsed: true }),
     slugField("title"),
     { name: "template", label: "Układ strony", type: "select", defaultValue: "standard", admin: { position: "sidebar" }, options: [
       { label: "Standardowy", value: "standard" },
@@ -89,9 +95,12 @@ export const Posts: CollectionConfig = {
       { name: "content", label: "Treść", type: "richText" },
     ]),
     section("Polecane produkty", "Produkty pokazywane pod artykułem – zamieniają czytelników w klientów.", "cart", [
-      { name: "relatedProducts", label: "Produkty", type: "relationship", relationTo: "products", hasMany: true },
+      productList("relatedProducts", "Produkty", "Pokazywane pod artykułem. Wyszukaj po nazwie albo SKU."),
     ]),
-    section("Wygląd w Google", "Opcjonalne – puste pola uzupełnią się z tytułu i zajawki.", "seo", [seoFields], { collapsed: true }),
+    section("Wygląd w Google", "Ocena i podpowiedzi pod ten wpis.", "seo", [
+      { type: "ui", name: "postSeo", admin: { components: { Field: { path: "@/payload/components/SeoPanel#SeoPanel", clientProps: { kind: "post" } } } } },
+      seoFields,
+    ], { collapsed: true }),
     slugField("title"),
     { name: "tag", label: "Kategoria wpisu", type: "select", admin: { position: "sidebar" }, options: [
       { label: "Poradnik", value: "poradnik" }, { label: "Detailing", value: "detailing" }, { label: "Myjnie", value: "myjnie" },
@@ -112,10 +121,10 @@ export const IntegrationLogs: CollectionConfig = {
     { name: "type", label: "Operacja", type: "select", index: true, options: [
       { label: "Test połączenia", value: "test" }, { label: "Synchronizacja produktów", value: "products" },
       { label: "Synchronizacja stanów i cen", value: "stock" }, { label: "Wysłanie zamówienia", value: "order" },
-      { label: "E-mail", value: "email" },
+      { label: "E-mail", value: "email" }, { label: "Historia zamówienia", value: "history" },
     ] },
     { name: "status", label: "Wynik", type: "select", index: true, options: [
-      { label: "Sukces", value: "success" }, { label: "Ostrzeżenia", value: "warning" }, { label: "Błąd", value: "error" },
+      { label: "Zajebiście udane", value: "success" }, { label: "Ostrzeżenia", value: "warning" }, { label: "Błąd", value: "error" },
     ] },
     { name: "mode", label: "Tryb", type: "select", options: [{ label: "Produkcyjny", value: "live" }, { label: "Testowy", value: "mock" }, { label: "Podgląd (bez zapisu)", value: "dry-run" }] },
     { name: "message", label: "Opis", type: "text" },

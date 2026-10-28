@@ -19,6 +19,16 @@ const sources: { slug: string; label: string; icon: typeof Package; fields: stri
 
 async function searchAll(q: string, signal: AbortSignal): Promise<Group[]> {
   return Promise.all(sources.map(async (s) => {
+    // Zamówienia: szukanie po wszystkim (telefon, firma, NIP, punkt, ID BaseLinkera, numer przesyłki) – orderBulk.ts
+    if (s.slug === "orders") {
+      try {
+        const res = await fetch(`/api/order-bulk/search?q=${encodeURIComponent(q)}`, { credentials: "include", signal });
+        const json = res.ok ? await res.json() : { docs: [] };
+        return { slug: s.slug, label: s.label, icon: s.icon, hits: (json.docs ?? []).slice(0, 6).map((d: { id: number; number: string; email: string; total: number; name: string }) => ({ id: d.id, title: d.number, sub: `${d.name ? `${d.name} · ` : ""}${d.email ?? ""} · ${Number(d.total ?? 0).toFixed(2)} zł` })) };
+      } catch {
+        return { slug: s.slug, label: s.label, icon: s.icon, hits: [] };
+      }
+    }
     const p = new URLSearchParams({ limit: "5", depth: "0" });
     s.fields.forEach((f, i) => p.set(`where[or][${i}][${f}][like]`, q));
     try {
@@ -163,12 +173,15 @@ export function TabsBar({ slug, tabs }: { slug: string; tabs: StatusTab[] }) {
       {tabs.map((t) => {
         const qs = encodeWhere(t.where);
         const isActive = decodeURIComponent(qs) === decodeURIComponent(current);
+        // Pełne przeładowanie (nie Link): lista Payload pamięta filtr z poprzedniej zakładki przy nawigacji w tle.
+        // Zakładka zawsze pokazuje od najnowszych, 50 na stronę, od pierwszej strony.
+        const href = `/admin/collections/${slug}?${qs ? `${qs}&` : ""}sort=-createdAt&limit=50&page=1`;
         return (
-          <Link key={t.label} href={`/admin/collections/${slug}${qs ? `?${qs}` : ""}`} className={`kc-tabs__tab${isActive ? " is-active" : ""}`}>
+          <a key={t.label} href={href} className={`kc-tabs__tab${isActive ? " is-active" : ""}`}>
             {t.tone && <span className={`kc-tabs__dot kc-tabs__dot--${t.tone}`} />}
             {t.label}
             <span className="kc-tabs__count">{t.count.toLocaleString("pl-PL")}</span>
-          </Link>
+          </a>
         );
       })}
     </nav>
@@ -195,4 +208,9 @@ export function ViewPageInStore() {
       <ShoppingBag size={15} /> Zobacz w sklepie
     </a>
   );
+}
+
+// „Drukuj / PDF” – np. instrukcja panelu (w oknie drukowania wybierz „Zapisz jako PDF”)
+export function PrintButton() {
+  return <button type="button" className="kc-btn kc-btn--lime" onClick={() => window.print()}>Drukuj / PDF</button>;
 }

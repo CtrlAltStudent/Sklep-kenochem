@@ -23,11 +23,24 @@ export const seoFields: Field = {
   label: "SEO",
   type: "group",
   fields: [
-    { name: "title", label: "Tytuł w Google", type: "text", admin: { description: "Zalecane do 60 znaków. Puste = nazwa." } },
-    { name: "description", label: "Opis w Google", type: "textarea", admin: { description: "Zalecane 120–160 znaków." } },
+    { name: "focusKeyword", label: "Fraza kluczowa", type: "text", admin: { placeholder: "np. wosk twardy do auta", description: "Jedna fraza, tak jak wpisałby ją klient. Ocena powyżej sprawdzi, czy jest w tytule, opisie i adresie." } },
+    { name: "title", label: "Tytuł w Google", type: "text", admin: { description: "Najlepiej 30–60 znaków i fraza na początku. Puste = nazwa." } },
+    { name: "description", label: "Opis w Google", type: "textarea", admin: { description: "Najlepiej 110–160 znaków. Jedno–dwa zdania: co to jest i dlaczego kupić tutaj." } },
     { name: "noindex", label: "Ukryj przed wyszukiwarkami", type: "checkbox" },
   ],
 };
+
+const productPicker = "@/payload/components/ProductPicker#ProductPicker";
+
+// Lista produktów z miniaturą i wyszukiwarką (zamiast zwykłej relacji, która się rozjeżdża).
+export const productList = (name: string, label: string, description: string): Field => ({
+  name,
+  label,
+  type: "relationship",
+  relationTo: "products",
+  hasMany: true,
+  admin: { description, components: { Field: productPicker } },
+});
 
 // Sekcja formularza w panelu: zwijana karta z ikoną, tytułem i podpowiedzią.
 // Nie zmienia struktury danych (collapsible), więc można nią owijać istniejące pola.

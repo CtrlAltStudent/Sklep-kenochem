@@ -43,6 +43,9 @@ Komunikacja z właścicielem projektu: **po polsku**, prosto, bez żargonu.
 - Koszyk dwuetapowy: `/koszyk` (`components/checkout/CartView.tsx`) → `/zamowienie` (`components/checkout/Checkout.tsx`, wszystko na jednym ekranie).
   Metody dostawy/płatności z panelu (Ustawienia sklepu). Logo przewoźnika po **kodzie metody**: `orlen…`, `inpost-paczkomat…`, `inpost…`, `gls…`,
   pobranie = kod kończący się na `-cod`. Składanie zamówienia jest jeszcze **demonstracyjne** (nie zapisuje do bazy).
+- Maile: lista i treści domyślne `src/integrations/mail/catalog.ts`, składanie `templates.ts`, konfigurator w panelu `/admin/maile`
+  (`MailStudio.tsx`, zapis w vault `mail`), automaty (prośba o opinię, porzucony koszyk) `mail/automations.ts`. Porzucone koszyki: kolekcja `carts`.
+  RODO (eksport / usunięcie konta): `src/integrations/privacy.ts`.
 - Karta produktu: `src/app/(frontend)/produkt/[slug]/page.tsx` (zakładki w miejscu `ProductTabs`, karta charakterystyki z pola `sds`, piktogramy `public/ghs`).
 - Panel: `src/payload.config.ts`, kolekcje `src/payload/collections/*`, komponenty panelu `src/payload/components/*`
   (pasek akcji Ctrl+K, zakładki statusów, sekcje formularzy `section()` z `src/payload/fields.ts`), motyw `src/app/(payload)/custom.scss`.

@@ -11,6 +11,7 @@ import { getAuto, getRuns, recordRun } from "./vault";
 const MIN = 60_000;
 let running = false;
 const lastTry: Partial<Record<JobId, number>> = {};
+let lastMails = 0; // automaty maili (prośba o opinię, porzucony koszyk) – co 15 minut, niezależnie od BaseLinkera
 
 // Flaga w globalThis: instrumentation i endpointy panelu mogą być osobnymi paczkami modułów
 const g = globalThis as { __sonaxScheduler?: boolean };
@@ -56,8 +57,18 @@ async function tick(getPayload: () => Promise<Payload>) {
   try {
     const now = new Date();
     const jobs = (["orders", "statuses", "stock", "products"] as JobId[]).filter((j) => due(j, now));
-    if (!jobs.length) return;
+    const mails = now.getTime() - lastMails >= 15 * MIN;
+    if (!jobs.length && !mails) return;
     const payload = await getPayload();
+    if (mails) {
+      lastMails = now.getTime();
+      try {
+        const { runMailAutomations } = await import("./mail/automations");
+        await runMailAutomations(payload);
+      } catch (e) {
+        payload.logger.error({ err: e }, "Automaty maili");
+      }
+    }
     for (const job of jobs) {
       lastTry[job] = Date.now();
       try {

@@ -7,7 +7,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronDown, KeyRound, LogOut, MapPin, Package, Plus, Trash2, Truck, UserRound } from "lucide-react";
+import { ChevronDown, Download, KeyRound, LogOut, MapPin, Package, Plus, ShieldCheck, Trash2, Truck, UserRound } from "lucide-react";
 import { formatPrice } from "@/lib/data";
 
 const input = "h-11 w-full rounded-xl border border-brand-100 bg-white px-3.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-leaf focus:ring-4 focus:ring-leaf/15";
@@ -299,7 +299,57 @@ function Password() {
   );
 }
 
-const TABS = [["orders", "Zamówienia", Package], ["profile", "Dane i adresy", UserRound], ["password", "Hasło", KeyRound]] as const;
+// RODO: pobranie wszystkich danych (JSON, zamówienia w CSV) i usunięcie konta (/api/account/export | delete)
+function Privacy({ onDeleted }: { onDeleted: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+  const remove = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    setBusy(true);
+    const r = await api<Res>("/api/account/delete", "POST", { password: f.get("password"), confirm: f.get("confirm") === "on" });
+    setBusy(false);
+    if (r.json.ok) onDeleted(); else setMsg(fail(r, "Nie udało się usunąć konta."));
+  };
+  const link = "inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold ring-1 ring-brand-100 hover:bg-brand-50";
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-lg font-black">Pobierz moje dane</h2>
+        <p className="mt-1 max-w-xl text-sm text-slate-500">Wszystko, co sklep o Tobie zapisał: dane konta, adresy, zgody, zamówienia, opinie, zgłoszenia i zapisy na powiadomienia.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- pobranie pliku z API, nie strona */}
+          <a href="/api/account/export" className={link}><Download className="h-4 w-4" /> Wszystkie dane (JSON)</a>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- pobranie pliku z API, nie strona */}
+          <a href="/api/account/export?format=csv" className={link}><Download className="h-4 w-4" /> Zamówienia (Excel / CSV)</a>
+        </div>
+      </div>
+      <div className="border-t border-brand-100 pt-6">
+        <h2 className="text-lg font-black">Usuń konto</h2>
+        <p className="mt-1 max-w-xl text-sm text-slate-500">Usuniemy konto, adresy, zapis do newslettera i powiadomień. W zamówieniach zostaną tylko produkty i kwoty – bez imienia, adresu, e-maila i telefonu. Faktury przechowujemy w systemie księgowym tak długo, jak wymagają przepisy. Tej operacji nie da się cofnąć.</p>
+        {!open ? (
+          <button type="button" onClick={() => setOpen(true)} className="mt-3 inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-red-700 ring-1 ring-red-200 hover:bg-red-50"><Trash2 className="h-4 w-4" /> Chcę usunąć konto</button>
+        ) : (
+          <form onSubmit={remove} className="mt-3 max-w-sm space-y-2.5 rounded-2xl bg-red-50/60 p-4 ring-1 ring-red-100">
+            <input required name="password" type="password" placeholder="Twoje hasło" autoComplete="current-password" className={input} />
+            <label className="flex cursor-pointer items-start gap-2.5 text-sm">
+              <input required type="checkbox" name="confirm" className="mt-0.5 h-4 w-4 accent-[#d32e2e]" />
+              Rozumiem, że konto i historia zamówień w koncie znikną na stałe.
+            </label>
+            {msg && <p className="rounded-xl bg-red-100 px-3 py-2 text-sm text-red-700">{msg}</p>}
+            <div className="flex gap-2">
+              <button disabled={busy} className="flex-1 rounded-xl bg-red-600 py-3 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-60">{busy ? "Usuwam…" : "Usuń konto na stałe"}</button>
+              <button type="button" onClick={() => setOpen(false)} className="rounded-xl px-4 text-sm font-semibold ring-1 ring-brand-100">Anuluj</button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const TABS = [["orders", "Zamówienia", Package], ["profile", "Dane i adresy", UserRound], ["password", "Hasło", KeyRound], ["privacy", "Prywatność", ShieldCheck]] as const;
 
 function Dashboard({ me, setMe }: { me: Me; setMe: (m: Me | null) => void }) {
   const [tab, setTab] = useState<(typeof TABS)[number][0]>("orders");
@@ -326,6 +376,7 @@ function Dashboard({ me, setMe }: { me: Me; setMe: (m: Me | null) => void }) {
           {tab === "orders" && <Orders />}
           {tab === "profile" && <Profile me={me} onSaved={setMe} />}
           {tab === "password" && <Password />}
+          {tab === "privacy" && <Privacy onDeleted={() => window.location.reload()} />}
         </section>
       </div>
     </div>

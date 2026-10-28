@@ -2,9 +2,10 @@
 // BaseLinker sam pobiera produkty i zamówienia – wtedy widać je jako sklep, nie „ręcznie / Admin”.
 // Dokumentacja: https://developers.baselinker.com/shops_api/
 
+import { addHistory } from "../history";
 import { timingSafeEqual } from "node:crypto";
 import type { Payload } from "payload";
-import { getKey, moduleEnabled } from "../vault";
+import { getKey, moduleEnabled, recordRun } from "../vault";
 import type { Order, Product } from "@/payload-types";
 
 const METHODS = [
@@ -41,6 +42,7 @@ const STATUSES: Record<string, string> = {
   new: "Nowe",
   paid: "Opłacone",
   processing: "W realizacji",
+  shipped: "Wysłane",
   cancelled: "Anulowane",
 };
 
@@ -211,7 +213,8 @@ async function ordersGet(payload: Payload, form: FormData) {
   if (one) and.push({ id: { equals: Number(one) || one } });
   if (timeFrom) and.push({ createdAt: { greater_than_equal: new Date(timeFrom * 1000).toISOString() } });
   if (idFrom) and.push({ id: { greater_than: idFrom } });
-  if (onlyPaid) and.push({ "payment.status": { equals: "paid" } });
+  // „tylko opłacone” w BaseLinkerze: opłacone online + pobranie / odbiór osobisty (płatność przy odbiorze) – też są do realizacji
+  if (onlyPaid) and.push({ "payment.status": { in: ["paid", "deferred"] } });
   const { docs } = await payload.find({
     collection: "orders",
     where: and.length ? ({ and } as never) : undefined,
@@ -284,7 +287,21 @@ async function ordersGet(payload: Payload, form: FormData) {
       })),
     };
   }
+  await markPulled(payload, docs as Order[]);
   return out;
+}
+
+// Zamówienia oddane BaseLinkerowi: w panelu status „Wysłane” (pobrane przez BaseLinkera) + wpis w historii; ostatnie pobranie w Integracjach
+async function markPulled(payload: Payload, docs: Order[]) {
+  recordRun("pull", { at: new Date().toISOString(), ok: true, message: docs.length ? `BaseLinker pobrał zamówienia: ${docs.map((o) => o.orderNumber).join(", ")}` : "BaseLinker sprawdził zamówienia – brak nowych" });
+  for (const o of docs) {
+    if (o.baselinker?.syncStatus === "sent" || o.status === "cancelled") continue;
+    await payload.update({
+      collection: "orders", id: o.id, overrideAccess: true, context: { skipBaseLinker: true },
+      data: { baselinker: { ...(o.baselinker ?? {}), syncStatus: "sent", lastError: "", lastAttemptAt: new Date().toISOString() } } as never,
+    });
+    await addHistory(payload, o.id, "Pobrane przez BaseLinkera (integracja „Inny sklep”)", "BaseLinker");
+  }
 }
 
 async function orderUpdate(payload: Payload, form: FormData) {
@@ -308,8 +325,10 @@ async function orderUpdate(payload: Payload, form: FormData) {
       });
       counter++;
     } else if (type === "delivery_number") {
+      // Numer przesyłki z BaseLinkera: zapis w notatce i status „Wysłane” – klient dostaje mail z numerem i linkiem do śledzenia
       const note = [order.adminNote, value && `Przesyłka: ${value}`].filter(Boolean).join("\n").slice(0, 200);
-      await payload.update({ collection: "orders", id, overrideAccess: true, context: { skipBaseLinker: true }, data: { adminNote: note, status: "processing" } });
+      const status = order.status === "cancelled" ? order.status : "shipped";
+      await payload.update({ collection: "orders", id, overrideAccess: true, context: { skipBaseLinker: true, trackingNumber: value }, data: { adminNote: note, status } });
       counter++;
     }
   }

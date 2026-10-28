@@ -4,13 +4,21 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Cookie } from "lucide-react";
 
-// Zgody na pliki cookies (RODO). Wybór zapisany w przeglądarce; skrypty analityczne/marketingowe
-// powinny sprawdzać window.sonaxConsent przed uruchomieniem.
+// Zgody na pliki cookies (RODO) + Google Consent Mode v2. Wybór zapisany w przeglądarce na 12 miesięcy.
+// Po zapisie: aktualizacja zgód w Google (gtag „consent update”) i załadowanie narzędzi, na które klient się zgodził
+// (window.sonaxTags ze skryptu startowego src/lib/tagsBootstrap.ts).
 type Consent = { necessary: true; analytics: boolean; marketing: boolean; at: string };
 const KEY = "sonax-consent-v1";
 
+const YEAR = 365 * 24 * 60 * 60 * 1000;
+
 declare global {
-  interface Window { sonaxConsent?: Consent }
+  interface Window {
+    sonaxConsent?: Consent;
+    sonaxTags?: (analytics: boolean, marketing: boolean) => void;
+    gtag?: (...args: unknown[]) => void;
+    dataLayer?: unknown[];
+  }
 }
 
 export function openCookieSettings() {
@@ -26,7 +34,8 @@ export function CookieConsent() {
   useEffect(() => {
     let saved: Consent | null = null;
     try { saved = JSON.parse(localStorage.getItem(KEY) ?? "null"); } catch {}
-    if (saved) {
+    // zgoda ważna 12 miesięcy – potem pytamy ponownie
+    if (saved && Date.now() - new Date(saved.at).getTime() < YEAR) {
       window.sonaxConsent = saved;
     } else {
       const t = setTimeout(() => setOpen(true), 600);
@@ -49,6 +58,10 @@ export function CookieConsent() {
     const c: Consent = { necessary: true, analytics: a, marketing: m, at: new Date().toISOString() };
     try { localStorage.setItem(KEY, JSON.stringify(c)); } catch {}
     window.sonaxConsent = c;
+    const g = (b: boolean) => (b ? "granted" : "denied");
+    window.gtag?.("consent", "update", { analytics_storage: g(a), ad_storage: g(m), ad_user_data: g(m), ad_personalization: g(m) });
+    window.dataLayer?.push({ event: "consent_update", consent_analytics: a, consent_marketing: m });
+    window.sonaxTags?.(a, m);
     setOpen(false);
   };
 
@@ -67,8 +80,8 @@ export function CookieConsent() {
             <div className="mt-4 space-y-2">
               {[
                 ["Niezbędne", "Koszyk, ulubione, bezpieczeństwo – zawsze włączone", true, () => {}, true],
-                ["Analityczne", "Statystyki odwiedzin, które pomagają ulepszać sklep", analytics, () => setAnalytics(!analytics), false],
-                ["Marketingowe", "Dopasowane reklamy w innych serwisach", marketing, () => setMarketing(!marketing), false],
+                ["Analityczne", "Statystyki odwiedzin i nagrania sesji bez danych osobowych (np. Google Analytics, Microsoft Clarity)", analytics, () => setAnalytics(!analytics), false],
+                ["Marketingowe", "Pomiar skuteczności i dopasowanie reklam (np. Google Ads, Meta – Facebook/Instagram)", marketing, () => setMarketing(!marketing), false],
               ].map(([title, desc, on, toggle, locked]) => (
                 <label key={title as string} className="flex cursor-pointer items-center justify-between gap-4 rounded-2xl bg-brand-50/60 px-4 py-3">
                   <span className="text-sm"><b className="block text-ink">{title as string}</b><span className="text-slate-500">{desc as string}</span></span>

@@ -24,8 +24,9 @@ const company = {
 const mapQuery = "Gen. Władysława Andersa 40, 15-113 Białystok";
 
 export default async function ContactPage(props: PageProps<"/kontakt">) {
-  const { produkt } = await props.searchParams;
+  const { produkt, slug } = await props.searchParams;
   const product = typeof produkt === "string" ? produkt.slice(0, 200) : undefined;
+  const productSlug = typeof slug === "string" ? slug.slice(0, 200) : undefined;
   const cards = [
     { icon: Phone, label: "Telefon", value: "+48 500 021 705", note: "Doradzimy w doborze chemii", action: { label: "Zadzwoń", href: "tel:+48500021705" } },
     { icon: Mail, label: "E-mail", value: "aukcje@sonax.bialystok.pl", note: "Odpowiadamy w dni robocze", action: { label: "Napisz e-mail", href: "mailto:aukcje@sonax.bialystok.pl" } },
@@ -76,7 +77,7 @@ export default async function ContactPage(props: PageProps<"/kontakt">) {
           <h2 className="text-2xl font-extrabold text-navy">Napisz do nas</h2>
           <p className="mt-1 mb-6 text-sm text-slate-500">Odpowiemy najszybciej, jak to możliwe. Pola oznaczone * są wymagane.</p>
           {product && <p className="mb-4 rounded-xl bg-brand-50 px-4 py-3 text-sm text-brand-900 ring-1 ring-brand-100">Pytanie dotyczy produktu: <b>{product}</b></p>}
-          <ContactForm product={product} />
+          <ContactForm product={product} productSlug={productSlug} />
         </div>
 
         <aside className="space-y-6">

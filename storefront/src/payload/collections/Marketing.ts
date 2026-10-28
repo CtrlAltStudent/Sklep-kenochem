@@ -1,6 +1,7 @@
 import type { CollectionConfig } from "payload";
 import { anyone, isAdmin, isEditor, isOrdersTeam, hasRole } from "../access";
 import { section } from "../fields";
+import { returnStatusMailHook } from "@/integrations/mail/events";
 
 const C = "@/payload/components/Cells#";
 
@@ -61,6 +62,7 @@ export const Reviews: CollectionConfig = {
   },
   defaultSort: "-createdAt",
   fields: [
+    { type: "ui", name: "view", admin: { disableListColumn: true, components: { Field: "@/payload/components/RecordView#ReviewView" } } },
     section("Opinia klienta", "Treść wystawiona przez klienta – sprawdź ją przed publikacją.", "star", [
     { name: "product", label: "Produkt", type: "relationship", relationTo: "products", required: true, index: true },
     { type: "row", fields: [
@@ -106,6 +108,7 @@ export const Returns: CollectionConfig = {
   access: { read: isOrdersTeam, create: () => false, update: isOrdersTeam, delete: isAdmin },
   defaultSort: "-createdAt",
   hooks: {
+    afterChange: [returnStatusMailHook],
     beforeChange: [
       async ({ data, operation, req }) => {
         if (operation === "create" && !data.number) {
@@ -118,11 +121,13 @@ export const Returns: CollectionConfig = {
     ],
   },
   fields: [
+    { type: "ui", name: "view", admin: { disableListColumn: true, components: { Field: "@/payload/components/RecordView#ReturnView" } } },
     { name: "number", label: "Numer zgłoszenia", type: "text", unique: true, admin: { readOnly: true, position: "sidebar" } },
     { name: "status", label: "Status", type: "select", defaultValue: "new", index: true, admin: { position: "sidebar", components: { Cell: `${C}ReturnStatusCell` } }, options: [
       { label: "Nowe", value: "new" }, { label: "Zaakceptowane – czekamy na paczkę", value: "accepted" }, { label: "Towar otrzymany", value: "received" },
       { label: "Zwrot pieniędzy wykonany", value: "refunded" }, { label: "Odrzucone", value: "rejected" }, { label: "Zamknięte", value: "closed" },
     ] },
+    { type: "ui", name: "quickActions", admin: { position: "sidebar", disableListColumn: true, components: { Field: "@/payload/components/SidebarActions#ReturnActions" } } },
     section("Zgłoszenie", "Rodzaj zgłoszenia i zamówienie, którego dotyczy.", "invoice", [
     { type: "row", fields: [
       { name: "type", label: "Rodzaj", type: "select", required: true, admin: { width: "50%", components: { Cell: `${C}ReturnTypeCell` } }, options: [

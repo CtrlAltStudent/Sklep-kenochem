@@ -4,7 +4,7 @@
 // Pełnych haseł nigdy nie pobieramy z serwera – widać tylko końcówkę („••••a1b2”).
 
 import Link from "next/link";
-import { Mail } from "lucide-react";
+import { ChartLine, Mail, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { moduleById, providers, upcoming, type AutoSettings, type JobId, type JobRun, type ModuleCategory, type Provider } from "@/integrations/registry";
@@ -17,7 +17,7 @@ type State = {
   scheduler: boolean;
   providers: { id: string; installed: boolean; enabled: boolean; mode: string; modeFromPanel: boolean; fields: Record<string, FieldState> }[];
   auto: AutoSettings;
-  runs: Partial<Record<JobId, JobRun>>;
+  runs: Partial<Record<JobId | "pull", JobRun>>;
 };
 type Res = { ok: boolean; message: string };
 
@@ -226,6 +226,11 @@ function AutoCard({ state, onSaved }: { state: State; onSaved: (s: State) => voi
           <p className="kc-ih__note">Na tym komputerze harmonogram nie działa (tryb programisty). Na serwerze uruchamia się sam. Przyciskiem „Uruchom teraz” można sprawdzić każde zadanie ręcznie.</p>
         )}
         {!blReady && <p className="kc-ih__note is-bad">Najpierw włącz moduł i wpisz token BaseLinkera (albo wybierz tryb testowy) w zakładce „Konfiguracja”.</p>}
+        {/* Integracja „Inny sklep”: BaseLinker sam pobiera zamówienia – pokazujemy, kiedy ostatnio to zrobił */}
+        <p className={`kc-ih__note ${state.runs.pull ? "" : "is-bad"}`}>
+          <b>Pobieranie zamówień przez BaseLinkera (Inny sklep):</b>{" "}
+          {state.runs.pull ? `ostatnio ${fmt(state.runs.pull.at)} – ${state.runs.pull.message}` : "BaseLinker jeszcze nie pobierał zamówień z tego sklepu. Sprawdź w BaseLinkerze: Integracje → Inny sklep → adres pliku i hasło komunikacji."}
+        </p>
 
         <ul className="kc-ih__jobs">
           {JOBS.map((j) => {
@@ -314,7 +319,7 @@ function ModuleLogo({ provider, size = "md" }: { provider: Provider; size?: "md"
   return (
     <div className={`kc-ih__logo kc-ih__logo--${size}`}>
       {/* eslint-disable-next-line @next/next/no-img-element -- małe logo z public/marks */}
-      {provider.logo ? <img src={provider.logo} alt="" /> : provider.id === "poczta" ? <Mail size={size === "lg" ? 28 : 20} /> : <b>{(provider.name.match(/[A-Z]/g) ?? []).slice(0, 2).join("")}</b>}
+      {provider.logo ? <img src={provider.logo} alt="" /> : provider.id === "poczta" ? <Mail size={size === "lg" ? 28 : 20} /> : provider.id === "google" ? <ChartLine size={size === "lg" ? 28 : 20} /> : <b>{(provider.name.match(/[A-Z]/g) ?? []).slice(0, 2).join("")}</b>}
     </div>
   );
 }
@@ -342,22 +347,53 @@ function ModuleSwitch({ provider, row, onSaved, onResult }: { provider: Provider
   );
 }
 
-const CATEGORIES: ModuleCategory[] = ["Sprzedaż i magazyn", "Płatności", "Dostawa", "Komunikacja"];
+const CATEGORIES: ModuleCategory[] = ["Sprzedaż i magazyn", "Płatności", "Dostawa", "Komunikacja", "Marketing i analityka"];
 
-// ---------- /admin/integracje – przegląd modułów ----------
+// ---------- /admin/integracje – przegląd (wzór: BaseLinker → Integracje) ----------
+// Dwie zakładki: „Moje integracje” (lista dodanych, stan, przełącznik, ustawienia) i „Dodaj integrację” (katalog).
+// Po lewej kategorie z licznikami i wyszukiwarka – wspólne dla obu zakładek.
+
+type View = "mine" | "add";
 
 export function ModulesOverview() {
   const { state, setState, error } = useIntegrations();
-  const [catalog, setCatalog] = useState(false);
+  const [view, setView] = useState<View>("mine");
+  const [cat, setCat] = useState<ModuleCategory | "all">("all");
+  const [q, setQ] = useState("");
   const [res, setRes] = useState<Res | null>(null);
+  const [checks, setChecks] = useState<"running" | { name: string; ok: boolean; message: string }[] | null>(null);
+
+  // Diagnostyka: stan sklepu (adres kontrolny) + test każdego włączonego modułu po kolei
+  const checkAll = async () => {
+    setChecks("running");
+    const out: { name: string; ok: boolean; message: string }[] = [];
+    const h = await fetch("/api/zdrowie", { cache: "no-store" }).then((r) => r.json()).catch(() => null);
+    out.push({ name: "Sklep (baza, harmonogram, synchronizacja)", ok: h?.status === "ok", message: h ? (h.problems?.length ? h.problems.join("; ") : `Działa – odpowiedź w ${h.ms} ms`) : "Brak odpowiedzi" });
+    for (const p of providers) {
+      const row = state?.providers.find((r) => r.id === p.id);
+      if (!row?.installed) continue;
+      if (!row.enabled) { out.push({ name: p.name, ok: true, message: "Wyłączony – nie sprawdzam" }); continue; }
+      if (!p.testable) { out.push({ name: p.name, ok: true, message: "Nie ma testu – działa bez połączenia" }); continue; }
+      const r = await api(`/test/${p.id}`, { method: "POST" }).catch((e) => ({ ok: false, message: String(e) }));
+      out.push({ name: p.name, ok: r.ok, message: r.message });
+    }
+    setChecks(out);
+  };
 
   if (error) return <div className="kc-card"><p className="kc-ih__note is-bad">{error}</p></div>;
   if (!state) return <div className="kc-card"><p className="kc-ih__note">Wczytuję…</p></div>;
 
   const rows = state.providers;
-  const installed = providers.filter((p) => rows.find((r) => r.id === p.id)?.installed);
-  const available = providers.filter((p) => !rows.find((r) => r.id === p.id)?.installed);
-  const on = rows.filter((r) => r.enabled).length;
+  const isInstalled = (p: Provider) => Boolean(rows.find((r) => r.id === p.id)?.installed);
+  const text = q.trim().toLowerCase();
+  const match = (name: string, what: string, category: string) =>
+    (cat === "all" || category === cat) && (!text || `${name} ${what} ${category}`.toLowerCase().includes(text));
+  const mine = providers.filter(isInstalled);
+  const shown = (view === "mine" ? mine : providers).filter((p) => match(p.name, p.what, p.category));
+  const soon = view === "add" ? upcoming.filter((u) => match(u.name, u.what, u.category)) : [];
+  const count = (c: ModuleCategory | "all") =>
+    (view === "mine" ? mine : providers).filter((p) => c === "all" || p.category === c).length +
+    (view === "add" ? upcoming.filter((u) => c === "all" || u.category === c).length : 0);
 
   const add = async (p: Provider) => {
     const r = await api<Res & { state?: State }>(`/modules/${p.id}`, { json: { installed: true } }).catch((e) => ({ ok: false, message: String(e) }) as Res & { state?: State });
@@ -366,69 +402,83 @@ export function ModulesOverview() {
   };
 
   return (
-    <div className="kc-ih">
-      <div className="kc-ih__toolbar">
-        <div>
-          <h2>Moduły w sklepie</h2>
-          <p>{installed.length} {installed.length === 1 ? "moduł" : installed.length < 5 ? "moduły" : "modułów"} · włączone: {on}</p>
-        </div>
+    <div className="kc-int">
+      <div className="kc-int__top">
+        <nav className="kc-int__views" aria-label="Integracje">
+          <button type="button" className={view === "mine" ? "is-active" : ""} onClick={() => setView("mine")}>Moje integracje <span>{mine.length}</span></button>
+          <button type="button" className={view === "add" ? "is-active" : ""} onClick={() => setView("add")}>+ Dodaj integrację</button>
+        </nav>
         {res && <span className={`kc-ih__res ${res.ok ? "is-ok" : "is-bad"}`}>{res.ok ? "✔" : "✖"} {res.message}</span>}
-        <button type="button" className="kc-ih__btn is-primary" onClick={() => setCatalog((c) => !c)} aria-expanded={catalog}>
-          {catalog ? "Zamknij katalog" : "+ Dodaj moduł"}
-        </button>
+        <button type="button" className="kc-ih__btn" onClick={checkAll} disabled={checks === "running"}>{checks === "running" ? "Sprawdzam…" : "Sprawdź połączenia"}</button>
       </div>
 
-      {catalog && (
-        <section className="kc-ih__catalog">
-          <h3>Katalog modułów</h3>
-          <div className="kc-ih__tiles">
-            {available.map((p) => (
-              <article key={p.id} className="kc-ih__tile">
-                <div className="kc-ih__tilehead"><ModuleLogo provider={p} /><div><b>{p.name}</b></div></div>
-                <p>{p.what}</p>
-                <div className="kc-ih__tilefoot"><button type="button" className="kc-ih__btn is-primary" onClick={() => add(p)}>Dodaj do sklepu</button></div>
-              </article>
-            ))}
-            {upcoming.map((u) => (
-              <article key={u.name} className="kc-ih__tile is-soon">
-                <div className="kc-ih__tilehead"><div className="kc-ih__logo"><b>{u.name.slice(0, 2).toUpperCase()}</b></div><div><b>{u.name}</b><small>{u.category}</small></div></div>
-                <p>{u.what}</p>
-                <div className="kc-ih__tilefoot"><span className="kc-ih__pill is-off">W przygotowaniu</span></div>
-              </article>
-            ))}
-          </div>
-          {!available.length && <p className="kc-ih__note">Wszystkie gotowe moduły są już dodane do sklepu.</p>}
+      {Array.isArray(checks) && (
+        <section className="kc-ih__checks" aria-live="polite">
+          <h3>Wynik sprawdzenia</h3>
+          <ul>{checks.map((c) => <li key={c.name} className={c.ok ? "is-ok" : "is-bad"}><b>{c.ok ? "✔" : "✖"} {c.name}</b><span>{c.message}</span></li>)}</ul>
         </section>
       )}
 
-      {CATEGORIES.map((cat) => {
-        const list = installed.filter((p) => p.category === cat);
-        if (!list.length) return null;
-        return (
-          <section key={cat} className="kc-ih__group">
-            <h3 className="kc-ih__grouptitle">{cat}</h3>
-            <div className="kc-ih__tiles">
-              {list.map((p) => {
-                const row = rows.find((r) => r.id === p.id)!;
-                return (
-                  <article key={p.id} className={`kc-ih__tile ${row.enabled ? "" : "is-off"}`}>
-                    <div className="kc-ih__tilehead">
+      <div className="kc-int__layout">
+        <aside className="kc-int__side">
+          <input type="search" className="kc-int__search" placeholder="Szukaj integracji…" value={q} onChange={(e) => setQ(e.target.value)} />
+          <ul>
+            {(["all", ...CATEGORIES] as const).map((c) => (
+              <li key={c}><button type="button" className={cat === c ? "is-active" : ""} onClick={() => setCat(c)}>{c === "all" ? "Wszystkie" : c}<span>{count(c)}</span></button></li>
+            ))}
+          </ul>
+        </aside>
+
+        <section className="kc-int__main">
+          {view === "mine" ? (
+            shown.length ? (
+              <div className="kc-int__list">
+                {shown.map((p) => {
+                  const row = rows.find((r) => r.id === p.id)!;
+                  return (
+                    <article key={p.id} className={`kc-int__row ${row.enabled ? "" : "is-off"}`}>
                       <ModuleLogo provider={p} />
-                      <div><b>{p.name}</b></div>
+                      <Link href={`/admin/integracje/${p.id}`} className="kc-int__name"><b>{p.name}</b><small>{p.category} · {p.what}</small></Link>
                       <Status provider={p} st={row} />
-                    </div>
-                    <p>{p.what}</p>
-                    <div className="kc-ih__tilefoot">
                       <ModuleSwitch provider={p} row={row} onSaved={setState} onResult={setRes} />
-                      <Link href={`/admin/integracje/${p.id}`} className="kc-ih__btn">Konfiguruj →</Link>
-                    </div>
-                  </article>
-                );
-              })}
+                      <Link href={`/admin/integracje/${p.id}`} className="kc-int__gear" title="Ustawienia" aria-label={`Ustawienia: ${p.name}`}><Settings size={16} /></Link>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="kc-int__empty">
+                <p>{mine.length ? "Nic nie pasuje do wyszukiwania." : "Nie dodano jeszcze żadnej integracji."}</p>
+                <button type="button" className="kc-ih__btn is-primary" onClick={() => setView("add")}>+ Dodaj integrację</button>
+              </div>
+            )
+          ) : (
+            <div className="kc-int__grid">
+              {shown.map((p) => (
+                <article key={p.id} className="kc-int__tile">
+                  <ModuleLogo provider={p} size="lg" />
+                  <b>{p.name}</b>
+                  <small>{p.category}</small>
+                  <p>{p.what}</p>
+                  {isInstalled(p)
+                    ? <Link href={`/admin/integracje/${p.id}`} className="kc-ih__btn">✓ Dodana – ustawienia</Link>
+                    : <button type="button" className="kc-ih__btn is-primary" onClick={() => add(p)}>Dodaj</button>}
+                </article>
+              ))}
+              {soon.map((u) => (
+                <article key={u.name} className="kc-int__tile is-soon">
+                  <div className="kc-ih__logo kc-ih__logo--lg"><b>{u.name.slice(0, 2).toUpperCase()}</b></div>
+                  <b>{u.name}</b>
+                  <small>{u.category}</small>
+                  <p>{u.what}</p>
+                  <span className="kc-ih__pill is-off">Wkrótce</span>
+                </article>
+              ))}
+              {!shown.length && !soon.length && <p className="kc-int__empty">Nic nie pasuje do wyszukiwania.</p>}
             </div>
-          </section>
-        );
-      })}
+          )}
+        </section>
+      </div>
 
       <p className="kc-ih__meta">
         Klucze są zaszyfrowane i zapisane w pliku <code>{state.file}</code> (poza bazą danych i poza gitem).
@@ -498,7 +548,7 @@ export function ModulePage({ id }: { id: string }) {
 
   return (
     <div className="kc-ih">
-      <Link href="/admin/integracje" className="kc-ih__back">← Wszystkie moduły</Link>
+      <Link href="/admin/integracje" className="kc-ih__back">← Moje integracje</Link>
       <header className="kc-ih__modhead">
         <ModuleLogo provider={provider} size="lg" />
         <div className="kc-ih__title">

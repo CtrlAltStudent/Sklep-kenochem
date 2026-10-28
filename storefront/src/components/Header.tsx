@@ -165,11 +165,14 @@ function MegaAll({ counts, onClose, onEnter }: { counts: CategoryCounts; onClose
                 const types = s.types.filter((t) => counts[`${cat.slug}/${s.slug}/${t.slug}`]);
                 return (
                   <div key={s.slug}>
-                    <Link href={`/kategoria/${cat.slug}?sub=${s.slug}`} onClick={onClose} className="text-sm font-bold text-navy hover:text-accent">
+                    <Link href={`/kategoria/${cat.slug}?sub=${s.slug}`} onClick={onClose} className="group/sub flex items-center gap-2.5 text-sm font-bold text-navy hover:text-accent">
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-50 text-accent ring-1 ring-brand-100 transition group-hover/sub:bg-accent group-hover/sub:text-white">
+                        <CatIcon name={s.lucide} className="h-4 w-4" />
+                      </span>
                       {s.name}
                     </Link>
                     {types.length > 0 && (
-                      <ul className="mt-2 space-y-1.5">
+                      <ul className="mt-2 space-y-1.5 pl-[42px]">
                         {types.map((t) => (
                           <li key={t.slug}>
                             <Link

@@ -71,6 +71,7 @@ export interface Config {
     orders: Order;
     returns: Return;
     'form-submissions': FormSubmission;
+    carts: Cart;
     'stock-alerts': StockAlert;
     customers: Customer;
     products: Product;
@@ -95,6 +96,7 @@ export interface Config {
     orders: OrdersSelect<false> | OrdersSelect<true>;
     returns: ReturnsSelect<false> | ReturnsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
+    carts: CartsSelect<false> | CartsSelect<true>;
     'stock-alerts': StockAlertsSelect<false> | StockAlertsSelect<true>;
     customers: CustomersSelect<false> | CustomersSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
@@ -324,6 +326,19 @@ export interface Product {
     from?: string | null;
     to?: string | null;
   };
+  qtyPromo?: {
+    enabled?: boolean | null;
+    from?: string | null;
+    to?: string | null;
+  };
+  qtyTiers?:
+    | {
+        kind?: ("percent" | "free") | null;
+        qty?: number | null;
+        percent?: number | null;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Zapisywana automatycznie przy każdej zmianie ceny.
    */
@@ -336,9 +351,25 @@ export interface Product {
     | null;
   sku?: string | null;
   ean?: string | null;
+  bundle?: boolean | null;
+  bundleItems?:
+    | {
+        product?: (number | null) | Product;
+        sku?: string | null;
+        quantity?: number | null;
+        id?: string | null;
+      }[]
+    | null;
   stock?: number | null;
   unitLabel?: string | null;
   weight?: number | null;
+  /**
+   * Jeśli ustawione, ten produkt jest pojemnością innej karty i nie pokazuje się osobno w sklepie.
+   */
+  variantOf?: (number | null) | Product;
+  variantSort?: number | null;
+  variantDisplay?: ('pojemnosc' | 'zdjecie' | 'dlugosc' | 'waga' | 'kolor' | 'opakowanie' | 'inny') | null;
+  variantNav?: ('switch' | 'link') | null;
   /**
    * Pierwsze zdjęcie jest główne. Wgraj plik albo podaj adres zdjęcia (np. z BaseLinkera).
    */
@@ -362,7 +393,38 @@ export interface Product {
      * Zalecane 120–160 znaków.
      */
     description?: string | null;
+    focusKeyword?: string | null;
     noindex?: boolean | null;
+  };
+  seoExtra?: {
+    /**
+     * Na tę frazę produkt ma się wyświetlać – lista kontrolna sprawdzi, czy jest w tytule, opisie i adresie.
+     */
+    focusKeyword?: string | null;
+    /**
+     * Tylko gdy ten produkt to duplikat innego – wpisz adres głównej wersji.
+     */
+    canonical?: string | null;
+  };
+  /**
+   * Dane do pliku /feed/google.xml (Merchant Center) i kampanii Google Ads.
+   */
+  merchant?: {
+    /**
+     * ID albo ścieżka z taksonomii Google – lepsze dopasowanie reklam.
+     */
+    googleCategory?: string | null;
+    exclude?: boolean | null;
+    /**
+     * Do dzielenia kampanii w Google Ads.
+     */
+    customLabel0?: string | null;
+    customLabel1?: string | null;
+    customLabel2?: string | null;
+    /**
+     * Pokazywane w Zakupach Google jako lista zalet produktu.
+     */
+    highlights?: string | null;
   };
   baselinkerId?: number | null;
   source?: ('baselinker' | 'csv' | 'manual') | null;
@@ -481,6 +543,7 @@ export interface Category {
      * Zalecane 120–160 znaków.
      */
     description?: string | null;
+    focusKeyword?: string | null;
     noindex?: boolean | null;
   };
   /**
@@ -614,7 +677,7 @@ export interface Return {
   createdAt: string;
 }
 /**
- * Wiadomości z formularza kontaktowego i wnioski o konto hurtowe B2B.
+ * Wiadomości z formularza kontaktowego i pytania o produkty. Kliknij wiadomość, żeby odpowiedzieć klientowi mailem.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "form-submissions".
@@ -649,6 +712,35 @@ export interface FormSubmission {
     | number
     | boolean
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Koszyki klientów, którzy zgodzili się na przypomnienie i nie dokończyli zamówienia. Przypomnienie włączysz w Marketing → Maile do klientów.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carts".
+ */
+export interface Cart {
+  id: number;
+  email: string;
+  customer?: (number | null) | Customer;
+  summary?: string | null;
+  total?: number | null;
+  status?: ('open' | 'reminded' | 'recovered') | null;
+  order?: (number | null) | Order;
+  consentAt?: string | null;
+  remindedAt?: string | null;
+  items?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  token: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -819,6 +911,7 @@ export interface Page {
      * Zalecane 120–160 znaków.
      */
     description?: string | null;
+    focusKeyword?: string | null;
     noindex?: boolean | null;
   };
   /**
@@ -868,6 +961,7 @@ export interface Post {
      * Zalecane 120–160 znaków.
      */
     description?: string | null;
+    focusKeyword?: string | null;
     noindex?: boolean | null;
   };
   /**
@@ -886,7 +980,7 @@ export interface Post {
  */
 export interface IntegrationLog {
   id: number;
-  type?: ('test' | 'products' | 'stock' | 'order' | 'email') | null;
+  type?: ('test' | 'products' | 'stock' | 'order' | 'email' | 'history') | null;
   status?: ('success' | 'warning' | 'error') | null;
   mode?: ('live' | 'mock' | 'dry-run') | null;
   message?: string | null;
@@ -1074,6 +1168,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'form-submissions';
         value: number | FormSubmission;
+      } | null)
+    | ({
+        relationTo: 'carts';
+        value: number | Cart;
       } | null)
     | ({
         relationTo: 'stock-alerts';
@@ -1306,6 +1404,24 @@ export interface FormSubmissionsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carts_select".
+ */
+export interface CartsSelect<T extends boolean = true> {
+  email?: T;
+  customer?: T;
+  summary?: T;
+  total?: T;
+  status?: T;
+  order?: T;
+  consentAt?: T;
+  remindedAt?: T;
+  items?: T;
+  token?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "stock-alerts_select".
  */
 export interface StockAlertsSelect<T extends boolean = true> {
@@ -1396,6 +1512,21 @@ export interface ProductsSelect<T extends boolean = true> {
         from?: T;
         to?: T;
       };
+  qtyPromo?:
+    | T
+    | {
+        enabled?: T;
+        from?: T;
+        to?: T;
+      };
+  qtyTiers?:
+    | T
+    | {
+        kind?: T;
+        qty?: T;
+        percent?: T;
+        id?: T;
+      };
   priceHistory?:
     | T
     | {
@@ -1405,9 +1536,22 @@ export interface ProductsSelect<T extends boolean = true> {
       };
   sku?: T;
   ean?: T;
+  bundle?: T;
+  bundleItems?:
+    | T
+    | {
+        product?: T;
+        sku?: T;
+        quantity?: T;
+        id?: T;
+      };
   stock?: T;
   unitLabel?: T;
   weight?: T;
+  variantOf?: T;
+  variantSort?: T;
+  variantDisplay?: T;
+  variantNav?: T;
   images?:
     | T
     | {
@@ -1425,6 +1569,22 @@ export interface ProductsSelect<T extends boolean = true> {
         title?: T;
         description?: T;
         noindex?: T;
+      };
+  seoExtra?:
+    | T
+    | {
+        focusKeyword?: T;
+        canonical?: T;
+      };
+  merchant?:
+    | T
+    | {
+        googleCategory?: T;
+        exclude?: T;
+        customLabel0?: T;
+        customLabel1?: T;
+        customLabel2?: T;
+        highlights?: T;
       };
   baselinkerId?: T;
   source?: T;
@@ -1836,6 +1996,9 @@ export interface Homepage {
    * Puste = automatycznie produkty marki SONAX.
    */
   featuredProducts?: (number | Product)[] | null;
+  promoProducts?: (number | Product)[] | null;
+  newestProducts?: (number | Product)[] | null;
+  bestsellerProducts?: (number | Product)[] | null;
   promoBanner?: {
     image?: (number | null) | Media;
     kicker?: string | null;
@@ -1996,6 +2159,9 @@ export interface HomepageSelect<T extends boolean = true> {
       };
   featuredTitle?: T;
   featuredProducts?: T;
+  promoProducts?: T;
+  newestProducts?: T;
+  bestsellerProducts?: T;
   promoBanner?:
     | T
     | {

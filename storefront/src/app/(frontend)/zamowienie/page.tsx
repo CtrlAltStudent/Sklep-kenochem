@@ -5,6 +5,7 @@ import { Checkout, type PayMethod, type ShipMethod } from "@/components/checkout
 import { paymentAvailable, shippingAvailable } from "@/integrations/availability";
 import { inpostWidgetToken } from "@/integrations/inpost";
 import { moduleEnabled } from "@/integrations/vault";
+import { cartRemindersOn } from "@/integrations/carts";
 
 export const metadata: Metadata = { title: "Dostawa i płatność", robots: { index: false } };
 // Zawsze świeże: ceny dostaw, włączone moduły i token mapy InPost z panelu
@@ -22,5 +23,5 @@ export default async function CheckoutPage() {
     .map((m) => ({ code: m.code, label: m.label, provider: m.provider ?? "przelewy24" }));
   // Token Geowidget jest publiczny (InPost wiąże go z domeną sklepu) – trafia do przeglądarki z założenia
   const inpostToken = moduleEnabled("inpost") ? inpostWidgetToken() : "";
-  return <Checkout shipping={shipping} payments={payments} freeThreshold={freeShippingFrom(s)} inpostToken={inpostToken} />;
+  return <Checkout shipping={shipping} payments={payments} freeThreshold={freeShippingFrom(s)} inpostToken={inpostToken} cartReminder={cartRemindersOn()} />;
 }

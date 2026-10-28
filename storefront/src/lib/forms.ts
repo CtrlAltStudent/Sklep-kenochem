@@ -22,6 +22,7 @@ export const contactSchema = z.object({
   message: z.string().trim().min(10, "Wiadomość jest za krótka").max(4000),
   consent,
   website: z.string().optional(), // pułapka na boty – pole niewidoczne dla ludzi (sprawdzane w /api/forms)
+  productSlug: z.string().max(200).optional(), // „Zapytaj o produkt” – którego produktu dotyczy pytanie
 });
 
 export const b2bSchema = z.object({

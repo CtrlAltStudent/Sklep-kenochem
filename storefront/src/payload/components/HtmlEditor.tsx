@@ -44,17 +44,24 @@ export function HtmlEditor(props: { path?: string; field?: { name?: string; labe
   const [mode, setMode] = useState<Mode>("visual");
   const box = useRef<HTMLDivElement>(null);
   const emitted = useRef<string | null>(null);
+  const shown = useRef<HTMLDivElement | null>(null);
   const label = typeof props.field?.label === "string" ? props.field.label : "Opis produktu";
   const description = typeof props.field?.admin?.description === "string" ? props.field.admin.description : "";
 
-  // Wartość z zewnątrz (wczytanie, zakładka HTML, synchronizacja) → do edytora; własne zmiany pomijamy, żeby nie skakał kursor
+  // Wartość z zewnątrz (wczytanie, zakładka HTML, synchronizacja) → do edytora; własne zmiany pomijamy, żeby nie skakał kursor.
+  // Po powrocie z zakładki HTML/Podgląd pole edycji jest nowe (puste) – wtedy zawsze wczytujemy opis.
   useEffect(() => {
     if (mode !== "visual" || !box.current) return;
-    if ((value ?? "") !== emitted.current) box.current.innerHTML = value ?? "";
+    if (box.current !== shown.current || (value ?? "") !== emitted.current) {
+      box.current.innerHTML = value ?? "";
+      shown.current = box.current;
+      emitted.current = value ?? "";
+    }
   }, [value, mode]);
 
   const emit = () => {
-    const html = box.current?.innerHTML ?? "";
+    if (!box.current || box.current !== shown.current) return; // pole jeszcze bez wczytanego opisu – nic nie nadpisujemy
+    const html = box.current.innerHTML;
     emitted.current = html;
     setValue(html === "<br>" ? "" : html);
   };

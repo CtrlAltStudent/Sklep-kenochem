@@ -29,7 +29,7 @@ const TRACKING: Record<number, string> = {
   6: "Zwrot", 7: "Awizo", 8: "Czeka w punkcie", 9: "Zagubiona", 10: "Anulowana", 11: "W drodze",
 };
 
-const trackingUrl = (code: string, nr: string) => {
+export const trackingUrl = (code: string, nr: string) => {
   const c = code.toLowerCase();
   const n = encodeURIComponent(nr);
   if (c.includes("inpost") || c.includes("paczkomat")) return `https://inpost.pl/sledzenie-przesylek?number=${n}`;

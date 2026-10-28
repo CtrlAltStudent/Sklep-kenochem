@@ -1,7 +1,8 @@
 import type { CollectionConfig } from "payload";
 import { anyone, isEditor } from "../access";
-import { seoFields, slugField } from "../fields";
-import { keepEditedDescription, priceHistoryHook, stockAlertHook, invalidateCatalogHook } from "../productHooks";
+import { productList, seoFields, slugField } from "../fields";
+import { VARIANT_DISPLAY, VARIANT_NAV } from "@/lib/data";
+import { keepEditedDescription, priceHistoryHook, stockAlertHook, invalidateCatalogHook, variantParentHook, uniqueSkuHook, unlinkVariantsHook } from "../productHooks";
 
 // Produkt sklepu. Pola z zakładki „Ceny i magazyn” oraz nazwa/opis/zdjęcia są nadpisywane
 // przez synchronizację z BaseLinkerem – chyba że zaznaczysz „Nie nadpisuj” w zakładce BaseLinker.
@@ -15,15 +16,15 @@ export const Products: CollectionConfig = {
     listSearchableFields: ["name", "sku", "ean", "brand"],
     pagination: { defaultLimit: 50 },
     components: {
-      beforeListTable: ["@/payload/components/StatusTabs#ProductTabs"],
+      beforeListTable: ["@/payload/components/StatusTabs#ProductTabs", "@/payload/components/ProductBulkBar#ProductBulkBar", "@/payload/components/SidebarActions#ExportProducts"],
       edit: { beforeDocumentControls: ["@/payload/components/AdminClient#ViewProductInStore"] },
     },
   },
   access: { read: anyone, create: isEditor, update: isEditor, delete: isEditor },
   hooks: {
-    beforeChange: [priceHistoryHook, keepEditedDescription],
+    beforeChange: [uniqueSkuHook, priceHistoryHook, keepEditedDescription, variantParentHook],
     afterChange: [stockAlertHook, invalidateCatalogHook],
-    afterDelete: [invalidateCatalogHook],
+    afterDelete: [unlinkVariantsHook, invalidateCatalogHook],
   },
   fields: [
     // Podgląd produktu w kartach; formularz pokazuje się po „Edytuj”
@@ -43,7 +44,7 @@ export const Products: CollectionConfig = {
             // Stare pole edytora – sklep go nie używa; widoczne tylko, jeśli ktoś coś w nim zapisał
             { name: "content", label: "Opis (stary edytor)", type: "richText", admin: { condition: (data) => Boolean(data?.content), description: "Sklep pokazuje „Opis produktu” poniżej – przenieś treść tam." } },
             { name: "descriptionHtml", label: "Opis produktu", type: "code", admin: { language: "html", components: { Field: "@/payload/components/HtmlEditor#HtmlEditor" }, description: "Synchronizacja z BaseLinkerem może nadpisać opis – zaznacz „Nie nadpisuj opisu” w zakładce BaseLinker, jeśli zmieniasz go tutaj." } },
-            { name: "related", label: "Produkty powiązane („Kup razem”)", type: "relationship", relationTo: "products", hasMany: true, admin: { description: "Akcesoria i produkty uzupełniające – pokazywane na stronie produktu." } },
+            productList("related", "Produkty powiązane („Kup razem”)", "Akcesoria i produkty uzupełniające – pokazywane na stronie produktu."),
             { name: "badges", label: "Etykiety", type: "select", hasMany: true, options: [
               { label: "Nowość", value: "nowosc" }, { label: "Promocja", value: "promocja" }, { label: "Bestseller", value: "bestseller" },
             ] },
@@ -75,6 +76,35 @@ export const Products: CollectionConfig = {
               ],
             },
             {
+              name: "qtyPromo",
+              label: "Rabat za większą ilość",
+              type: "group",
+              admin: { description: "Rabat jest na ostatniej sztuce w stosie, nie na całym zakupie. Puste daty = bez końca." },
+              fields: [
+                { name: "enabled", label: "Włączona", type: "checkbox", defaultValue: false },
+                { type: "row", fields: [
+                  { name: "from", label: "Od", type: "date", admin: { width: "50%", date: { pickerAppearance: "dayAndTime" } } },
+                  { name: "to", label: "Do", type: "date", admin: { width: "50%", date: { pickerAppearance: "dayAndTime" } } },
+                ] },
+              ],
+            },
+            {
+              name: "qtyTiers",
+              label: "Progi rabatu",
+              type: "array",
+              maxRows: 4,
+              labels: { singular: "Próg", plural: "Progi" },
+              admin: { description: "Np. co 3. sztuka −30%: przy 12 sztukach rabat jest na 4 sztukach. Co 4. sztuka gratis: przy 12 sztukach 3 sztuki są za darmo. Gdy jest kilka progów, klient dostaje ten z większą zniżką." },
+              fields: [{ type: "row", fields: [
+                { name: "kind", label: "Co dostaje", type: "select", defaultValue: "percent", options: [
+                  { label: "Rabat % na ostatnią sztukę", value: "percent" },
+                  { label: "Ostatnia sztuka gratis", value: "free" },
+                ], admin: { width: "40%" } },
+                { name: "qty", label: "Co ile sztuk", type: "number", required: true, min: 2, admin: { width: "30%" } },
+                { name: "percent", label: "Rabat %", type: "number", min: 1, max: 90, admin: { width: "30%", condition: (_data, sibling) => (sibling?.kind ?? "percent") !== "free" } },
+              ] }],
+            },
+            {
               name: "priceHistory",
               label: "Historia cen (ostatnie 90 dni)",
               type: "array",
@@ -96,14 +126,46 @@ export const Products: CollectionConfig = {
           ],
         },
         {
+          label: "Zestaw",
+          fields: [
+            { type: "ui", name: "bundleEditor", label: "Skład zestawu", admin: { disableListColumn: true, components: { Field: "@/payload/components/BundleEditor#BundleEditor" } } },
+            { name: "bundle", label: "To jest zestaw", type: "checkbox", defaultValue: false, index: true, admin: { hidden: true, disableListColumn: true } },
+            {
+              name: "bundleItems",
+              label: "Produkty w zestawie",
+              type: "array",
+              admin: { hidden: true, disableListColumn: true },
+              fields: [
+                { name: "product", label: "Produkt", type: "relationship", relationTo: "products" },
+                { name: "sku", label: "SKU", type: "text" },
+                { name: "quantity", label: "Ilość", type: "number", defaultValue: 1, min: 1 },
+              ],
+            },
+          ],
+        },
+        {
+          label: "Warianty",
+          fields: [
+            { type: "ui", name: "variantEditor", label: "Warianty na karcie", admin: { disableListColumn: true, components: { Field: "@/payload/components/VariantEditor#VariantEditor" } } },
+            { name: "variantOf", label: "Karta w sklepie", type: "relationship", relationTo: "products", index: true, filterOptions: ({ id }) => (id ? { id: { not_equals: id } } : true), admin: { hidden: true, disableListColumn: true, description: "Jeśli ustawione, ten produkt należy do grupy wariantów innej karty." } },
+            { name: "variantSort", label: "Kolejność wariantu", type: "number", admin: { hidden: true, disableListColumn: true } },
+            { name: "variantDisplay", label: "Wygląd wyboru w sklepie", type: "select", defaultValue: "pojemnosc", options: VARIANT_DISPLAY.map((d) => ({ label: d.label, value: d.id })), admin: { hidden: true, disableListColumn: true } },
+            { name: "variantNav", label: "Strony wariantów", type: "select", defaultValue: "switch", options: VARIANT_NAV.map((d) => ({ label: d.label, value: d.id })), admin: { hidden: true, disableListColumn: true } },
+          ],
+        },
+        {
           label: "Zdjęcia",
           fields: [
+            { type: "ui", name: "imageStrip", admin: { components: { Field: "@/payload/components/ImagePreview#ImageStrip" } } },
             {
               name: "images",
               label: "Zdjęcia",
               type: "array",
               labels: { singular: "Zdjęcie", plural: "Zdjęcia" },
-              admin: { description: "Pierwsze zdjęcie jest główne. Wgraj plik albo podaj adres zdjęcia (np. z BaseLinkera).", components: { Cell: "@/payload/components/Cells#ThumbCell" } },
+              admin: {
+                description: "Pierwsze zdjęcie jest główne. Wgraj plik albo podaj adres zdjęcia (np. z BaseLinkera).",
+                components: { Cell: "@/payload/components/Cells#ThumbCell", RowLabel: "@/payload/components/ImagePreview#ImageRowLabel" },
+              },
               fields: [
                 { type: "row", fields: [
                   { name: "media", label: "Plik", type: "upload", relationTo: "media", admin: { width: "40%" } },
@@ -130,7 +192,41 @@ export const Products: CollectionConfig = {
             { name: "safetyNotes", label: "Zwroty H/P i uwagi", type: "textarea" },
           ],
         },
-        { label: "SEO", fields: [seoFields] },
+        {
+          label: "SEO i Google",
+          fields: [
+            // Podgląd wyniku w Google + lista kontrolna (bez zmian w bazie)
+            { type: "ui", name: "seoPanel", admin: { components: { Field: "@/payload/components/SeoPanel#SeoPanel" } } },
+            seoFields,
+            {
+              name: "seoExtra",
+              label: "Pozycjonowanie",
+              type: "group",
+              fields: [
+                { name: "focusKeyword", type: "text", admin: { hidden: true, disableListColumn: true } },
+                { name: "canonical", label: "Adres kanoniczny (opcjonalnie)", type: "text", admin: { placeholder: "/produkt/inny-adres", description: "Tylko gdy ten produkt to duplikat innego – wpisz adres głównej wersji." } },
+              ],
+            },
+            {
+              name: "merchant",
+              label: "Zakupy Google i reklamy",
+              type: "group",
+              admin: { description: "Dane do pliku /feed/google.xml (Merchant Center) i kampanii Google Ads." },
+              fields: [
+                { type: "row", fields: [
+                  { name: "googleCategory", label: "Kategoria Google", type: "text", admin: { width: "50%", placeholder: "np. 8237 albo Pojazdy i części > Akcesoria > Środki czystości", description: "ID albo ścieżka z taksonomii Google – lepsze dopasowanie reklam." } },
+                  { name: "exclude", label: "Nie pokazuj w Zakupach Google", type: "checkbox", admin: { width: "50%" } },
+                ] },
+                { type: "row", fields: [
+                  { name: "customLabel0", label: "Etykieta reklam 0", type: "text", admin: { width: "33%", placeholder: "np. bestseller", description: "Do dzielenia kampanii w Google Ads." } },
+                  { name: "customLabel1", label: "Etykieta reklam 1", type: "text", admin: { width: "33%", placeholder: "np. wysoka marża" } },
+                  { name: "customLabel2", label: "Etykieta reklam 2", type: "text", admin: { width: "34%", placeholder: "np. sezon zima" } },
+                ] },
+                { name: "highlights", label: "Najważniejsze cechy (po jednej w linii, do 10)", type: "textarea", admin: { placeholder: "Usuwa owady w 60 sekund\nBezpieczny dla lakieru i plastików\nGotowy do użycia", description: "Pokazywane w Zakupach Google jako lista zalet produktu." } },
+              ],
+            },
+          ],
+        },
         {
           label: "BaseLinker",
           fields: [
@@ -167,5 +263,6 @@ export const Products: CollectionConfig = {
       { label: "Ukryty", value: "hidden" },
       { label: "Wycofany", value: "archived" },
     ] },
+    { type: "ui", name: "quickActions", admin: { position: "sidebar", disableListColumn: true, components: { Field: "@/payload/components/SidebarActions#ProductActions" } } },
   ],
 };

@@ -23,13 +23,6 @@ const col = (slug: string, label: string, extra: Partial<NavItem> = {}): NavItem
   collection: slug,
   ...extra,
 });
-const glob = (slug: string, label: string, extra: Partial<NavItem> = {}): NavItem => ({
-  id: `nav-global-${slug}`,
-  label,
-  href: `/admin/globals/${slug}`,
-  global: slug,
-  ...extra,
-});
 
 export const navSections: NavSection[] = [
   {
@@ -37,6 +30,7 @@ export const navSections: NavSection[] = [
     items: [
       { id: "nav-dashboard", label: "Pulpit", href: "/admin", exact: true },
       { id: "nav-reports", label: "Raporty sprzedaży", href: "/admin/raporty", collection: "orders" },
+      { id: "nav-help", label: "Instrukcja", href: "/admin/pomoc" },
     ],
   },
   {
@@ -45,6 +39,7 @@ export const navSections: NavSection[] = [
       col("orders", "Zamówienia", { badge: { collection: "orders", where: { status: { in: ["new", "paid"] } }, tone: "red" } }),
       col("returns", "Zwroty i reklamacje", { badge: { collection: "returns", where: { status: { equals: "new" } }, tone: "amber" } }),
       col("customers", "Klienci"),
+      col("carts", "Porzucone koszyki"),
       col("form-submissions", "Wiadomości", { badge: { collection: "form-submissions", where: { status: { equals: "new" } }, tone: "amber" } }),
     ],
   },
@@ -52,6 +47,7 @@ export const navSections: NavSection[] = [
     label: "Katalog",
     items: [
       col("products", "Produkty"),
+      { id: "nav-import", label: "Import / eksport", href: "/admin/import", adminOnly: true },
       col("categories", "Kategorie"),
       col("stock-alerts", "Powiadomienia o dostępności"),
     ],
@@ -62,16 +58,17 @@ export const navSections: NavSection[] = [
       col("coupons", "Kody rabatowe"),
       col("reviews", "Opinie", { badge: { collection: "reviews", where: { status: { equals: "pending" } }, tone: "amber" } }),
       col("newsletter", "Newsletter"),
+      { id: "nav-mails", label: "Maile do klientów", href: "/admin/maile", adminOnly: true },
     ],
   },
   {
     label: "Treści i wygląd",
     items: [
-      glob("homepage", "Strona główna"),
-      glob("navigation", "Menu i stopka"),
-      col("pages", "Strony"),
+      // Układ strony obejmuje też edycję treści strony głównej oraz menu i stopki
+      { id: "nav-content", label: "Układ strony", href: "/admin/uklad", collection: "pages", also: ["/admin/globals/homepage", "/admin/globals/navigation"] },
+      col("pages", "Podstrony"),
       col("posts", "Blog"),
-      col("media", "Zdjęcia i pliki"),
+      col("media", "Media"),
     ],
   },
   {
@@ -84,7 +81,8 @@ export const navSections: NavSection[] = [
   {
     label: "Ustawienia",
     items: [
-      glob("store-settings", "Ustawienia sklepu"),
+      // Ustawienia sklepu = przegląd /admin/ustawienia + formularz danych sklepu (global store-settings)
+      { id: "nav-settings", label: "Ustawienia sklepu", href: "/admin/ustawienia", adminOnly: true, also: ["/admin/globals/store-settings"] },
       col("users", "Pracownicy"),
       col("redirects", "Przekierowania"),
     ],

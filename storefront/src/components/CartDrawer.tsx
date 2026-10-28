@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { Minus, Plus, ShoppingBag, Trash2, Truck, X } from "lucide-react";
 import { formatPrice } from "@/lib/data";
+import { qtyDealText } from "@/lib/qtyDeal";
 import { resolveCart, type ResolvedLine } from "@/lib/cart";
 import { actions, useStore } from "@/lib/store";
 import { ProductImage } from "./ProductImage";
@@ -38,7 +39,10 @@ export function CartLineRow({ line, compact }: { line: ResolvedLine; compact?: b
         <Link href={`/produkt/${slug}`} onClick={() => actions.openCart(false)} className="line-clamp-2 text-sm leading-snug font-semibold hover:text-accent-dark">
           {line.name}
         </Link>
-        <span className="text-xs text-slate-500">{line.label} · {formatPrice(line.price)} / szt.</span>
+        <span className="text-xs text-slate-500">
+          {line.label} · {formatPrice(line.price)} / szt.
+          {line.hits > 0 && line.deal ? <span className="font-semibold text-green-700"> · {qtyDealText(line.deal)} ({line.hits} szt.)</span> : null}
+        </span>
         <div className="mt-auto flex items-center justify-between pt-2">
           <div className="flex items-center rounded-lg border border-brand-100">
             <button onClick={() => actions.setQty(slug, variantId, qty - 1)} aria-label="Zmniejsz" className="grid h-8 w-8 place-items-center hover:bg-brand-50">
@@ -49,7 +53,10 @@ export function CartLineRow({ line, compact }: { line: ResolvedLine; compact?: b
               <Plus className="h-3.5 w-3.5" />
             </button>
           </div>
-          <span className="font-bold">{formatPrice(line.total)}</span>
+          <span className="text-right">
+            {line.hits > 0 && <span className="block text-xs font-normal text-slate-400 line-through">{formatPrice(line.full)}</span>}
+            <span className="font-bold">{formatPrice(line.total)}</span>
+          </span>
         </div>
       </div>
     </div>

@@ -9,22 +9,25 @@ export const FormSubmissions: CollectionConfig = {
   admin: {
     group: "Sprzedaż",
     useAsTitle: "title",
-    defaultColumns: ["title", "type", "email", "status", "createdAt"],
+    defaultColumns: ["title", "listProduct", "email", "status", "createdAt"],
     listSearchableFields: ["name", "email", "company", "nip"],
-    description: "Wiadomości z formularza kontaktowego i wnioski o konto hurtowe B2B.",
+    description: "Wiadomości z formularza kontaktowego i pytania o produkty. Kliknij wiadomość, żeby odpowiedzieć klientowi mailem.",
   },
   access: { read: isOrdersTeam, create: () => false, update: isOrdersTeam, delete: isOrdersTeam },
   defaultSort: "-createdAt",
   hooks: {
     beforeChange: [
-      ({ data }) => {
-        data.title = data.type === "b2b" ? `B2B: ${data.company || data.name}` : `${data.subject || "Wiadomość"} – ${data.name}`;
+      ({ data, originalDoc }) => {
+        const d = { ...originalDoc, ...data }; // przy zmianie statusu / odpowiedzi przychodzi tylko część pól
+        data.title = d.type === "b2b" ? `B2B: ${d.company || d.name}` : `${d.subject || "Wiadomość"} – ${d.name}`;
         return data;
       },
     ],
   },
   fields: [
     { name: "title", type: "text", admin: { hidden: true } },
+    { type: "ui", name: "conversation", admin: { disableListColumn: true, components: { Field: "@/payload/components/MessageView#MessageView" } } },
+    { type: "ui", name: "listProduct", label: "Produkt", admin: { components: { Cell: "@/payload/components/MessageView#ProductCell" } } },
     { type: "row", fields: [
       { name: "type", label: "Rodzaj", type: "select", required: true, admin: { width: "50%" }, options: [
         { label: "Kontakt", value: "contact" }, { label: "Wniosek B2B", value: "b2b" },

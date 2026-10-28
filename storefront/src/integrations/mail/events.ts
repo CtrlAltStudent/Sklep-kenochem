@@ -7,13 +7,29 @@
 import type { CollectionAfterChangeHook, Payload } from "payload";
 import type { Order } from "@/payload-types";
 import { blActive } from "../baselinker/client";
-import { orderPackages } from "../baselinker/shipping";
+import { orderPackages, trackingUrl } from "../baselinker/shipping";
 import { mailConfig, mailReady, sendLater, sendMail, type Mail } from "./send";
 import * as T from "./templates";
 
-async function context(payload: Payload, o: Order) {
+// Miniatury produktów z zamówienia (pierwsze zdjęcie, pełny adres – maile otwierają się poza sklepem)
+async function productImages(payload: Payload, o: Order) {
+  const ids = [...new Set((o.items ?? []).map((i) => (typeof i.product === "object" && i.product ? i.product.id : i.product)).filter(Boolean))] as number[];
+  if (!ids.length) return {};
+  const { docs } = await payload.find({ collection: "products", where: { id: { in: ids } }, depth: 1, limit: ids.length, overrideAccess: true, select: { images: true } });
+  const out: Record<string, string> = {};
+  for (const p of docs) {
+    const first = p.images?.[0];
+    const media = typeof first?.media === "object" ? first.media : null;
+    const url = media?.sizes?.thumb?.url || media?.url || first?.url;
+    if (url) out[String(p.id)] = url.startsWith("http") ? url : `${T.siteUrl()}${url}`;
+  }
+  return out;
+}
+
+export async function orderContext(payload: Payload, o: Order) {
   const store = await payload.findGlobal({ slug: "store-settings", overrideAccess: true });
   return {
+    images: await productImages(payload, o).catch(() => ({})),
     shop: store as T.Shop,
     shipLabel: store.shippingMethods?.find((m) => m.code === o.shipping?.method)?.label,
     payLabel: store.paymentMethods?.find((m) => m.code === o.payment?.method)?.label,
@@ -26,14 +42,14 @@ const toCustomer = (o: Order, b: T.Built): Mail => ({ to: o.email, ...b, order: 
 export function orderPlacedMails(payload: Payload, orderId: number | string) {
   sendLater(payload, async () => {
     const o = await payload.findByID({ collection: "orders", id: orderId, depth: 0, overrideAccess: true });
-    const c = await context(payload, o);
+    const c = await orderContext(payload, o);
     const notify = mailConfig()?.notify ?? [];
     return [toCustomer(o, T.orderPlaced(o, c)), ...(notify.length ? [{ to: notify, replyTo: o.email, ...T.shopNewOrder(o, c), order: o.id }] : [])];
   });
 }
 
 // Hook kolekcji Orders: mail przy zmianie statusu (także zmienionego ręcznie w panelu)
-export const orderStatusMailHook: CollectionAfterChangeHook<Order> = ({ doc, previousDoc, operation, req }) => {
+export const orderStatusMailHook: CollectionAfterChangeHook<Order> = ({ doc, previousDoc, operation, req, context: hookContext }) => {
   if (operation !== "update" || !previousDoc || doc.status === previousDoc.status || !mailReady()) return doc;
   const status = doc.status;
   if (status !== "paid" && status !== "shipped" && status !== "cancelled") return doc;
@@ -41,11 +57,14 @@ export const orderStatusMailHook: CollectionAfterChangeHook<Order> = ({ doc, pre
   if (status === "paid" && previousDoc.payment?.status === "paid") return doc;
 
   sendLater(req.payload, async () => {
-    const c = await context(req.payload, doc);
+    const c = await orderContext(req.payload, doc);
     if (status === "paid") return toCustomer(doc, T.orderPaid(doc, c));
     if (status === "cancelled") return toCustomer(doc, T.orderCancelled(doc, c));
     let parcels: T.Parcel[] = [];
-    if (blActive() && doc.baselinker?.orderId) {
+    // Numer przesłany przez BaseLinkera (integracja „Inny sklep”) – link do śledzenia po metodzie dostawy
+    const tracking = typeof hookContext?.trackingNumber === "string" ? hookContext.trackingNumber : "";
+    if (tracking) parcels = [{ number: tracking, courier: c.shipLabel ?? "Przesyłka", url: trackingUrl(doc.shipping?.method ?? "", tracking) }];
+    else if (blActive() && doc.baselinker?.orderId) {
       try {
         parcels = (await orderPackages(doc.baselinker.orderId)).filter((p) => p.number).map((p) => ({ number: p.number, courier: p.courier, url: p.url }));
       } catch {
@@ -89,6 +108,16 @@ export function backInStockMails(payload: Payload, productId: number | string) {
     }
   }, 0);
 }
+
+// Zwrot / reklamacja: mail do klienta przy zmianie statusu (zaakceptowane, otrzymane, zwrócone, odrzucone, zamknięte)
+export const returnStatusMailHook: CollectionAfterChangeHook = ({ doc, previousDoc, operation, req }) => {
+  if (operation !== "update" || !previousDoc || doc.status === previousDoc.status || !doc.email || !T.returnStatusText(doc.status) || !mailReady()) return doc;
+  sendLater(req.payload, async () => {
+    const store = await req.payload.findGlobal({ slug: "store-settings", overrideAccess: true });
+    return { to: doc.email, ...T.returnUpdate(store as T.Shop, doc, doc.status) };
+  });
+  return doc;
+};
 
 // Konto założone w sklepie → mail powitalny
 export const welcomeMailHook: CollectionAfterChangeHook = ({ doc, operation, req }) => {

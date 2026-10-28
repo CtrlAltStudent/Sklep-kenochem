@@ -75,7 +75,7 @@ export function ProductActions({ name, slug }: { name: string; slug: string }) {
   };
   return (
     <div className="grid grid-cols-2 gap-2">
-      <Link href={`/kontakt?produkt=${encodeURIComponent(name)}`}
+      <Link href={`/kontakt?produkt=${encodeURIComponent(name)}&slug=${encodeURIComponent(slug)}`}
         className="flex h-10 items-center justify-center gap-1.5 rounded-lg px-2 text-[13px] font-semibold whitespace-nowrap text-slate-600 ring-1 ring-brand-100 transition hover:bg-slate-50 hover:text-navy">
         <MessageCircleQuestion className="h-4 w-4 shrink-0" /> Zapytaj o produkt
       </Link>

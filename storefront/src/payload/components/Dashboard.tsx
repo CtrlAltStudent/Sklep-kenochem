@@ -21,14 +21,9 @@ function windowStart(days: number) {
   return d;
 }
 
-function greeting() {
-  const h = Number(new Intl.DateTimeFormat("pl-PL", { hour: "numeric", hour12: false, timeZone: "Europe/Warsaw" }).format(new Date()));
-  return h < 12 ? "Dzień dobry" : h < 18 ? "Miłego popołudnia" : "Dobry wieczór";
-}
-
 // Pulpit panelu – zastępuje domyślny widok Payload (admin.components.views.dashboard)
 export async function Dashboard({ initPageResult }: AdminViewServerProps) {
-  const { payload, user } = initPageResult.req;
+  const { payload } = initPageResult.req;
   const count = (collection: "orders" | "products" | "customers" | "form-submissions" | "stock-alerts" | "reviews" | "returns", where?: Record<string, unknown>) =>
     payload.count({ collection, where: where as never, overrideAccess: true }).then((r) => r.totalDocs).catch(() => 0);
 
@@ -66,7 +61,6 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
   const orders14 = days.reduce((s, d) => s + d.orders, 0);
   const maxRev = Math.max(...days.map((d) => d.revenue), 1);
   const mode = integrationMode();
-  const name = (user as { name?: string } | null)?.name?.split(" ")[0];
 
   const kpis = [
     { label: "Zamówienia do obsługi", value: toHandle, icon: ShoppingBag, tone: "green", href: "/admin/collections/orders?where[status][in]=new,paid,awaiting_payment" },
@@ -98,8 +92,8 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
       <section className="kc-hero">
         <div>
           <p className="kc-hero__date">{new Date().toLocaleDateString("pl-PL", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p>
-          <h1 className="kc-hero__title">{greeting()}{name ? `, ${name}` : ""} 👋</h1>
-          <p className="kc-hero__text">Oto, co dzieje się dziś w sklepie Sonax.</p>
+          <h1 className="kc-hero__title">Pulpit</h1>
+          <p className="kc-hero__text">Zamówienia, stany i integracje – to, co wymaga uwagi.</p>
         </div>
         <div className="kc-hero__actions">
           <Link href="/" target="_blank" className="kc-btn kc-btn--light"><Store size={16} /> Otwórz sklep <ArrowUpRight size={14} /></Link>
@@ -217,7 +211,7 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
 
       <section>
         <h2 className="kc-section-title">Szybkie akcje</h2>
-        <div className="kc-actions">
+        <div className="kc-quick">
           {actions.map(({ label, href, icon: Icon }) => (
             <Link key={label} href={href} className="kc-card kc-action"><span className="kc-icon kc-icon--green"><Icon size={18} /></span>{label}</Link>
           ))}

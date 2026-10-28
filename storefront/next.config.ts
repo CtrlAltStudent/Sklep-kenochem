@@ -30,6 +30,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "upload.cdn.baselinker.com" },
       { protocol: "https", hostname: "www.sonax.sklep.pl" },
       { protocol: "https", hostname: "sonax.sklep.pl" },
+      { protocol: "https", hostname: "kenochem.com" },
+      { protocol: "https", hostname: "www.kenochem.com" },
       { protocol: "https", hostname: "*.supabase.co" },
     ],
     // Pliki wgrane w panelu

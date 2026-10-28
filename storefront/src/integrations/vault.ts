@@ -7,6 +7,9 @@
 // - pusta wartość w panelu = zapasowo zmienna z .env (dotychczasowy sposób dalej działa)
 // Tylko po stronie serwera.
 
+import { defaultSite, type SiteSettings } from "./siteSettings";
+import { cleanMailSettings, type MailSettings } from "./mail/catalog";
+import { mergeLayout, type LayoutItem, type PageKind } from "@/lib/layoutSections";
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -16,8 +19,12 @@ type VaultFile = {
   secrets: Record<string, string>; // zaszyfrowane
   values: Record<string, string>; // jawne: ID sprzedawcy, tryby
   auto: Partial<AutoSettings>;
-  runs: Partial<Record<JobId, JobRun>>;
+  runs: Partial<Record<JobId | "pull", JobRun>>; // pull = BaseLinker pobiera zamówienia ze sklepu (Inny sklep)
   modules?: Partial<Record<ModuleId, Partial<ModuleState>>>;
+  site?: Partial<SiteSettings>; // ustawienia techniczne sklepu (siteSettings.ts)
+  layout?: Partial<Record<PageKind, LayoutItem[]>>; // układ sekcji stron (src/lib/layoutSections.ts)
+  mail?: Partial<MailSettings>; // konfigurator maili (src/integrations/mail/catalog.ts)
+  mailState?: MailState; // co już wysłały automaty (prośby o opinię)
   updatedAt?: string;
   updatedBy?: string;
 };
@@ -126,9 +133,40 @@ export function setModule(id: ModuleId, patch: Partial<ModuleState>, by?: string
 }
 
 export const getAuto = (): AutoSettings => ({ ...defaultAuto, ...load().auto });
+
+// Ustawienia techniczne (indeksowanie, robots, llms.txt, plik Google, przerwa techniczna)
+export const getSite = (): SiteSettings => ({ ...defaultSite, ...load().site });
+export const getLayout = (kind: PageKind): LayoutItem[] => mergeLayout(kind, load().layout?.[kind]);
+export function setLayout(patch: Partial<Record<PageKind, LayoutItem[]>>, by?: string) {
+  const v = load();
+  save({ ...v, layout: { ...v.layout, ...patch }, updatedAt: new Date().toISOString(), updatedBy: by });
+}
+export function setSite(patch: Partial<SiteSettings>, by?: string) {
+  const v = load();
+  save({ ...v, site: { ...v.site, ...patch }, updatedAt: new Date().toISOString(), updatedBy: by });
+}
 export const getRuns = () => load().runs;
 
-export function recordRun(job: JobId, run: JobRun) {
+// Konfigurator maili: wygląd, nadpisane treści, ustawienia automatów
+export const getMailSettings = (): MailSettings => cleanMailSettings(load().mail);
+export function setMailSettings(next: MailSettings, by?: string) {
+  const v = load();
+  save({ ...v, mail: cleanMailSettings(next), updatedAt: new Date().toISOString(), updatedBy: by });
+}
+
+// Prośby o opinię: id zamówienia → kiedy wysłano (wpisy starsze niż 120 dni są usuwane)
+export type MailState = { reviews?: Record<string, string> };
+export const getMailState = (): MailState => load().mailState ?? {};
+export function markReviewSent(orderIds: (number | string)[]) {
+  if (!orderIds.length) return;
+  const v = load();
+  const old = Date.now() - 120 * 86_400_000;
+  const reviews = Object.fromEntries(Object.entries(v.mailState?.reviews ?? {}).filter(([, at]) => Date.parse(at) > old));
+  for (const id of orderIds) reviews[String(id)] = new Date().toISOString();
+  save({ ...v, mailState: { ...v.mailState, reviews } });
+}
+
+export function recordRun(job: JobId | "pull", run: JobRun) {
   const v = load();
   save({ ...v, runs: { ...v.runs, [job]: run } });
 }

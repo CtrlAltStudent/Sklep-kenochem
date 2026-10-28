@@ -1,10 +1,12 @@
-import { Suspense } from "react";
+import { Fragment, Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { categories, getCategory, toCard } from "@/lib/data";
+import { categories, getCategory, toCard, usableImages } from "@/lib/data";
 import { getByCategory, getCategoryCounts } from "@/lib/catalog";
-import { getCms } from "@/lib/cms";
+import { getCms, getPosts } from "@/lib/cms";
+import { getLayout } from "@/integrations/vault";
+import { ProductGrid } from "@/components/home/HomeBits";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Listing } from "@/components/Listing";
 import { RichContent } from "@/components/RichContent";
@@ -13,10 +15,23 @@ export function generateStaticParams() {
   return categories.map((c) => ({ slug: c.slug }));
 }
 
+// Podkategoria (?sub=) i typ (&typ=) mają własny tytuł, opis i adres kanoniczny – Google traktuje je jak osobne strony,
+// a filtry (marka, cena, sortowanie) wskazują kanonicznie na stronę bez filtrów.
 export async function generateMetadata(props: PageProps<"/kategoria/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
+  const sp = await props.searchParams;
   const c = getCategory(slug);
-  return { title: c?.name, description: c ? `${c.name} – ${c.children.map((s) => s.name).join(", ")}. Sklep Sonax Białystok, wysyłka InPost.` : undefined };
+  if (!c) return {};
+  const sub = c.children.find((s) => s.slug === sp.sub);
+  const type = sub?.types.find((t) => t.slug === sp.typ);
+  const canonical = `/kategoria/${c.slug}${sub ? `?sub=${sub.slug}${type ? `&typ=${type.slug}` : ""}` : ""}`;
+  const name = type ? `${type.name} – ${sub!.name}` : sub ? `${sub.name} – ${c.name}` : c.name;
+  const description = type
+    ? `${type.name} (${sub!.name.toLowerCase()}) w sklepie SONAX Białystok. Oryginalne produkty, wysyłka w 24 h InPost i ORLEN Paczka.`
+    : sub
+      ? `${sub.name}: ${sub.types.slice(0, 6).map((t) => t.name.toLowerCase()).join(", ")}. Sklep SONAX Białystok – wysyłka w 24 h.`
+      : `${c.name} – ${c.children.map((s) => s.name).join(", ")}. Sklep Sonax Białystok, wysyłka InPost.`;
+  return { title: name, description, alternates: { canonical } };
 }
 
 async function getCategoryDescription(slug: string) {
@@ -29,7 +44,41 @@ export default async function CategoryPage(props: PageProps<"/kategoria/[slug]">
   const { slug } = await props.params;
   const category = getCategory(slug);
   if (!category) notFound();
-  const [items, counts, description] = await Promise.all([getByCategory(slug), getCategoryCounts(), getCategoryDescription(slug)]);
+  const [items, counts, description, posts] = await Promise.all([getByCategory(slug), getCategoryCounts(), getCategoryDescription(slug), getPosts()]);
+  const bestsellers = items.filter((p) => p.badges?.includes("bestseller") && p.stock > 0 && usableImages(p.images).length).slice(0, 4);
+
+  // Bloki widoku kategorii – kolejność i widoczność z panelu (Treści i wygląd → Układ strony)
+  const blocks: Record<string, React.ReactNode> = {
+    listing: (
+      <Suspense fallback={<div className="h-96 animate-pulse rounded-xl bg-white" />}>
+        <CategoryListing searchParams={props.searchParams} slug={slug} items={items.map(toCard)} counts={counts} />
+      </Suspense>
+    ),
+    bestsellers: bestsellers.length > 0 && (
+      <section className="mt-14">
+        <h2 className="mb-6 text-2xl font-extrabold text-navy">Najczęściej wybierane: {category.name.toLowerCase()}</h2>
+        <ProductGrid products={bestsellers.map(toCard)} />
+      </section>
+    ),
+    description: description && (
+      <section className="mt-16 rounded-xl bg-white p-6 ring-1 ring-brand-100 sm:p-10">
+        <RichContent data={description} />
+      </section>
+    ),
+    guides: posts.length > 0 && (
+      <section className="mt-14">
+        <h2 className="mb-6 text-2xl font-extrabold text-navy">Poradniki</h2>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {posts.slice(0, 3).map((b) => (
+            <Link key={b.id} href={`/blog/${b.slug}`} className="rounded-xl bg-white p-5 ring-1 ring-brand-100 hover:shadow-md">
+              <h3 className="font-bold text-navy">{b.title}</h3>
+              {b.excerpt && <p className="mt-2 line-clamp-2 text-sm text-slate-500">{b.excerpt}</p>}
+            </Link>
+          ))}
+        </div>
+      </section>
+    ),
+  };
 
   return (
     <div className="mx-auto max-w-shop px-4 pt-6">
@@ -40,15 +89,7 @@ export default async function CategoryPage(props: PageProps<"/kategoria/[slug]">
         <p className="mt-1 text-sm text-slate-500">{items.length.toLocaleString("pl-PL")} produktów</p>
       </header>
 
-      <Suspense fallback={<div className="h-96 animate-pulse rounded-xl bg-white" />}>
-        <CategoryListing searchParams={props.searchParams} slug={slug} items={items.map(toCard)} counts={counts} />
-      </Suspense>
-
-      {description && (
-        <section className="mt-16 rounded-xl bg-white p-6 ring-1 ring-brand-100 sm:p-10">
-          <RichContent data={description} />
-        </section>
-      )}
+      {getLayout("category").filter((s) => s.visible).map((s) => <Fragment key={s.id}>{blocks[s.id] || null}</Fragment>)}
     </div>
   );
 }

@@ -82,6 +82,9 @@ export async function POST(request: Request) {
       break;
     }
     default: {
+      // Pytanie o produkt: zapamiętujemy, którego produktu dotyczy (widać w panelu przy wiadomości)
+      const slug = d.type === "contact" ? d.productSlug : undefined;
+      const prod = slug ? (await payload.find({ collection: "products", where: { slug: { equals: slug } }, limit: 1, depth: 0, overrideAccess: true, select: { name: true, slug: true, sku: true } })).docs[0] : undefined;
       const sub = await payload.create({
         collection: "form-submissions",
         overrideAccess: true,
@@ -95,7 +98,7 @@ export async function POST(request: Request) {
           subject: d.type === "contact" ? d.subject : "Wniosek o konto hurtowe",
           message: d.message || undefined,
           consent: d.consent,
-          meta,
+          meta: prod ? { ...meta, product: { id: prod.id, slug: prod.slug, name: prod.name, sku: prod.sku } } : meta,
         },
       });
       formMails(payload, {

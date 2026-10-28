@@ -7,7 +7,7 @@ export function Logo() {
     <div style={{ textAlign: "center" }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/sonax/logo.png" alt="Sonax" style={{ width: 240, height: "auto" }} />
-      <div style={{ marginTop: 8, fontSize: 13, letterSpacing: "0.2em", color: "var(--theme-elevation-500)" }}>PANEL SKLEPU</div>
+      <div style={{ marginTop: 8, fontSize: 13, color: "var(--theme-elevation-500)" }}>Panel sklepu</div>
     </div>
   );
 }

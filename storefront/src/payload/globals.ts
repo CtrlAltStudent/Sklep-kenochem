@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache";
 import type { GlobalAfterChangeHook, GlobalConfig } from "payload";
+import { productList } from "./fields";
 import { anyone, isAdmin, isEditor } from "./access";
 
 const link = [
@@ -7,11 +8,22 @@ const link = [
   { name: "url", label: "Link", type: "text" as const, required: true, admin: { placeholder: "/kategoria/... lub https://..." } },
 ];
 
+// Po zapisie ustawień (ceny dostaw, próg darmowej dostawy, płatności) odśwież zapamiętane strony sklepu od razu
+export const refreshShop: GlobalAfterChangeHook = ({ doc }) => {
+  try {
+    revalidatePath("/", "layout");
+  } catch {
+    /* zapis poza żądaniem Next (skrypt) – nie ma czego odświeżać */
+  }
+  return doc;
+};
+
 export const Homepage: GlobalConfig = {
   slug: "homepage",
   label: "Strona główna",
   admin: { group: "Wygląd sklepu" },
   access: { read: anyone, update: isEditor },
+  hooks: { afterChange: [refreshShop] },
   versions: { drafts: true, max: 20 },
   fields: [
     {
@@ -42,8 +54,18 @@ export const Homepage: GlobalConfig = {
       { name: "title", label: "Tytuł", type: "text", required: true },
       { name: "text", label: "Opis", type: "text" },
     ] },
-    { name: "featuredTitle", label: "Tytuł sekcji polecanych", type: "text", defaultValue: "Wybór detailerów – SONAX" },
-    { name: "featuredProducts", label: "Polecane produkty", type: "relationship", relationTo: "products", hasMany: true, admin: { description: "Puste = automatycznie produkty marki SONAX." } },
+    {
+      type: "collapsible",
+      label: "Siatki produktów",
+      admin: { initCollapsed: false, description: "Kolejność na stronie jest taka, jak na liście. Puste pole = sklep dobiera sam." },
+      fields: [
+        { name: "featuredTitle", label: "Tytuł sekcji polecanych", type: "text", defaultValue: "Wybór detailerów – SONAX" },
+        productList("featuredProducts", "Polecane (wybór detailerów)", "Puste = pierwsze produkty marki SONAX."),
+        productList("promoProducts", "Promocje", "Własna grupa na stronie głównej i na stronie Promocje. Puste = produkty z obniżoną ceną."),
+        productList("newestProducts", "Nowości", "Własna grupa. Puste = najnowsze produkty dodane w panelu."),
+        productList("bestsellerProducts", "Bestsellery", "Własna grupa na stronie Bestsellery. Puste = produkty z etykietą „Bestseller”."),
+      ],
+    },
     {
       name: "promoBanner",
       label: "Baner promocyjny",
@@ -67,6 +89,7 @@ export const Navigation: GlobalConfig = {
   label: "Menu i stopka",
   admin: { group: "Wygląd sklepu" },
   access: { read: anyone, update: isEditor },
+  hooks: { afterChange: [refreshShop] },
   fields: [
     { name: "announcement", label: "Pasek ogłoszeń (na samej górze)", type: "group", fields: [
       { name: "enabled", label: "Pokaż", type: "checkbox" },
@@ -81,15 +104,6 @@ export const Navigation: GlobalConfig = {
   ],
 };
 
-// Po zapisie ustawień (ceny dostaw, próg darmowej dostawy, płatności) odśwież zapamiętane strony sklepu od razu
-const refreshShop: GlobalAfterChangeHook = ({ doc }) => {
-  try {
-    revalidatePath("/", "layout");
-  } catch {
-    /* zapis poza żądaniem Next (skrypt) – nie ma czego odświeżać */
-  }
-  return doc;
-};
 
 export const StoreSettings: GlobalConfig = {
   slug: "store-settings",

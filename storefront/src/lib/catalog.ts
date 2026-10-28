@@ -5,7 +5,8 @@
 import "server-only";
 import { getCms } from "./cms";
 import { catalogVersion } from "./catalogCache";
-import { brandSlug, mediaPath, usableImages, type Product } from "./data";
+import { brandSlug, mediaPath, usableImages, variantDisplayOf, variantNavOf, type Product, type QtyTier, type Variant } from "./data";
+import { relId, volumeMl } from "@/integrations/variants";
 import type { Product as CmsProduct } from "@/payload-types";
 
 const TTL = 60_000;
@@ -22,6 +23,18 @@ const g = globalThis as typeof globalThis & { __kcCatalog?: { at: number; versio
 
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ł/g, "l");
 
+function qtyDealOf(d: Pick<CmsProduct, "qtyPromo" | "qtyTiers">, at: number): QtyTier[] | undefined {
+  const g = d.qtyPromo;
+  if (!g?.enabled) return;
+  if (g.from && new Date(g.from).getTime() > at) return;
+  if (g.to && new Date(g.to).getTime() < at) return;
+  const tiers = (d.qtyTiers ?? [])
+    .map((t) => ({ qty: Number(t.qty), percent: Number(t.percent), free: t.kind === "free" }))
+    .filter((t) => t.qty >= 2 && (t.free || (t.percent >= 1 && t.percent <= 90)))
+    .sort((a, b) => a.qty - b.qty);
+  return tiers.length ? tiers : undefined;
+}
+
 function saleActive(sale: CmsProduct["sale"], at: number) {
   return sale?.price != null && sale.price > 0 && (!sale.from || new Date(sale.from).getTime() <= at) && (!sale.to || new Date(sale.to).getTime() >= at);
 }
@@ -33,7 +46,8 @@ async function load(): Promise<Catalog> {
       collection: "products", where: { status: { equals: "active" } }, limit: 0, pagination: false, depth: 0, overrideAccess: true,
       select: {
         name: true, slug: true, brand: true, category: true, sku: true, ean: true, vatRate: true, stock: true, unitLabel: true, price: true,
-        oldPrice: true, lowestPrice30d: true, sale: true, images: true, shortDescription: true, badges: true,
+        oldPrice: true, lowestPrice30d: true, sale: true, qtyPromo: true, qtyTiers: true, images: true, shortDescription: true, badges: true, updatedAt: true, createdAt: true, seo: true, seoExtra: true,
+        variantOf: true, variantSort: true, variantDisplay: true, variantNav: true, bundle: true, bundleItems: true,
       },
     }),
     payload.find({ collection: "categories", limit: 0, pagination: false, depth: 0, overrideAccess: true, select: { slug: true, parent: true } }),
@@ -53,13 +67,15 @@ async function load(): Promise<Catalog> {
   };
 
   const now = Date.now();
-  const products: Product[] = [];
+  type Row = { product: Product; parent?: number; sort: number; volume: number; bundleRaw?: NonNullable<CmsProduct["bundleItems"]> };
 
+  const rows: Row[] = [];
   for (const d of docs) {
     if (!d.slug) continue;
     const catId = d.category == null ? undefined : typeof d.category === "object" ? d.category.id : d.category;
     const [category, subcategory, type] = slugPath(catId);
     const onSale = saleActive(d.sale, now);
+    const qtyDeal = qtyDealOf(d, now);
     const price = onSale ? d.sale!.price! : d.price;
     const crossed = onSale ? d.price : d.oldPrice ?? undefined;
     const oldPrice = crossed && crossed > price ? crossed : undefined;
@@ -68,26 +84,95 @@ async function load(): Promise<Catalog> {
       .filter((u): u is string => Boolean(u));
     const badges = [...(d.badges ?? [])] as NonNullable<Product["badges"]>;
     if (oldPrice && !badges.includes("promocja")) badges.unshift("promocja");
-
-    products.push({
-      id: String(d.id),
-      slug: d.slug,
-      name: d.name,
-      brand: d.brand && !NOT_BRANDS.has(d.brand.toLowerCase()) ? d.brand : "",
-      category,
-      subcategory,
-      type: type || undefined,
-      sku: d.sku ?? "",
-      ean: d.ean ?? "",
-      vat: d.vatRate ?? 23,
-      stock: d.stock ?? 0,
-      variants: [{ id: "1", label: d.unitLabel || "1 szt.", price, oldPrice }],
-      images,
-      short: d.shortDescription ?? "",
-      badges,
-      lowestPrice30d: oldPrice ? d.lowestPrice30d ?? undefined : undefined,
-      saleTo: onSale ? d.sale?.to ?? undefined : undefined,
+    rows.push({
+      parent: relId(d.variantOf),
+      sort: d.variantSort ?? 0,
+      volume: volumeMl(d.unitLabel || ""),
+      bundleRaw: d.bundle ? (d.bundleItems ?? []) : undefined,
+      product: {
+        id: String(d.id),
+        slug: d.slug,
+        name: d.name,
+        brand: d.brand && !NOT_BRANDS.has(d.brand.toLowerCase()) ? d.brand : "",
+        category,
+        subcategory,
+        type: type || undefined,
+        sku: d.sku ?? "",
+        ean: d.ean ?? "",
+        vat: d.vatRate ?? 23,
+        stock: d.stock ?? 0,
+        variants: [{ id: "1", label: d.unitLabel || "1 szt.", price, oldPrice, slug: d.slug, sku: d.sku ?? "", ean: d.ean ?? "", stock: d.stock ?? 0, image: images[0], qtyDeal }],
+        variantDisplay: variantDisplayOf(d.variantDisplay).id,
+        variantNav: variantNavOf(d.variantNav).id,
+        images,
+        short: d.shortDescription ?? "",
+        badges,
+        lowestPrice30d: oldPrice ? d.lowestPrice30d ?? undefined : undefined,
+        saleTo: onSale ? d.sale?.to ?? undefined : undefined,
+        updatedAt: d.updatedAt,
+        addedAt: d.createdAt,
+        seo: { title: d.seo?.title || undefined, description: d.seo?.description || undefined, noindex: Boolean(d.seo?.noindex), canonical: d.seoExtra?.canonical || undefined },
+        qtyDeal,
+      },
     });
+  }
+
+  const byId = new Map(rows.map((r) => [Number(r.product.id), r]));
+  for (const r of rows) {
+    if (!r.bundleRaw?.length) continue;
+    r.product.bundleParts = r.bundleRaw.map((item) => {
+      const partId = item.product == null ? undefined : typeof item.product === "object" ? item.product.id : item.product;
+      const other = partId ? byId.get(partId) : undefined;
+      return {
+        slug: other?.product.slug,
+        name: other?.product.name || item.sku || "Produkt",
+        sku: other?.product.sku || item.sku || "",
+        qty: item.quantity || 1,
+        image: other?.product.images[0],
+      };
+    });
+  }
+  const kidsOf = new Map<number, Row[]>();
+  for (const r of rows) {
+    if (!r.parent || r.parent === Number(r.product.id) || !byId.has(r.parent)) continue;
+    const list = kidsOf.get(r.parent) ?? [];
+    list.push(r);
+    kidsOf.set(r.parent, list);
+  }
+  const sortRows = (list: Row[]) =>
+    [...list].sort((a, b) => a.sort - b.sort || a.volume - b.volume || a.product.variants[0].label.localeCompare(b.product.variants[0].label, "pl"));
+
+  const asVariant = (r: Row, id: string): Variant => ({ ...r.product.variants[0], id, image: r.product.images[0], qtyDeal: r.product.qtyDeal });
+
+  const products: Product[] = [];
+  for (const r of rows) {
+    const id = Number(r.product.id);
+    if (r.parent && byId.has(r.parent) && r.parent !== id) continue;
+    const kids = sortRows(kidsOf.get(id) ?? []);
+    const members = kids.length ? [r, ...kids] : [r];
+    const variants = members.map((m) => asVariant(m, members.length > 1 ? m.product.id : "1"));
+    const display = variantDisplayOf(r.product.variantDisplay).id;
+    const nav = members.length > 1 ? variantNavOf(r.product.variantNav).id : "switch";
+    const listed = nav === "link" ? members : [r];
+    for (const m of listed) {
+      const images = m.product.images.length ? m.product.images : (members.find((x) => x.product.images.length)?.product.images ?? []);
+      const badges = [...(m.product.badges ?? [])] as NonNullable<Product["badges"]>;
+      if (variants.some((v) => v.oldPrice) && !badges.includes("promocja")) badges.unshift("promocja");
+      const saleTo = (nav === "link" ? [m] : members).map((x) => x.product.saleTo).filter(Boolean).sort()[0];
+      const lowest = (nav === "link" ? [m] : members).map((x) => x.product.lowestPrice30d).filter((n): n is number => n != null);
+      const own = asVariant(m, variants[0].id === "1" ? "1" : m.product.id);
+      products.push({
+        ...m.product,
+        images,
+        stock: nav === "link" ? (own.stock ?? m.product.stock) : variants.reduce((s, v) => s + (v.stock ?? 0), 0),
+        variants,
+        variantDisplay: display,
+        variantNav: nav,
+        badges: badges.length ? badges : undefined,
+        lowestPrice30d: (nav === "link" ? own.oldPrice : variants.some((v) => v.oldPrice)) ? (lowest.length ? Math.min(...lowest) : m.product.lowestPrice30d) : undefined,
+        saleTo,
+      });
+    }
   }
 
   const counts: Record<string, number> = {};
@@ -98,10 +183,16 @@ async function load(): Promise<Catalog> {
     if (p.type) counts[`${k}/${p.type}`] = (counts[`${k}/${p.type}`] ?? 0) + 1;
   }
 
+  const bySlug = new Map<string, Product>();
+  for (const p of products) {
+    bySlug.set(p.slug, p);
+    if (p.variantNav !== "link") for (const v of p.variants) if (v.slug) bySlug.set(v.slug, p);
+  }
+
   return {
     products,
-    bySlug: new Map(products.map((p) => [p.slug, p])),
-    index: products.map((p) => ({ p, text: norm(`${p.name} ${p.brand} ${p.sku} ${p.ean}`) })),
+    bySlug,
+    index: products.map((p) => ({ p, text: norm(`${p.name} ${p.brand} ${p.sku} ${p.ean} ${p.variants.map((v) => `${v.sku ?? ""} ${v.ean ?? ""} ${v.label}`).join(" ")}`) })),
     counts,
   };
 }
@@ -163,14 +254,21 @@ export async function searchProducts(q: string, limit = Infinity) {
 
 const withImage = (list: Product[]) => list.filter((p) => usableImages(p.images).length && p.stock > 0);
 
-// Polecane: wybrane w panelu (Wygląd sklepu → Strona główna), a gdy lista jest pusta – produkty SONAX
-const hg = globalThis as typeof globalThis & { __sonaxHome?: { at: number; data: Promise<{ title: string; ids: (number | string)[] }> } };
-async function homepageFeatured() {
+// Siatki strony głównej: listy z panelu (Strona główna → Siatki produktów). Pusta lista = dobór automatyczny.
+type HomeLists = { title: string; featured: (number | string)[]; promo: (number | string)[]; newest: (number | string)[]; bestsellers: (number | string)[] };
+const hg = globalThis as typeof globalThis & { __sonaxHome?: { at: number; data: Promise<HomeLists> } };
+const relIds = (list: unknown) =>
+  (Array.isArray(list) ? list : []).map((p) => (typeof p === "object" && p ? (p as { id: number }).id : p)).filter((id) => id != null) as (number | string)[];
+
+async function homepageLists() {
   const cached = hg.__sonaxHome;
   if (!cached || Date.now() - cached.at > TTL) {
     const data = (await getCms()).findGlobal({ slug: "homepage", depth: 0 }).then((home) => ({
       title: home.featuredTitle || "Wybór detailerów – SONAX",
-      ids: (home.featuredProducts ?? []).map((p) => (typeof p === "object" ? p.id : p)).filter((id) => id != null),
+      featured: relIds(home.featuredProducts),
+      promo: relIds(home.promoProducts),
+      newest: relIds(home.newestProducts),
+      bestsellers: relIds(home.bestsellerProducts),
     }));
     hg.__sonaxHome = { at: Date.now(), data };
     data.catch(() => { if (hg.__sonaxHome?.data === data) hg.__sonaxHome = undefined; });
@@ -178,14 +276,37 @@ async function homepageFeatured() {
   }
   return cached.data;
 }
+
+function pickListed(ids: (number | string)[], products: Product[]) {
+  const byId = new Map(products.map((p) => [p.id, p]));
+  const out: Product[] = [];
+  const seen = new Set<string>();
+  for (const id of ids) {
+    const key = String(id);
+    const p = byId.get(key) ?? products.find((x) => x.variants.some((v) => v.id === key));
+    if (p && !seen.has(p.slug)) { seen.add(p.slug); out.push(p); }
+  }
+  return out;
+}
+
 export async function getFeatured() {
-  const [home, { bySlug, products }] = await Promise.all([homepageFeatured(), getCatalog()]);
-  const chosen = home.ids.map((id) => bySlug.get(String(id)) ?? [...bySlug.values()].find((p) => p.id === String(id))).filter((p) => p !== undefined);
+  const [home, { products }] = await Promise.all([homepageLists(), getCatalog()]);
+  const chosen = pickListed(home.featured, products);
   return chosen.length ? chosen : withImage(products).filter((p) => /^sonax$/i.test(p.brand)).slice(0, 12);
 }
-export const getFeaturedTitle = async () => (await homepageFeatured()).title;
-export const getNewest = async () => (await getProducts()).filter((p) => p.badges?.includes("nowosc") && usableImages(p.images).length);
+export const getFeaturedTitle = async () => (await homepageLists()).title;
 export const getOnSale = async () => (await getProducts()).filter((p) => p.variants.some((v) => v.oldPrice));
+export async function getDeals() {
+  const [home, { products }] = await Promise.all([homepageLists(), getCatalog()]);
+  const chosen = pickListed(home.promo, products);
+  return chosen.length ? chosen : getOnSale();
+}
+export async function getNewest() {
+  const [home, products] = await Promise.all([homepageLists(), getProducts()]);
+  const chosen = pickListed(home.newest, products);
+  if (chosen.length) return chosen;
+  return withImage(products).sort((a, b) => (b.addedAt ?? "").localeCompare(a.addedAt ?? "")).slice(0, 24);
+}
 export const getByCategory = async (slug: string) => (await getProducts()).filter((p) => p.category === slug);
 export const pickFrom = async (category: string, n: number) => withImage(await getProducts()).filter((p) => p.category === category).slice(0, n);
 
@@ -204,4 +325,8 @@ export async function getBrands() {
   return [...map.values()].sort((a, b) => b.count - a.count);
 }
 export const getByBrand = async (slug: string) => (await getProducts()).filter((p) => p.brand && brandSlug(p.brand) === slug);
-export const getBestsellers = async () => (await getProducts()).filter((p) => p.badges?.includes("bestseller"));
+export async function getBestsellers() {
+  const [home, products] = await Promise.all([homepageLists(), getProducts()]);
+  const chosen = pickListed(home.bestsellers, products);
+  return chosen.length ? chosen : products.filter((p) => p.badges?.includes("bestseller"));
+}

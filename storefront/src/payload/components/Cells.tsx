@@ -145,7 +145,7 @@ export function AlertStatusCell(props: DefaultCellComponentProps) {
 
 // ---------- Listy produktów i zamówień (bogatsze komórki) ----------
 
-type ProductRow = { images?: Img[]; sku?: string | null; ean?: string | null; brand?: string | null; unitLabel?: string | null; sale?: { price?: number | null; from?: string | null; to?: string | null } | null };
+type ProductRow = { images?: Img[]; sku?: string | null; ean?: string | null; brand?: string | null; unitLabel?: string | null; variantOf?: unknown; bundle?: boolean | null; sale?: { price?: number | null; from?: string | null; to?: string | null } | null };
 
 const thumbOf = (images?: Img[]) => {
   const first = images?.[0];
@@ -167,7 +167,8 @@ export function ProductCell(props: DefaultCellComponentProps) {
         </span>
         <span className="kc-prod__text">
           <span className="kc-prod__name">{String(props.cellData ?? "")}</span>
-          {meta && <span className="kc-prod__meta">{meta}</span>}
+          {meta && <span className="kc-prod__meta">{meta}{row.bundle ? " · zestaw" : ""}{row.variantOf ? " · wariant innej karty" : ""}</span>}
+          {!meta && row.variantOf ? <span className="kc-prod__meta">wariant innej karty</span> : null}
         </span>
       </span>
     </Cell>

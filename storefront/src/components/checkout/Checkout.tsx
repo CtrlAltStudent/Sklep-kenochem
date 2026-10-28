@@ -5,13 +5,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { CheckCircle2, ChevronDown, Lock, MapPin, MessageSquareText, Pencil, ShoppingBag, Wallet } from "lucide-react";
 import { formatPrice } from "@/lib/data";
 import { resolveCart } from "@/lib/cart";
-import { actions, useStore } from "@/lib/store";
+import { actions, useRemind, useStore } from "@/lib/store";
 import { ProductImage } from "@/components/ProductImage";
 import { BrandMark, carrierFromCode, type MarkName } from "./BrandMarks";
 import { CheckoutSteps } from "./CheckoutSteps";
 import { BlikCodeField, BlikWaiting } from "./BlikPayment";
 import { InpostMap, type InpostPoint } from "./InpostMap";
 import { useMe, type Me } from "@/components/account/Account";
+import { cartItem, track, trackPurchaseOnce } from "@/lib/track";
 
 export type ShipMethod = { code: string; label: string; price: number; requiresPoint: boolean; freeAboveThreshold: boolean };
 export type PayMethod = { code: string; label: string; provider: string };
@@ -37,9 +38,19 @@ function Title({ n, children, aside }: { n: number; children: React.ReactNode; a
 }
 
 // Krok 2 – wszystko na jednym ekranie: dane, dostawa, płatność, uwagi i podsumowanie
-export function Checkout({ shipping, payments, freeThreshold, inpostToken = "" }: { shipping: ShipMethod[]; payments: PayMethod[]; freeThreshold: number; inpostToken?: string }) {
+export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", cartReminder = false }: { shipping: ShipMethod[]; payments: PayMethod[]; freeThreshold: number; inpostToken?: string; cartReminder?: boolean }) {
   const { cart } = useStore();
+  // Zgoda na przypomnienie o porzuconym koszyku (pamiętana w przeglądarce – src/lib/store.ts)
+  const remindTo = useRemind();
+  const [remindPending, setRemindPending] = useState(false); // zaznaczone, ale e-mail jeszcze niewpisany
+  const remind = Boolean(remindTo) || remindPending;
   const { lines, subtotal } = resolveCart(cart);
+  const started = useRef(false);
+  useEffect(() => {
+    if (started.current || !lines.length) return;
+    started.current = true;
+    track("begin_checkout", { value: subtotal, items: lines.map(cartItem) });
+  }, [lines, subtotal]);
   const [cod, setCod] = useState(false);
   const visibleShip = shipping.filter((s) => isCod(s.code) === cod);
   const [ship, setShip] = useState(() => shipping.find((s) => !isCod(s.code))?.code ?? "");
@@ -158,6 +169,9 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "" }
           return;
         }
         setSubmitting(true);
+        const items = lines.map(cartItem);
+        track("add_shipping_info", { value: subtotal, items, shipping_tier: method?.label ?? ship, coupon: coupon?.code });
+        track("add_payment_info", { value: subtotal, items, payment_type: cod ? "pobranie" : payments.find((p) => p.code === pay)?.label ?? pay, coupon: coupon?.code });
         try {
           const res = await fetch("/api/checkout", {
             method: "POST",
@@ -173,7 +187,11 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "" }
             }),
           }).then((r) => r.json());
           if (!res.ok) { setFormError(res.message ?? "Nie udało się złożyć zamówienia."); return; }
-          if (res.redirectUrl) { window.location.href = res.redirectUrl; return; }
+          // zamówienie złożone – przypomnienie o koszyku już niepotrzebne
+          actions.setRemind(null);
+          // zakup (wartości policzone na serwerze) – raz na zamówienie, przed przejściem do płatności
+          if (res.analytics) trackPurchaseOnce(res.analytics, { email: String(fd.get("email") ?? ""), phone: String(fd.get("phone") ?? "") });
+          if (res.redirectUrl) { const url = res.redirectUrl as string; setTimeout(() => { window.location.href = url; }, 350); return; }
           if (res.blik) {
             // zamówienie już zapisane – koszyk czyścimy, dalej tylko płatność BLIK
             actions.clear();
@@ -211,7 +229,8 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "" }
             ) : undefined}>Twoje dane</Title>
             <div className="grid grid-cols-2 gap-2.5">
               <input required name="name" placeholder="Imię i nazwisko" autoComplete="name" className={`${input} col-span-2`} />
-              <input required name="email" type="email" placeholder="E-mail" autoComplete="email" className={input} />
+              <input required name="email" type="email" placeholder="E-mail" autoComplete="email" className={input}
+                onBlur={(e) => { if (remind && e.target.validity.valid && e.target.value) { actions.setRemind(e.target.value.trim()); setRemindPending(false); } }} />
               <input required name="phone" type="tel" placeholder="Telefon" autoComplete="tel" className={input} />
               <input required name="street" placeholder="Ulica i numer" autoComplete="street-address" className={`${input} col-span-2`} />
               <input required name="postcode" placeholder="Kod pocztowy" autoComplete="postal-code" pattern="\d{2}-?\d{3}" title="Format: 00-000" className={input} />
@@ -221,6 +240,17 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "" }
               <input type="checkbox" checked={invoice} onChange={(e) => setInvoice(e.target.checked)} className="h-4 w-4 accent-[#d32e2e]" />
               Chcę fakturę na firmę
             </label>
+            {cartReminder && (
+              <label className="mt-2 flex cursor-pointer items-start gap-2.5 text-sm text-slate-600">
+                <input type="checkbox" checked={remind} className="mt-0.5 h-4 w-4 shrink-0 accent-[#d32e2e]" onChange={(e) => {
+                  const email = e.currentTarget.form?.querySelector<HTMLInputElement>("input[name=email]");
+                  setRemindPending(e.target.checked);
+                  if (!e.target.checked) actions.setRemind(null);
+                  else if (email?.value && email.validity.valid) { actions.setRemind(email.value.trim()); setRemindPending(false); }
+                }} />
+                <span>Jeśli nie dokończę zamówienia, przypomnijcie mi raz mailem o koszyku <small className="block text-xs text-slate-400">Zgodę możesz wycofać w każdej chwili – odznaczając pole lub linkiem w mailu.</small></span>
+              </label>
+            )}
             {invoice && (
               <div className="mt-2.5 grid animate-fade-in grid-cols-2 gap-2.5">
                 <input required name="nip" placeholder="NIP" inputMode="numeric" className={input} />
@@ -350,12 +380,12 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "" }
               <h2 className="text-base font-extrabold text-navy">Twoje zamówienie</h2>
               <Link href="/koszyk" className="flex items-center gap-1 text-xs font-semibold text-accent-dark hover:underline"><Pencil className="h-3.5 w-3.5" /> Edytuj</Link>
             </div>
-            <ul className="no-scrollbar max-h-44 space-y-2.5 overflow-y-auto">
+            <ul className="no-scrollbar max-h-44 space-y-2.5 overflow-y-auto px-2 pt-2.5">
               {lines.map((l) => (
                 <li key={l.slug + l.variantId} className="flex items-center gap-3">
-                  <span className="relative">
+                  <span className="relative shrink-0">
                     <ProductImage src={l.image} alt="" sizes="48px" className="h-12 w-12 rounded-lg ring-1 ring-brand-100" />
-                    <span className="absolute -top-1.5 -right-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-navy px-1 text-[10px] font-bold text-white">{l.qty}</span>
+                    <span className="absolute -top-1.5 -right-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-navy px-1 text-[10px] font-bold leading-none text-white">{l.qty}</span>
                   </span>
                   <span className="min-w-0 flex-1 truncate text-xs font-medium">{l.name}</span>
                   <span className="text-xs font-bold whitespace-nowrap">{formatPrice(l.total)}</span>
@@ -398,7 +428,7 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "" }
             </label>
             {formError && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-xs font-medium text-red-700">{formError}</p>}
             <button disabled={submitting} className="btn-kc mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-4 text-base font-bold text-white active:scale-[.98] disabled:opacity-60">
-              <Lock className="h-4.5 w-4.5" /> {submitting ? "Składam zamówienie…" : cod ? "Zamawiam z obowiązkiem zapłaty" : isBlik ? `Zamawiam i płacę BLIKIEM ${formatPrice(total)}` : `Zamawiam i płacę ${formatPrice(total)}`}
+              <Lock className="h-4.5 w-4.5 shrink-0" /> {submitting ? "Składam zamówienie…" : cod ? "Zamawiam z obowiązkiem zapłaty" : `Zamawiam i płacę ${formatPrice(total)}`}
             </button>
             <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-slate-500"><Lock className="h-3 w-3" /> Bezpieczna płatność – Przelewy24</p>
           </div>

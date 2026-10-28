@@ -14,6 +14,7 @@ export const getPage = cache(async (slug: string) => {
 });
 
 export const getStoreSettings = cache(async () => (await getCms()).findGlobal({ slug: "store-settings" }));
+export const getHomepage = cache(async () => (await getCms()).findGlobal({ slug: "homepage", depth: 1 }).catch(() => null));
 
 export const getFooterPages = cache(async () => {
   const payload = await getCms();
@@ -63,7 +64,7 @@ export const getPosts = cache(async () => {
   const payload = await getCms();
   const { docs } = await payload.find({
     collection: "posts", where: { _status: { equals: "published" } }, sort: "-publishedAt", limit: 100, depth: 1,
-    select: { title: true, slug: true, excerpt: true, cover: true, tag: true, publishedAt: true },
+    select: { title: true, slug: true, excerpt: true, cover: true, tag: true, publishedAt: true, updatedAt: true },
   });
   return docs;
 });

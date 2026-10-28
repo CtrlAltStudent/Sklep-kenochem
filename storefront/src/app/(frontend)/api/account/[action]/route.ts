@@ -1,9 +1,11 @@
 import { getCms } from "@/lib/cms";
 import { currentCustomer, customerCookie, publicCustomer } from "@/integrations/account";
+import { deleteCustomer, exportCustomerData, ordersCsv } from "@/integrations/privacy";
 
 export const dynamic = "force-dynamic";
 
 // Konto klienta sklepu: /api/account/me | login | register | logout | profile | password | forgot | reset
+// RODO: GET /api/account/export (JSON, ?format=csv – zamówienia), POST /api/account/delete { password }
 // Sesja w ciasteczku „sonax-klient” – osobno od logowania do panelu admina.
 
 type Body = Record<string, unknown>;
@@ -36,8 +38,22 @@ async function login(email: string, password: string) {
 
 export async function GET(request: Request, { params }: { params: Promise<{ action: string }> }) {
   const { action } = await params;
+  const payload = await getCms();
+  const c = await currentCustomer(payload, request.headers);
+  if (action === "export") {
+    if (!c) return json({ ok: false, message: "Zaloguj się ponownie." }, 401);
+    const data = await exportCustomerData(payload, c);
+    const day = new Date().toISOString().slice(0, 10);
+    const csv = new URL(request.url).searchParams.get("format") === "csv";
+    return new Response(csv ? ordersCsv(data) : JSON.stringify(data, null, 2), {
+      headers: {
+        "Content-Type": csv ? "text/csv; charset=utf-8" : "application/json; charset=utf-8",
+        "Content-Disposition": `attachment; filename="sonax-${csv ? "zamowienia" : "moje-dane"}-${day}.${csv ? "csv" : "json"}"`,
+        "Cache-Control": "no-store",
+      },
+    });
+  }
   if (action !== "me") return json({ ok: false }, 404);
-  const c = await currentCustomer(await getCms(), request.headers);
   return json({ ok: true, user: c ? publicCustomer(c) : null });
 }
 
@@ -96,6 +112,20 @@ export async function POST(request: Request, { params }: { params: Promise<{ act
           : { firstName: str(b.firstName, 60), lastName: str(b.lastName, 80), phone: str(b.phone, 20), addresses: addresses(b.addresses) };
         const doc = await payload.update({ collection: "customers", id: c.id, overrideAccess: true, data: data as never });
         return json({ ok: true, user: publicCustomer(doc) });
+      }
+
+      case "delete": {
+        const c = await currentCustomer(payload, request.headers);
+        if (!c) return json({ ok: false, message: "Zaloguj się ponownie." }, 401);
+        if (b.confirm !== true) return json({ ok: false, message: "Zaznacz, że rozumiesz skutki usunięcia konta." }, 400);
+        // Hasło jeszcze raz – nikt przy cudzym, otwartym komputerze nie usunie konta jednym kliknięciem
+        try {
+          await payload.login({ collection: "customers", data: { email: c.email, password } });
+        } catch {
+          return json({ ok: false, message: "Nieprawidłowe hasło." }, 400);
+        }
+        await deleteCustomer(payload, c);
+        return json({ ok: true }, 200, customerCookie(null));
       }
 
       default:

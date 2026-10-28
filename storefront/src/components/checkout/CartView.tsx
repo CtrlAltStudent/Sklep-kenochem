@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { cartItem, track } from "@/lib/track";
 import { ArrowLeft, ArrowRight, Lock, RotateCcw, ShieldCheck, ShoppingBag, Truck } from "lucide-react";
 import { formatPrice } from "@/lib/data";
 import { resolveCart } from "@/lib/cart";
-import { useStore } from "@/lib/store";
+import { actions, useStore, type CartLine } from "@/lib/store";
 import { CartLineRow, FreeShippingBar } from "@/components/CartDrawer";
 import { BrandMark, carrierFromCode } from "@/components/checkout/BrandMarks";
 import { CheckoutSteps } from "@/components/checkout/CheckoutSteps";
@@ -17,10 +19,34 @@ export function CartView({ minShip, shipping }: { minShip: number; shipping: Car
   const { cart } = useStore();
   const freeShipping = useFreeShipping();
   const { lines, subtotal, count, missing, progress } = resolveCart(cart, freeShipping);
+  const viewed = useRef(false);
+  // Link z maila: /koszyk?przywroc=<kod> (zapisany koszyk) albo ?przypomnienia=wylaczone (rezygnacja)
+  const [notice, setNotice] = useState("");
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("przypomnienia") === "wylaczone") {
+      actions.setRemind(null);
+      queueMicrotask(() => setNotice("Nie będziemy już przypominać o koszyku."));
+    }
+    const token = q.get("przywroc");
+    if (!token) return;
+    fetch(`/api/cart?token=${encodeURIComponent(token)}`).then((r) => r.json()).then((j: { ok: boolean; items?: CartLine[] }) => {
+      if (j.ok && j.items?.length) { actions.restore(j.items); setNotice("Przywróciliśmy Twój koszyk – możesz dokończyć zamówienie."); }
+      else setNotice("Ten koszyk został już zamówiony albo wygasł.");
+    }).catch(() => {});
+    window.history.replaceState(null, "", "/koszyk");
+  }, []);
+  const banner = notice && <p className="mb-4 rounded-xl bg-leaf-50 px-4 py-3 text-sm font-semibold text-accent-dark ring-1 ring-leaf/20">{notice}</p>;
+  useEffect(() => {
+    if (viewed.current || !lines.length) return;
+    viewed.current = true;
+    track("view_cart", { value: subtotal, items: lines.map(cartItem) });
+  }, [lines, subtotal]);
 
   if (lines.length === 0) {
     return (
       <div className="mx-auto max-w-lg px-4 py-20 text-center">
+        {banner}
         <span className="mx-auto grid h-24 w-24 place-items-center rounded-full bg-white ring-1 ring-brand-100"><ShoppingBag className="h-10 w-10 text-brand-700" /></span>
         <h1 className="mt-6 text-2xl font-black">Twój koszyk jest pusty</h1>
         <p className="mt-2 text-slate-500">Dodaj produkty, a pojawią się tutaj.</p>
@@ -31,6 +57,7 @@ export function CartView({ minShip, shipping }: { minShip: number; shipping: Car
 
   return (
     <div className="mx-auto max-w-shop px-4 pt-6">
+      {banner}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-black tracking-tight sm:text-3xl">Koszyk <span className="text-lg font-semibold text-slate-400">({count} szt.)</span></h1>
         <CheckoutSteps current={0} />

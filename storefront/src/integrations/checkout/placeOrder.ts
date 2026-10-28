@@ -10,6 +10,8 @@ import type { Order } from "@/payload-types";
 import { paymentAvailable, shippingAvailable } from "../availability";
 import { BLIK_CODE, startBlik, type BlikClient } from "./blik";
 import { orderPlacedMails } from "../mail/events";
+import { markCartsOrdered } from "../carts";
+import { priceAfterQtyDeal } from "@/lib/qtyDeal";
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 const serverUrl = () => process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000";
@@ -35,6 +37,23 @@ export const checkoutInput = z.object({
 });
 
 export type CheckoutInput = z.infer<typeof checkoutInput>;
+
+function qtyQuote(
+  p: { qtyPromo?: { enabled?: boolean | null; from?: string | null; to?: string | null } | null; qtyTiers?: { kind?: string | null; qty?: number | null; percent?: number | null }[] | null },
+  base: number,
+  qty: number,
+) {
+  const g = p.qtyPromo;
+  const empty = priceAfterQtyDeal(base, undefined, qty);
+  if (!g?.enabled) return empty;
+  const now = Date.now();
+  if (g.from && new Date(g.from).getTime() > now) return empty;
+  if (g.to && new Date(g.to).getTime() < now) return empty;
+  const tiers = (p.qtyTiers ?? [])
+    .map((t) => ({ qty: Number(t.qty), percent: Number(t.percent), free: t.kind === "free" }))
+    .filter((t) => Number.isFinite(t.qty) && (t.free || Number.isFinite(t.percent)));
+  return priceAfterQtyDeal(base, tiers, qty);
+}
 
 function salePrice(p: { price: number; sale?: { price?: number | null; from?: string | null; to?: string | null } | null }) {
   const at = Date.now();
@@ -72,16 +91,16 @@ export async function placeOrder(payload: Payload, raw: CheckoutInput, client: B
     const p = bySlug.get(item.slug);
     if (!p) return { ok: false as const, message: `Produkt „${item.slug}” nie jest już dostępny.` };
     if ((p.stock ?? 0) < item.qty) return { ok: false as const, message: `Brak wystarczającego stanu: ${p.name} (dostępne: ${p.stock ?? 0} szt.).` };
-    lines.push({
-      product: p.id,
-      name: p.name,
-      sku: p.sku ?? undefined,
-      ean: p.ean ?? undefined,
-      quantity: item.qty,
-      priceGross: salePrice(p),
-      vatRate: p.vatRate ?? 23,
-      variantLabel: p.unitLabel ?? undefined,
-    });
+    const base = salePrice(p);
+    const deal = qtyQuote(p, base, item.qty);
+    const label = p.unitLabel ?? undefined;
+    const row = { product: p.id, name: p.name, sku: p.sku ?? undefined, ean: p.ean ?? undefined, vatRate: p.vatRate ?? 23 };
+    const paid = item.qty - deal.hits;
+    if (paid > 0) lines.push({ ...row, quantity: paid, priceGross: base, variantLabel: label });
+    if (deal.hits > 0 && deal.tier) {
+      const note = deal.tier.free ? "gratis" : `−${deal.tier.percent}%`;
+      lines.push({ ...row, quantity: deal.hits, priceGross: deal.each, variantLabel: label ? `${label} · ${note}` : note });
+    }
   }
 
   const subtotal = round2(lines.reduce((s, l) => s + l.priceGross * l.quantity, 0));
@@ -165,6 +184,21 @@ export async function placeOrder(payload: Payload, raw: CheckoutInput, client: B
 
   // Maile: potwierdzenie dla klienta + powiadomienie dla sklepu (w tle, gdy Poczta jest skonfigurowana)
   orderPlacedMails(payload, order.id);
+  // Zapisany koszyk (przypomnienie o porzuconym koszyku) – już niepotrzebny
+  await markCartsOrdered(payload, raw.email, order.id);
+
+  // Dane zakupu dla Google Analytics / Ads / Meta (src/lib/track.ts) – liczone tutaj, nie w przeglądarce
+  const analytics = {
+    transaction_id: order.orderNumber as string,
+    value: Number(order.total),
+    tax: round2(lines.reduce((s, l) => s + (l.priceGross * l.quantity * l.vatRate) / (100 + l.vatRate), 0)),
+    shipping: shipCost,
+    coupon: coupon?.code,
+    items: lines.map((l) => {
+      const p = docs.find((d) => d.id === l.product);
+      return { item_id: l.sku || String(l.product), item_name: l.name, item_brand: p?.brand || undefined, item_variant: l.variantLabel, price: l.priceGross, quantity: l.quantity };
+    }),
+  };
 
   if (coupon) {
     const c = (await payload.find({ collection: "coupons", where: { code: { equals: coupon.code } }, limit: 1, depth: 0, overrideAccess: true })).docs[0];
@@ -175,6 +209,7 @@ export async function placeOrder(payload: Payload, raw: CheckoutInput, client: B
     const blik = await startBlik(payload, order, raw.blikCode!, client);
     return {
       ok: true as const,
+      analytics,
       orderNumber: order.orderNumber as string,
       orderId: order.id,
       total: Number(order.total),
@@ -212,6 +247,7 @@ export async function placeOrder(payload: Payload, raw: CheckoutInput, client: B
 
   return {
     ok: true as const,
+    analytics,
     orderNumber: order.orderNumber as string,
     orderId: order.id,
     total: Number(order.total),

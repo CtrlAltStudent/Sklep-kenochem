@@ -19,7 +19,38 @@ export type IconName =
   | "Building" | "ChefHat" | "Shirt" | "Sofa" | "Hand" | "Scroll" | "House" | "Bath" | "Trees" | "Frame" | "Flower2" | "Wind"
   | "AirVent" | "Flame" | "TestTubeDiagonal" | "Wrench" | "Droplet" | "Fuel" | "AudioWaveform" | "Tractor" | "ShieldPlus" | "Truck";
 
-export type Variant = { id: string; label: string; price: number; oldPrice?: number };
+export const VARIANT_DISPLAY = [
+  { id: "pojemnosc", label: "Pojemność", hint: "Przyciski 500 ml / 1 L / 5 L", placeholder: "np. 1 L" },
+  { id: "zdjecie", label: "Zdjęcie", hint: "Miniatury opakowań do kliknięcia", placeholder: "np. czerwony" },
+  { id: "dlugosc", label: "Długość", hint: "Przyciski 5 m / 10 m / 25 m", placeholder: "np. 10 m" },
+  { id: "waga", label: "Waga", hint: "Przyciski 1 kg / 5 kg / 10 kg", placeholder: "np. 5 kg" },
+  { id: "kolor", label: "Kolor", hint: "Przyciski z nazwą koloru", placeholder: "np. czarny" },
+  { id: "opakowanie", label: "Opakowanie", hint: "Sztuka, komplet, zestaw", placeholder: "np. 12 szt." },
+  { id: "inny", label: "Etykieta", hint: "Własny podpis na przycisku", placeholder: "np. zestaw" },
+] as const;
+export type VariantDisplay = (typeof VARIANT_DISPLAY)[number]["id"];
+export const variantDisplayOf = (id?: string | null) => VARIANT_DISPLAY.find((x) => x.id === id) ?? VARIANT_DISPLAY[0];
+
+export const VARIANT_NAV = [
+  { id: "switch", label: "Jedna karta", hint: "Pozostałe warianty znikają z list. Klient przełącza je na tej stronie, bez zmiany adresu." },
+  { id: "link", label: "Osobne strony", hint: "Każdy wariant jest widoczny w sklepie jak zwykły produkt. Kliknięcie otwiera jego kartę – i odwrotnie." },
+] as const;
+export type VariantNav = (typeof VARIANT_NAV)[number]["id"];
+export const variantNavOf = (id?: string | null) => VARIANT_NAV.find((x) => x.id === id) ?? VARIANT_NAV[0];
+
+export type QtyTier = { qty: number; percent: number; free?: boolean };
+export type Variant = { id: string; label: string; price: number; oldPrice?: number; slug?: string; sku?: string; ean?: string; stock?: number; image?: string; qtyDeal?: QtyTier[] };
+
+// Najtańsza pojemność, którą da się kupić (albo najtańsza w ogóle, gdy wszystkie są na wyczerpaniu)
+export const buyVariant = (p: { variants: Variant[] }) => {
+  const ok = p.variants.filter((v) => (v.stock ?? 0) > 0);
+  return (ok.length ? ok : p.variants).reduce((a, b) => (b.price < a.price ? b : a));
+};
+
+// Na liście: w trybie osobnych stron kupujemy ten produkt, nie najtańszego brata
+export const cardVariant = (p: { slug: string; variants: Variant[]; variantNav?: string }) =>
+  p.variantNav === "link" ? (p.variants.find((v) => v.slug === p.slug) ?? p.variants[0]) : buyVariant(p);
+export const showFromPrice = (p: { variants: Variant[]; variantNav?: string }) => p.variantNav !== "link" && p.variants.length > 1;
 
 export type Product = {
   id: string;
@@ -34,15 +65,22 @@ export type Product = {
   vat: number;
   stock: number;
   variants: Variant[];
+  variantDisplay?: VariantDisplay;
+  variantNav?: VariantNav;
   images: string[];
   short: string;
   badges?: ("nowosc" | "promocja" | "bestseller")[];
   lowestPrice30d?: number; // Omnibus – tylko gdy jest cena przekreślona
   saleTo?: string; // koniec promocji czasowej
+  updatedAt?: string; // ostatnia zmiana w panelu (mapa strony, feed Google)
+  addedAt?: string; // data dodania produktu – siatka „Nowości”, gdy nie wybrano ręcznie
+  seo?: { title?: string; description?: string; noindex?: boolean; canonical?: string }; // zakładka „SEO i Google”
+  bundleParts?: { slug?: string; name: string; sku: string; qty: number; image?: string }[];
+  qtyDeal?: QtyTier[];
 };
 
 // Lekka wersja produktu wysyłana do przeglądarki (listy, koszyk, ulubione).
-export type ProductCardData = Pick<Product, "slug" | "name" | "brand" | "category" | "subcategory" | "type" | "stock" | "variants" | "badges" | "lowestPrice30d"> & {
+export type ProductCardData = Pick<Product, "slug" | "sku" | "name" | "brand" | "category" | "subcategory" | "type" | "stock" | "variants" | "variantDisplay" | "variantNav" | "badges" | "lowestPrice30d"> & {
   image?: string;
 };
 
@@ -50,6 +88,7 @@ export const usableImages = (images: string[]) => images.filter(Boolean);
 
 export const toCard = (p: Product): ProductCardData => ({
   slug: p.slug,
+  sku: p.sku,
   name: p.name,
   brand: p.brand,
   category: p.category,
@@ -57,6 +96,8 @@ export const toCard = (p: Product): ProductCardData => ({
   type: p.type,
   stock: p.stock,
   variants: p.variants,
+  variantDisplay: p.variantDisplay,
+  variantNav: p.variantNav,
   badges: p.badges,
   image: usableImages(p.images)[0],
   lowestPrice30d: p.lowestPrice30d,

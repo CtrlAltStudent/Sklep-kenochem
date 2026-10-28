@@ -120,6 +120,8 @@ export function BaseLinkerPanel() {
           )}
         </div>
       )}
+
+      <p style={{ margin: "0 0 8px", fontSize: 13 }}>Wybrane produkty z katalogu BaseLinkera zaciągasz w <Link href="/admin/import">Katalog → Import / eksport</Link>.</p>
     </div>
   );
 }
