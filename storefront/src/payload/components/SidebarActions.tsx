@@ -145,7 +145,7 @@ export function CustomerActions() {
 const RETURN_NEXT: { to: string; label: string; icon: typeof Truck; from: string[]; danger?: boolean }[] = [
   { to: "accepted", label: "Zaakceptuj – czekamy na paczkę", icon: CheckCircle2, from: ["new"] },
   { to: "received", label: "Towar otrzymany", icon: PackageCheck, from: ["new", "accepted"] },
-  { to: "refunded", label: "Zwrot pieniędzy wykonany", icon: Banknote, from: ["received", "accepted"] },
+  { to: "refunded", label: "Oznacz jako zwrócone (bez Przelewy24)", icon: Banknote, from: ["received", "accepted"] },
   { to: "rejected", label: "Odrzuć zgłoszenie", icon: Ban, from: ["new", "accepted", "received"], danger: true },
   { to: "closed", label: "Zamknij zgłoszenie", icon: Archive, from: ["refunded", "rejected", "received"] },
 ];
@@ -156,8 +156,34 @@ export function ReturnActions() {
   const status = useField<string>({ path: "status" });
   const email = useField<string>({ path: "email" });
   const orderNo = useField<string>({ path: "orderNumber" });
+  const kind = useField<string>({ path: "type" });
+  const resolution = useField<string>({ path: "resolution" });
   const [res, setRes] = useState<Res | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [amount, setAmount] = useState("");
   if (!id) return null;
+  const moneyBack = kind.value === "return" || resolution.value === "refund" || (kind.value !== "complaint" && !resolution.value);
+
+  const refundOnline = async () => {
+    const typed = amount.trim();
+    const ask = typed ? `Zwrócić ${typed.replace(".", ",")} zł przez Przelewy24?` : "Zwrócić całą kwotę tego zamówienia przez Przelewy24?";
+    if (!confirm(`${ask} Pieniądze wyjdą naprawdę.`)) return;
+    setBusy(true);
+    setRes(null);
+    try {
+      const r = await fetch(`/api/return-tools/${id}/refund`, {
+        method: "POST", credentials: "include", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(typed ? { amount: typed.replace(",", ".") } : {}),
+      });
+      const j = (await r.json()) as Res;
+      setRes(j);
+      if (j.ok) setTimeout(() => window.location.reload(), 900);
+    } catch {
+      setRes({ ok: false, message: "Nie udało się połączyć ze sklepem." });
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const setStatus = (to: string, label: string) => {
     if (to === "rejected" && !confirm("Odrzucić zgłoszenie? Klient dostanie maila.")) return;
@@ -169,6 +195,16 @@ export function ReturnActions() {
   return (
     <div className="kc-act">
       <h4>Szybkie akcje</h4>
+      {moneyBack && ["accepted", "received"].includes(status.value ?? "new") && (
+        <>
+          <label className="kc-muted" style={{ display: "grid", gap: 4, fontSize: 12 }}>
+            Kwota zwrotu (zł). Puste = całe zamówienie, z dostawą.
+            <input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="całe zamówienie" style={{ height: 32, borderRadius: 8, border: "1px solid var(--kc-border)", padding: "0 8px" }} />
+          </label>
+          <button type="button" className="kc-act__btn" disabled={busy} onClick={() => void refundOnline()}><Banknote size={15} /> {busy ? "Wysyłam zwrot…" : "Zwróć przez Przelewy24"}</button>
+          <p className="kc-muted" style={{ margin: 0, fontSize: 12 }}>Ten przycisk wysyła pieniądze. Przycisk niżej tylko oznacza zwrot, na przykład przelew albo pobranie.</p>
+        </>
+      )}
       {RETURN_NEXT.filter((n) => n.from.includes(status.value ?? "new")).map(({ to, label, icon: Icon, danger }) => (
         <button key={to} type="button" className={`kc-act__btn ${danger ? "is-danger" : ""}`} onClick={() => setStatus(to, label)}><Icon size={15} /> {label}</button>
       ))}

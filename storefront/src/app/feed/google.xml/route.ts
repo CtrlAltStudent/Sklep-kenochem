@@ -1,4 +1,4 @@
-import { categories } from "@/lib/data";
+import { getShopCategories } from "@/lib/catalog";
 import { getProducts } from "@/lib/catalog";
 import { getCms, getStoreSettings } from "@/lib/cms";
 import { freeShippingFrom, methodFreeFrom } from "@/lib/data";
@@ -19,7 +19,7 @@ const gtin = (ean?: string) => (ean && /^\d{8}$|^\d{12,14}$/.test(ean.trim()) ? 
 export async function GET() {
   const site = getSite();
   if (!site.feedEnabled) return new Response("Not found", { status: 404 });
-  const [products, store, cms] = await Promise.all([getProducts(), getStoreSettings(), getCms()]);
+  const [products, store, cms, categories] = await Promise.all([getProducts(), getStoreSettings(), getCms(), getShopCategories()]);
   const { docs } = await cms.find({ collection: "products", limit: 0, pagination: false, depth: 0, overrideAccess: true, where: { status: { equals: "active" } }, select: { slug: true, descriptionHtml: true, shortDescription: true, sale: true, merchant: true, seo: true } });
   const extra = new Map(docs.map((d) => [d.slug, d]));
 
@@ -63,7 +63,7 @@ export async function GET() {
       items.push([
         "<item>",
         `<g:id>${xml(id)}</g:id>`,
-        `<g:title>${xml(p.name.slice(0, 150))}</g:title>`,
+        `<g:title>${xml((v.label && v.label !== "1 szt." && !p.name.includes(v.label) ? `${p.name} ${v.label}` : p.name).slice(0, 150))}</g:title>`,
         `<g:description>${xml(description)}</g:description>`,
         `<g:link>${xml(absUrl(`/produkt/${slug}`))}</g:link>`,
         `<g:image_link>${xml(absUrl(p.images[0]))}</g:image_link>`,

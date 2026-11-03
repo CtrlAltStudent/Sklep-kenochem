@@ -18,6 +18,11 @@ export const Coupons: CollectionConfig = {
   access: { read: canReadCoupons, create: isPromo, update: isPromo, delete: isPromo },
   hooks: { beforeValidate: [({ data }) => (data?.code ? { ...data, code: String(data.code).trim().toUpperCase().replace(/\s+/g, "") } : data)] },
   fields: [
+    { type: "ui", name: "couponBoard", admin: { components: { Field: { path: "@/payload/components/SectionSheet#SectionBoard", clientProps: { sections: [
+      { id: "kod", title: "Kod", hint: "Napis, który klient wpisuje w koszyku." },
+      { id: "wartosc", title: "Wartość rabatu", hint: "Procent, kwota albo darmowa dostawa." },
+      { id: "warunki", title: "Warunki i ważność", hint: "Kwota koszyka, limit i daty." },
+    ] } } } } },
     section("Kod rabatowy", "Kod, który klient wpisze w koszyku. Wielkość liter nie ma znaczenia.", "tag", [
     { type: "row", fields: [
       { name: "code", label: "Kod", type: "text", required: true, unique: true, index: true, admin: { width: "40%", placeholder: "np. WIOSNA10", components: { Cell: `${C}CodeCell` } } },
@@ -25,7 +30,7 @@ export const Coupons: CollectionConfig = {
       { name: "b2bOnly", label: "Tylko konta B2B", type: "checkbox", admin: { width: "40%" } },
     ] },
     { name: "description", label: "Opis wewnętrzny", type: "text", admin: { placeholder: "np. kampania newsletter marzec", description: "Widoczny tylko w panelu – żeby pamiętać, po co jest ten kod." } },
-    ]),
+    ], { id: "kod" }),
     section("Wartość rabatu", "Procent od produktów, stała kwota albo darmowa dostawa.", "percent", [
     { type: "row", fields: [
       { name: "type", label: "Rodzaj rabatu", type: "select", required: true, defaultValue: "percent", admin: { width: "50%" }, options: [
@@ -33,7 +38,7 @@ export const Coupons: CollectionConfig = {
       ] },
       { name: "value", label: "Wartość (% lub zł)", type: "number", min: 0, admin: { width: "50%", placeholder: "np. 10", condition: (d) => d?.type !== "free_shipping" } },
     ] },
-    ]),
+    ], { id: "wartosc" }),
     section("Warunki i ważność", "Kiedy i na jakich zasadach kod działa. Puste pola = bez ograniczeń.", "calendar", [
     { type: "row", fields: [
       { name: "minOrder", label: "Minimalna wartość koszyka (zł)", type: "number", min: 0, admin: { width: "50%" } },
@@ -44,7 +49,7 @@ export const Coupons: CollectionConfig = {
       { name: "validTo", label: "Ważny do", type: "date", admin: { width: "50%", date: { pickerAppearance: "dayAndTime" } } },
     ] },
     { name: "categories", label: "Tylko produkty z kategorii (puste = wszystkie)", type: "relationship", relationTo: "categories", hasMany: true },
-    ]),
+    ], { id: "warunki" }),
     { name: "usedCount", label: "Wykorzystano", type: "number", defaultValue: 0, admin: { readOnly: true, position: "sidebar" } },
   ],
 };
@@ -72,10 +77,10 @@ export const Reviews: CollectionConfig = {
     ] },
     { name: "title", label: "Tytuł", type: "text", required: true },
     { name: "content", label: "Treść", type: "textarea", required: true },
-    ]),
+    ], { id: "opinia" }),
     section("Odpowiedź sklepu", "Pojawi się publicznie pod opinią. Odpowiadaj uprzejmie i konkretnie.", "message", [
       { name: "reply", label: "Odpowiedź (publiczna)", type: "textarea", admin: { placeholder: "Dziękujemy za opinię! …" } },
-    ]),
+    ], { id: "odpowiedz" }),
     { name: "status", label: "Status", type: "select", defaultValue: "pending", index: true, admin: { position: "sidebar", components: { Cell: `${C}ReviewStatusCell` } }, options: [
       { label: "Do moderacji", value: "pending" }, { label: "Opublikowana", value: "approved" }, { label: "Odrzucona", value: "rejected" },
     ] },
@@ -136,14 +141,14 @@ export const Returns: CollectionConfig = {
       { name: "orderNumber", label: "Numer zamówienia", type: "text", required: true, admin: { width: "50%" } },
     ] },
     { name: "order", label: "Powiązane zamówienie", type: "relationship", relationTo: "orders" },
-    ]),
+    ], { id: "zgloszenie" }),
     section("Klient", "Dane kontaktowe osoby zgłaszającej.", "user", [
     { type: "row", fields: [
       { name: "name", label: "Imię i nazwisko", type: "text", required: true, admin: { width: "35%" } },
       { name: "email", label: "E-mail", type: "email", required: true, admin: { width: "35%" } },
       { name: "phone", label: "Telefon", type: "text", admin: { width: "30%" } },
     ] },
-    ]),
+    ], { id: "klient-zwrotu" }),
     section("Produkty i powód", "Co klient odsyła i dlaczego, oraz czego oczekuje.", "package", [
     { name: "products", label: "Produkty i ilości", type: "textarea", required: true },
     { name: "reason", label: "Powód / opis wady", type: "textarea" },
@@ -153,10 +158,10 @@ export const Returns: CollectionConfig = {
       ] },
       { name: "bankAccount", label: "Numer konta do zwrotu", type: "text", admin: { width: "50%" } },
     ] },
-    ]),
+    ], { id: "powod" }),
     section("Notatka wewnętrzna", "Widoczna tylko dla pracowników.", "message", [
       { name: "internalNote", label: "Notatka", type: "textarea", admin: { placeholder: "np. paczka dotarła uszkodzona, zdjęcia w mailu" } },
-    ]),
+    ], { id: "notatka" }),
   ],
 };
 

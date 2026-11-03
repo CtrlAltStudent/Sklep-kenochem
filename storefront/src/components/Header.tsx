@@ -7,11 +7,13 @@ import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight, ChevronDown, ChevronRight, Clock, Headset, Heart, Loader2, Menu, Phone, Search, ShoppingCart, Truck, User, X,
 } from "lucide-react";
-import { categories, formatPrice, minPrice, type ProductCardData } from "@/lib/data";
+import { formatPrice, minPrice, type ProductCardData } from "@/lib/data";
+import { useShopCategories } from "@/lib/shopConfig";
 import { resolveCart } from "@/lib/cart";
 import { actions, useStore } from "@/lib/store";
 import { CatIcon } from "./CatIcon";
 import { ProductImage } from "./ProductImage";
+import { useTypedPlaceholder } from "./TypedHint";
 export type CategoryCounts = Record<string, number>; // "kategoria" i "kategoria/podkategoria" → liczba produktów
 
 export function Logo({ className = "h-11 w-auto" }: { className?: string }) {
@@ -28,6 +30,7 @@ const NAV_LINKS: { href: string; label: string; hot?: boolean }[] = [
   { href: "/nowosci", label: "Nowości" },
   { href: "/marki", label: "Marki" },
   { href: "/blog", label: "Poradniki" },
+  { href: "/rozcienczanie", label: "Rozcieńczanie" },
   { href: "/kontakt", label: "Kontakt" },
 ];
 
@@ -36,8 +39,10 @@ const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,
 function SearchBox({ onDone }: { onDone?: () => void }) {
   const [q, setQ] = useState("");
   const [focus, setFocus] = useState(false);
+  const hint = useTypedPlaceholder(!q && !focus);
   const [res, setRes] = useState<{ q: string; total: number; items: ProductCardData[] } | null>(null);
   const router = useRouter();
+  const categories = useShopCategories();
   const term = q.trim();
   const loading = term.length >= 2 && res?.q !== term;
   const subHits = term.length >= 2
@@ -74,10 +79,15 @@ function SearchBox({ onDone }: { onDone?: () => void }) {
         onChange={(e) => setQ(e.target.value)}
         onFocus={() => setFocus(true)}
         onBlur={() => setTimeout(() => setFocus(false), 150)}
-        placeholder="Czego szukasz? Wpisz produkt, markę, SKU lub EAN"
+        placeholder=""
         aria-label="Szukaj produktów"
         className="h-12 w-full rounded-full border-2 border-brand-100 bg-brand-50 pr-14 pl-12 text-sm transition outline-none focus:border-accent focus:bg-white"
       />
+      {!q && (
+        <span className="pointer-events-none absolute top-1/2 left-12 -translate-y-1/2 truncate pr-16 text-sm text-slate-400">
+          {focus ? "Wpisz czego szukasz" : <>{hint}<span className="kc-caret" aria-hidden="true" /></>}
+        </span>
+      )}
       <button aria-label="Szukaj" className="btn-kc absolute top-1.5 right-1.5 grid h-9 w-11 place-items-center rounded-full text-white">
         <Search className="h-4.5 w-4.5" />
       </button>
@@ -124,8 +134,10 @@ function SearchBox({ onDone }: { onDone?: () => void }) {
 
 // Panel kategorii jak x-kom / MediaExpert: działy z lewej, po najechaniu podkategorie z prawej
 function MegaAll({ counts, onClose, onEnter }: { counts: CategoryCounts; onClose: () => void; onEnter: () => void }) {
-  const [open, setOpen] = useState(categories[0].slug);
+  const categories = useShopCategories();
+  const [open, setOpen] = useState(categories[0]?.slug ?? "");
   const cat = categories.find((c) => c.slug === open) ?? categories[0];
+  if (!cat) return null;
   const subs = cat.children.filter((s) => counts[`${cat.slug}/${s.slug}`]);
 
   return (
@@ -196,6 +208,7 @@ function MegaAll({ counts, onClose, onEnter }: { counts: CategoryCounts; onClose
 }
 
 function MobileMenu({ onClose, counts }: { onClose: () => void; counts: CategoryCounts }) {
+  const categories = useShopCategories();
   const [open, setOpen] = useState<string | null>(null);
   const [openSub, setOpenSub] = useState<string | null>(null);
   return (
@@ -254,14 +267,21 @@ function MobileMenu({ onClose, counts }: { onClose: () => void; counts: Category
             </div>
           ))}
         </nav>
-        <div className="grid grid-cols-3 gap-2 border-t border-brand-100 p-4 text-sm font-semibold">
-          <Link href="/blog" onClick={onClose} className="btn-kc rounded-xl py-3 text-center text-white">Poradniki</Link>
-          <Link href="/promocje" onClick={onClose} className="rounded-xl bg-brand-50 py-3 text-center">Promocje</Link>
-          <Link href="/nowosci" onClick={onClose} className="rounded-xl bg-brand-50 py-3 text-center">Nowości</Link>
-          <Link href="/bestsellery" onClick={onClose} className="rounded-xl bg-brand-50 py-3 text-center">Bestsellery</Link>
-          <Link href="/marki" onClick={onClose} className="rounded-xl bg-brand-50 py-3 text-center">Marki</Link>
-          <Link href="/kontakt" onClick={onClose} className="rounded-xl bg-brand-50 py-3 text-center">Kontakt</Link>
-        </div>
+        <details className="group border-t border-brand-100">
+          <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-semibold text-navy">
+            Promocje, marki i strony
+            <ChevronDown className="h-4 w-4 text-slate-400 transition group-open:rotate-180" />
+          </summary>
+          <div className="grid grid-cols-2 gap-2 px-4 pb-4 text-sm font-semibold">
+            <Link href="/promocje" onClick={onClose} className="rounded-xl bg-brand-50 py-2.5 text-center">Promocje</Link>
+            <Link href="/nowosci" onClick={onClose} className="rounded-xl bg-brand-50 py-2.5 text-center">Nowości</Link>
+            <Link href="/bestsellery" onClick={onClose} className="rounded-xl bg-brand-50 py-2.5 text-center">Bestsellery</Link>
+            <Link href="/marki" onClick={onClose} className="rounded-xl bg-brand-50 py-2.5 text-center">Marki</Link>
+            <Link href="/blog" onClick={onClose} className="rounded-xl bg-brand-50 py-2.5 text-center">Poradniki</Link>
+            <Link href="/rozcienczanie" onClick={onClose} className="rounded-xl bg-brand-50 py-2.5 text-center">Rozcieńczanie</Link>
+            <Link href="/kontakt" onClick={onClose} className="col-span-2 rounded-xl bg-brand-50 py-2.5 text-center">Kontakt</Link>
+          </div>
+        </details>
       </aside>
     </div>
   );

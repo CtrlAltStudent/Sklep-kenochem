@@ -4,12 +4,13 @@
 // Każda karta ma „Edytuj” – wtedy pokazujemy zwykły formularz Payload na właściwej zakładce.
 // Tryb widoku ustawiamy atrybutami na <html> (data-kc-view / data-kc-edit) – CSS chowa formularz (custom.scss).
 
-import { useDocumentInfo, useForm, useFormFields, useFormModified, useFormProcessing } from "@payloadcms/ui";
-import { useCallback, useEffect, useState } from "react";
+import { useDocumentInfo, useFormFields } from "@payloadcms/ui";
+import { useEffect, useState } from "react";
+import { EditSlot, openSheet, useSheet } from "@/payload/components/SectionSheet";
 import {
   Banknote, CircleAlert, CircleDot, ExternalLink, FileText, History, ImageIcon, Mail, MapPin, MessageSquareText, Package, Pencil, Receipt, ShieldAlert, Store, Tag, Truck, User,
 } from "lucide-react";
-import { variantDisplayOf, variantNavOf } from "@/lib/data";
+import { unitPrice, variantDisplayOf, variantNavOf } from "@/lib/data";
 
 type Fields = Record<string, { value?: unknown } | undefined>;
 type HistoryEvent = { at: string; type: string; status: string; message: string; by: string };
@@ -34,62 +35,33 @@ function rows(f: Fields, prefix: string, keys: string[]) {
 // ---------- Tryb widoku / edycji ----------
 
 function useViewMode(kind: "order" | "product", isNew: boolean) {
-  const [editing, setEditing] = useState(isNew);
   useEffect(() => {
     const html = document.documentElement;
     html.dataset.kcView = kind;
-    return () => { delete html.dataset.kcView; delete html.dataset.kcEdit; };
-  }, [kind]);
-  useEffect(() => {
-    const html = document.documentElement;
-    if (editing) html.dataset.kcEdit = "1";
+    if (isNew) html.dataset.kcEdit = "1";
     else delete html.dataset.kcEdit;
-  }, [editing]);
-
-  const edit = useCallback((tab?: string) => {
-    setEditing(true);
-    // po pokazaniu formularza: przełącz na właściwą zakładkę i przewiń do niej
-    setTimeout(() => {
-      if (tab) [...document.querySelectorAll<HTMLButtonElement>(".tabs-field__tab-button")].find((b) => b.textContent?.trim() === tab)?.click();
-      document.querySelector(".kc-ov__editbar")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 30);
-  }, []);
-  const done = useCallback(() => {
-    setEditing(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
-  return { editing, edit, done };
+    window.dispatchEvent(new Event("kc-sheet"));
+    return () => { delete html.dataset.kcView; delete html.dataset.kcEdit; delete html.dataset.kcSheet; window.dispatchEvent(new Event("kc-sheet")); };
+  }, [kind, isNew]);
 }
 
-function Card({ title, icon, onEdit, children, wide }: { title: string; icon: React.ReactNode; onEdit?: () => void; children: React.ReactNode; wide?: boolean }) {
+function Card({ title, icon, onEdit, children, wide, slot }: { title: string; icon: React.ReactNode; onEdit?: () => void; children: React.ReactNode; wide?: boolean; slot?: string }) {
+  const open = useSheet();
+  const editing = Boolean(slot) && open === slot;
   return (
-    <section className={`kc-ov__card ${wide ? "is-wide" : ""}`}>
+    <section className={`kc-ov__card ${wide ? "is-wide" : ""} ${editing ? "is-editing" : ""}`}>
       <header>
         <h3>{icon}{title}</h3>
-        {onEdit && <button type="button" onClick={onEdit} className="kc-ov__edit"><Pencil size={13} /> Edytuj</button>}
+        {onEdit && !editing && <button type="button" onClick={onEdit} className="kc-ov__edit"><Pencil size={13} /> Edytuj</button>}
       </header>
-      <div className="kc-ov__body">{children}</div>
+      {!editing && <div className="kc-ov__body">{children}</div>}
+      {slot && <EditSlot id={slot} />}
     </section>
   );
 }
 
 const Row = ({ k, children }: { k: string; children: React.ReactNode }) =>
   children === "" || children == null ? null : <div className="kc-ov__row"><span>{k}</span><b>{children}</b></div>;
-
-function EditBar({ onDone, what }: { onDone: () => void; what: string }) {
-  const modified = useFormModified();
-  const processing = useFormProcessing();
-  const { submit } = useForm();
-  return (
-    <div className="kc-ov__editbar">
-      <span><Pencil size={15} /> Edytujesz {what}. {modified ? "Są niezapisane zmiany." : "Wszystko zapisane."}</span>
-      <div className="kc-ov__editbar-act">
-        <button type="button" className="is-save" disabled={!modified || processing} onClick={() => void submit()}>{processing ? "Zapisuję…" : "Zapisz"}</button>
-        <button type="button" onClick={onDone}>Zakończ edycję</button>
-      </div>
-    </div>
-  );
-}
 
 function VariantPreview({ id }: { id: number | string }) {
   const [info, setInfo] = useState<{ ok?: boolean; display?: string; nav?: string; isChild?: boolean; mainName?: string; members?: { id: number; unitLabel: string; name: string; isMain: boolean }[] } | null>(null);
@@ -156,7 +128,7 @@ type Parcel = { number: string; courier: string; status: string; url: string };
 
 export function OrderOverview() {
   const { id } = useDocumentInfo();
-  const { editing, edit, done } = useViewMode("order", !id);
+  useViewMode("order", !id);
   const f = useFormFields(([fields]) => fields) as Fields;
   const labels = useLabels();
   const [parcels, setParcels] = useState<Parcel[] | null>(null);
@@ -184,7 +156,7 @@ export function OrderOverview() {
     return () => { alive = false; };
   }, [id, blId]);
 
-  if (editing) return id ? <EditBar onDone={done} what="zamówienie" /> : null;
+  if (!id) return null;
 
   const items = rows(f, "items", ["name", "sku", "ean", "quantity", "priceGross", "vatRate", "variantLabel"]);
   const subtotal = items.reduce((s, i) => s + Number(i.quantity ?? 0) * Number(i.priceGross ?? 0), 0);
@@ -210,7 +182,7 @@ export function OrderOverview() {
 
       <div className="kc-ov__grid">
         <div className="kc-ov__col">
-          <Card title="Produkty" icon={<Package size={16} />} onEdit={() => edit("Produkty")} wide>
+          <Card title="Produkty" icon={<Package size={16} />} slot="pozycje" onEdit={() => openSheet("pozycje", "Produkty", "Produkty")} wide>
             <table className="kc-ov__table">
               <thead><tr><th>Produkt</th><th>Ilość</th><th>Cena</th><th>VAT</th><th>Wartość</th></tr></thead>
               <tbody>
@@ -231,7 +203,7 @@ export function OrderOverview() {
               <div className="kc-ov__row is-total"><span>Razem</span><b>{pln(subtotal + shipPrice)}</b></div>
             </div>
           </Card>
-          <Card title="Uwagi" icon={<MessageSquareText size={16} />} onEdit={() => edit("Produkty")}>
+          <Card title="Uwagi" icon={<MessageSquareText size={16} />} slot="uwagi" onEdit={() => openSheet("uwagi", "Produkty", "Uwagi")}>
             {str(f, "customerNote") || str(f, "adminNote") ? (
               <>
                 {str(f, "customerNote") && <p className="kc-ov__note"><span>Od klienta</span>{str(f, "customerNote")}</p>}
@@ -259,13 +231,13 @@ export function OrderOverview() {
         </div>
 
         <div className="kc-ov__col">
-          <Card title="Klient" icon={<User size={16} />} onEdit={() => edit("Klient i dostawa")}>
+          <Card title="Klient" icon={<User size={16} />} slot="klient" onEdit={() => openSheet("klient", "Klient i dostawa", "Klient")}>
             <p className="kc-ov__strong">{str(f, "shipping.fullName") || str(f, "shipping.company") || "—"}</p>
             {str(f, "email") && <a href={`mailto:${str(f, "email")}`}>{str(f, "email")}</a>}
             {str(f, "phone") && <a href={`tel:${str(f, "phone").replace(/\s/g, "")}`}>{str(f, "phone")}</a>}
             {f.customer?.value ? <p className="kc-ov__muted">Klient ma konto w sklepie</p> : <p className="kc-ov__muted">Zakup bez konta</p>}
           </Card>
-          <Card title="Dostawa" icon={<Truck size={16} />} onEdit={() => edit("Klient i dostawa")}>
+          <Card title="Dostawa" icon={<Truck size={16} />} slot="dostawa" onEdit={() => openSheet("dostawa", "Klient i dostawa", "Dostawa")}>
             <div className="kc-ov__ship">
               {/* eslint-disable-next-line @next/next/no-img-element -- logo przewoźnika z public/marks */}
               {logo ? <img src={logo} alt="" /> : <Store size={20} />}
@@ -277,7 +249,7 @@ export function OrderOverview() {
               <p className="kc-ov__addr"><MapPin size={14} /> {[str(f, "shipping.street"), [str(f, "shipping.postcode"), str(f, "shipping.city")].filter(Boolean).join(" ")].filter(Boolean).join(", ") || "—"}</p>
             )}
           </Card>
-          <Card title={invoice ? "Faktura" : "Dokument sprzedaży"} icon={<FileText size={16} />} onEdit={() => edit("Klient i dostawa")}>
+          <Card title={invoice ? "Faktura" : "Dokument sprzedaży"} icon={<FileText size={16} />} slot="faktura" onEdit={() => openSheet("faktura", "Klient i dostawa", "Faktura")}>
             {invoice ? (
               <>
                 <p className="kc-ov__strong">{str(f, "invoice.company")}</p>
@@ -286,13 +258,13 @@ export function OrderOverview() {
               </>
             ) : <p className="kc-ov__muted">Paragon – klient nie prosił o fakturę.</p>}
           </Card>
-          <Card title="Płatność" icon={<Banknote size={16} />} onEdit={() => edit("Płatność")}>
+          <Card title="Płatność" icon={<Banknote size={16} />} slot="platnosc" onEdit={() => openSheet("platnosc", "Płatność", "Płatność")}>
             <Row k="Metoda">{labels.pay[payMethod] ?? payMethod}</Row>
             <Row k="Status"><Pill m={PAY_STATUS} v={str(f, "payment.status")} /></Row>
             <Row k="Opłacono">{when(f["payment.paidAt"]?.value)}</Row>
             <Row k="Transakcja P24">{str(f, "payment.transactionId")}</Row>
           </Card>
-          <Card title="Przesyłki i BaseLinker" icon={<Package size={16} />} onEdit={id ? () => edit("BaseLinker") : undefined}>
+          <Card title="Przesyłki i BaseLinker" icon={<Package size={16} />} slot="baselinker" onEdit={() => openSheet("baselinker", "BaseLinker", "BaseLinker")}>
             <Row k="BaseLinker"><Pill m={BL_STATUS} v={str(f, "baselinker.syncStatus") || "pending"} /></Row>
             <Row k="ID w BaseLinkerze">{blId ? String(blId) : ""}</Row>
             {str(f, "baselinker.lastError") && <p className="kc-ov__warn">{str(f, "baselinker.lastError")}</p>}
@@ -315,7 +287,7 @@ type Media = { id: number; url?: string; sizes?: { thumbnail?: { url?: string } 
 
 export function ProductOverview() {
   const { id } = useDocumentInfo();
-  const { editing, edit, done } = useViewMode("product", !id);
+  useViewMode("product", !id);
   const f = useFormFields(([fields]) => fields) as Fields;
   const [media, setMedia] = useState<Record<number, string>>({});
   const [category, setCategory] = useState("");
@@ -344,7 +316,7 @@ export function ProductOverview() {
     return () => { alive = false; };
   }, [catId]);
 
-  if (editing) return id ? <EditBar onDone={done} what="produkt" /> : null;
+  if (!id) return null;
 
   const srcs = images.map((i) => (typeof i.media === "number" ? media[i.media] : (i.media as Media | null)?.url) || String(i.url ?? "")).filter(Boolean);
   const price = num(f, "price");
@@ -366,13 +338,13 @@ export function ProductOverview() {
         </div>
         <div className="kc-ov__actions">
           {slug && <a href={`/produkt/${slug}`} target="_blank" rel="noreferrer" className="kc-ov__btn"><ExternalLink size={14} /> Zobacz w sklepie</a>}
-          <button type="button" className="kc-ov__btn is-primary" onClick={() => edit("Dane podstawowe")}><Pencil size={14} /> Edytuj nazwę i opis</button>
+          <button type="button" className="kc-ov__btn is-primary" onClick={() => openSheet("opis", "Dane podstawowe", "Nazwa i opis")}><Pencil size={14} /> Edytuj nazwę i opis</button>
         </div>
       </div>
 
       <div className="kc-ov__grid">
         <div className="kc-ov__col">
-          <Card title="Zdjęcia" icon={<ImageIcon size={16} />} onEdit={() => edit("Zdjęcia")} wide>
+          <Card title="Zdjęcia" icon={<ImageIcon size={16} />} slot="zdjecia" onEdit={() => openSheet("zdjecia", "Zdjęcia", "Zdjęcia")} wide>
             {srcs.length ? (
               <div className="kc-ov__gallery">
                 {/* eslint-disable-next-line @next/next/no-img-element -- miniatury zdjęć produktu */}
@@ -380,7 +352,7 @@ export function ProductOverview() {
               </div>
             ) : <p className="kc-ov__muted">Brak zdjęć.</p>}
           </Card>
-          <Card title="Opis" icon={<FileText size={16} />} onEdit={() => edit("Dane podstawowe")} wide>
+          <Card title="Opis" icon={<FileText size={16} />} slot="opis" onEdit={() => openSheet("opis", "Dane podstawowe", "Nazwa i opis")} wide>
             {str(f, "shortDescription") && <p className="kc-ov__lead">{str(f, "shortDescription")}</p>}
             {desc ? (
               <>
@@ -392,7 +364,7 @@ export function ProductOverview() {
         </div>
 
         <div className="kc-ov__col">
-          <Card title="Cena" icon={<Tag size={16} />} onEdit={() => edit("Ceny i magazyn")}>
+          <Card title="Cena" icon={<Tag size={16} />} slot="cena" onEdit={() => openSheet("cena", "Ceny i magazyn", "Cena")}>
             <div className="kc-ov__price">
               <b className={onSale ? "is-sale" : ""}>{pln(onSale ? salePrice : price)}</b>
               {onSale && <s>{pln(price)}</s>}
@@ -402,18 +374,22 @@ export function ProductOverview() {
             <Row k="Przekreślona">{num(f, "oldPrice") ? pln(num(f, "oldPrice")) : ""}</Row>
             <Row k="Najniższa z 30 dni">{num(f, "lowestPrice30d") ? pln(num(f, "lowestPrice30d")) : ""}</Row>
             <Row k="VAT">{`${num(f, "vatRate") || 23}%`}</Row>
+            <Row k="Pojemność">{str(f, "unitLabel")}</Row>
+            <Row k="Za 1 l / kg">{unitPrice(onSale ? salePrice : price, str(f, "unitLabel")) ?? ""}</Row>
           </Card>
-          <Card title="Magazyn" icon={<Package size={16} />} onEdit={() => edit("Ceny i magazyn")}>
+          <Card title="Magazyn" icon={<Package size={16} />} slot="magazyn" onEdit={() => openSheet("magazyn", "Ceny i magazyn", "Magazyn")}>
             <Row k="Stan"><span className={`kc-pill kc-pill--${stock <= 0 ? "gray" : stock < 5 ? "amber" : "green"}`}>{stock <= 0 ? "brak" : `${stock} szt.`}</span></Row>
             <Row k="SKU">{str(f, "sku")}</Row>
             <Row k="EAN">{str(f, "ean")}</Row>
-            <Row k="Wariant">{str(f, "unitLabel")}</Row>
-            <Row k="Waga">{num(f, "weight") ? `${num(f, "weight")} kg` : ""}</Row>
+            <Row k="Waga przesyłki">{num(f, "weight") ? `${num(f, "weight")} kg` : ""}</Row>
           </Card>
-          <Card title="Warianty" icon={<Store size={16} />} onEdit={() => edit("Warianty")}>
+          <Card title="Zestaw" icon={<Package size={16} />} slot="zestaw" onEdit={() => openSheet("zestaw", "Zestaw", "Zestaw")}>
+            <p className="kc-ov__muted">{f.bundle?.value ? "Ten produkt jest zestawem." : "Zwykły produkt, nie zestaw."}</p>
+          </Card>
+          <Card title="Warianty" icon={<Store size={16} />} slot="warianty" onEdit={() => openSheet("warianty", "Warianty", "Warianty")}>
             {id ? <VariantPreview id={id} /> : <p className="kc-ov__muted">Zapisz produkt, potem połączysz warianty.</p>}
           </Card>
-          <Card title="Bezpieczeństwo (CLP)" icon={<ShieldAlert size={16} />} onEdit={() => edit("Bezpieczeństwo (CLP/GPSR)")}>
+          <Card title="Bezpieczeństwo (CLP)" icon={<ShieldAlert size={16} />} slot="bezpieczenstwo" onEdit={() => openSheet("bezpieczenstwo", "Bezpieczeństwo (CLP/GPSR)", "Bezpieczeństwo")}>
             {picto.length ? (
               <div className="kc-ov__ghs">
                 {/* eslint-disable-next-line @next/next/no-img-element -- piktogramy GHS z public/ghs */}
@@ -423,12 +399,12 @@ export function ProductOverview() {
             <Row k="Hasło">{({ warning: "Uwaga", danger: "Niebezpieczeństwo" } as Record<string, string>)[str(f, "signalWord")] ?? ""}</Row>
             <Row k="Karta charakterystyki">{f.sds?.value ? "dodana" : ""}</Row>
           </Card>
-          <Card title="BaseLinker" icon={<Package size={16} />} onEdit={() => edit("BaseLinker")}>
+          <Card title="BaseLinker" icon={<Package size={16} />} slot="baselinker-produkt" onEdit={() => openSheet("baselinker-produkt", "BaseLinker", "BaseLinker")}>
             <Row k="ID w BaseLinkerze">{str(f, "baselinkerId")}</Row>
             <Row k="Ostatnia synchronizacja">{when(f.lastSyncedAt?.value)}</Row>
             <Row k="Nie nadpisuj">{keep.length ? keep.map((k) => ({ name: "nazwy", description: "opisu", images: "zdjęć", category: "kategorii", price: "ceny" } as Record<string, string>)[k]).join(", ") : ""}</Row>
           </Card>
-          <Card title="SEO i Google" icon={<FileText size={16} />} onEdit={() => edit("SEO i Google")}>
+          <Card title="SEO i Google" icon={<FileText size={16} />} slot="seo" onEdit={() => openSheet("seo", "SEO i Google", "SEO i Google")}>
             <p className="kc-ov__seo-title">{str(f, "seo.title") || str(f, "name")}</p>
             <p className="kc-ov__muted">{str(f, "seo.description") || str(f, "shortDescription") || "Brak opisu dla Google."}</p>
             <Row k="Fraza kluczowa">{str(f, "seoExtra.focusKeyword") || "—"}</Row>

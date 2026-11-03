@@ -1,0 +1,46 @@
+# Osobny serwer Sonax (własne porty 80/443). Sklep testowy zostaje przy docker-compose.yml.
+services:
+  sonax:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL:-http://localhost:3000}
+        NEXT_PUBLIC_SKIP_KENOCHEM_IMAGES: "1"
+        PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+    container_name: sonax-app
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: file:/data/sonax.db
+      NODE_OPTIONS: --max-old-space-size=512
+    volumes:
+      - ./data:/data
+      - ./media:/app/media
+    expose:
+      - "3000"
+    networks:
+      - shop
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on: [sonax]
+    env_file: .env
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - shop
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  shop:

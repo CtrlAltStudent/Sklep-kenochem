@@ -46,6 +46,7 @@ next-env.d.ts
 
 # Lokalna baza SQLite
 /sonax.db*
+/stats.db*
 
 # Dostępy do serwera testowego (lokalnie)
 /deploy/.dostep-*.txt

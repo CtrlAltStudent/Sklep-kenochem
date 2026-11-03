@@ -1,5 +1,6 @@
 import type { CollectionConfig } from "payload";
 import { isOrdersTeam } from "../access";
+import { section } from "../fields";
 
 // Wiadomości z formularzy sklepu (kontakt, zgłoszenia B2B).
 // Tworzone wyłącznie przez API sklepu (/api/forms) – po walidacji i ochronie antyspamowej.
@@ -28,6 +29,7 @@ export const FormSubmissions: CollectionConfig = {
     { name: "title", type: "text", admin: { hidden: true } },
     { type: "ui", name: "conversation", admin: { disableListColumn: true, components: { Field: "@/payload/components/MessageView#MessageView" } } },
     { type: "ui", name: "listProduct", label: "Produkt", admin: { components: { Cell: "@/payload/components/MessageView#ProductCell" } } },
+    section("Dane zgłoszenia", "Nadawca, treść i notatka. Odpowiedź do klienta jest w oknie powyżej.", "user", [
     { type: "row", fields: [
       { name: "type", label: "Rodzaj", type: "select", required: true, admin: { width: "50%" }, options: [
         { label: "Kontakt", value: "contact" }, { label: "Wniosek B2B", value: "b2b" },
@@ -51,5 +53,6 @@ export const FormSubmissions: CollectionConfig = {
     { name: "customer", label: "Utworzone konto klienta", type: "relationship", relationTo: "customers", admin: { description: "Po zatwierdzeniu wniosku B2B możesz powiązać tu konto klienta." } },
     { name: "internalNote", label: "Notatka wewnętrzna", type: "textarea" },
     { name: "meta", label: "Dane techniczne", type: "json", admin: { readOnly: true, description: "Strona, z której wysłano, przeglądarka." } },
+    ], { id: "dane-wiadomosci" }),
   ],
 };

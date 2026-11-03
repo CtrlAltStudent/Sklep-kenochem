@@ -30,6 +30,7 @@ export const navSections: NavSection[] = [
     items: [
       { id: "nav-dashboard", label: "Pulpit", href: "/admin", exact: true },
       { id: "nav-reports", label: "Raporty sprzedaży", href: "/admin/raporty", collection: "orders" },
+      { id: "nav-stats", label: "Statystyki sklepu", href: "/admin/statystyki", collection: "orders" },
       { id: "nav-help", label: "Instrukcja", href: "/admin/pomoc" },
     ],
   },
@@ -47,6 +48,7 @@ export const navSections: NavSection[] = [
     label: "Katalog",
     items: [
       col("products", "Produkty"),
+      { id: "nav-brands", label: "Marki", href: "/admin/marki", collection: "products" },
       { id: "nav-import", label: "Import / eksport", href: "/admin/import", adminOnly: true },
       col("categories", "Kategorie"),
       col("stock-alerts", "Powiadomienia o dostępności"),

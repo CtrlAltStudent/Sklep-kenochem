@@ -5,6 +5,7 @@ import { getCms } from "@/lib/cms";
 import { getP24Transaction, p24Mode, verifyP24Transaction } from "@/integrations/przelewy24";
 import { markOrderPaid } from "@/integrations/checkout/markPaid";
 import { CheckoutSteps } from "@/components/checkout/CheckoutSteps";
+import { PurchaseTrack } from "@/components/checkout/PurchaseTrack";
 
 export const metadata: Metadata = { title: "Potwierdzenie zamówienia", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -16,6 +17,8 @@ export default async function ReturnPage({ searchParams }: { searchParams: Promi
 
   let orderNumber = "";
   let paid = false;
+  let purchase: { transaction_id: string; value: number; shipping: number; items: { item_id: string; item_name: string; item_variant?: string; price: number; quantity: number }[] } | null = null;
+  let buyer: { email?: string; phone?: string } = {};
   if (sessionId) {
     const payload = await getCms();
     const found = await payload.find({
@@ -44,11 +47,27 @@ export default async function ReturnPage({ searchParams }: { searchParams: Promi
           paid = true;
         }
       }
+      if (paid) {
+        buyer = { email: order.email ?? undefined, phone: order.phone ?? undefined };
+        purchase = {
+          transaction_id: orderNumber,
+          value: Number(order.total),
+          shipping: Number(order.shipping?.price ?? 0),
+          items: (order.items ?? []).map((l) => ({
+            item_id: l.sku || String(l.product ?? l.name),
+            item_name: l.name,
+            item_variant: l.variantLabel || undefined,
+            price: Number(l.priceGross),
+            quantity: l.quantity,
+          })),
+        };
+      }
     }
   }
 
   return (
     <div className="mx-auto max-w-lg px-4 py-16 text-center">
+      {paid && purchase ? <PurchaseTrack data={purchase} email={buyer.email} phone={buyer.phone} /> : null}
       <div className="flex justify-center"><CheckoutSteps current={2} /></div>
       {paid ? (
         <>

@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
-import { categories } from "@/lib/data";
-import { getBrands, getCategoryCounts, getProducts } from "@/lib/catalog";
+import { getBrands, getCategoryCounts, getProducts, getShopCategories } from "@/lib/catalog";
 import { getCms, getPosts } from "@/lib/cms";
 import { absUrl, siteBase, siteIndexable } from "@/lib/site";
 
@@ -12,12 +11,13 @@ export const revalidate = 3600;
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!siteIndexable()) return []; // serwer testowy nie ma mapy dla wyszukiwarek
   const base = siteBase();
-  const [products, pages, brands, posts, counts] = await Promise.all([
+  const [products, pages, brands, posts, counts, categories] = await Promise.all([
     getProducts(),
     getCms().then((p) => p.find({ collection: "pages", where: { _status: { equals: "published" } }, limit: 500, depth: 0, select: { slug: true, updatedAt: true, seo: true } })),
     getBrands(),
     getPosts(),
     getCategoryCounts(),
+    getShopCategories(),
   ]);
   const newest = products.reduce((d, p) => (p.updatedAt && p.updatedAt > d ? p.updatedAt : d), "");
   const catalogDate = newest ? new Date(newest) : undefined;
@@ -26,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const add = (e: MetadataRoute.Sitemap[number]) => { if (!out.has(e.url)) out.set(e.url, e); };
 
   add({ url: base, lastModified: catalogDate, changeFrequency: "daily", priority: 1 });
-  for (const p of ["/promocje", "/nowosci", "/bestsellery", "/marki", "/blog", "/kontakt", "/dostawa-i-platnosci", "/zwroty-i-reklamacje", "/o-nas", "/faq"])
+  for (const p of ["/promocje", "/nowosci", "/bestsellery", "/marki", "/blog", "/rozcienczanie", "/kontakt", "/dostawa-i-platnosci", "/zwroty-i-reklamacje", "/o-nas", "/faq"])
     add({ url: `${base}${p}`, lastModified: ["/promocje", "/nowosci", "/bestsellery"].includes(p) ? catalogDate : undefined, changeFrequency: "weekly", priority: 0.6 });
 
   // Kategorie: dział → podkategoria (?sub=) → typ (&typ=), tylko te z produktami

@@ -20,7 +20,8 @@ var s=null;try{s=JSON.parse(localStorage.getItem("sonax-consent-v1")||"null");}c
 var g=function(b){return b?"granted":"denied";};
 var A=!!(s&&s.analytics),M=!!(s&&s.marketing);
 gtag("consent","default",{analytics_storage:g(A),ad_storage:g(M),ad_user_data:g(M),ad_personalization:g(M),functionality_storage:"granted",security_storage:"granted",personalization_storage:"denied",wait_for_update:500});
-gtag("set","ads_data_redaction",true);
+gtag("set","ads_data_redaction",!M);
+gtag("set","url_passthrough",true);
 var L={};
 function js(k,src){if(L[k])return;L[k]=1;var e=d.createElement("script");e.async=true;e.src=src;d.head.appendChild(e);}
 w.sonaxTags=function(a,m){

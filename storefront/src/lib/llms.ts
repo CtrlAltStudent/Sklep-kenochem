@@ -2,8 +2,8 @@
 // Krótka wersja: kim jesteśmy, zasady zakupów i najważniejsze linki. Pełna (llms-full.txt): cały katalog z cenami i dostępnością.
 // Format: https://llmstxt.org – zwykły Markdown, bezwzględne adresy.
 
-import { categories, formatPrice, freeShippingFrom } from "@/lib/data";
-import { getBrands, getCategoryCounts, getProducts } from "@/lib/catalog";
+import { formatPrice, freeShippingFrom } from "@/lib/data";
+import { getBrands, getCategoryCounts, getProducts, getShopCategories } from "@/lib/catalog";
 import { getCms, getPosts, getStoreSettings } from "@/lib/cms";
 import { paymentAvailable, shippingAvailable } from "@/integrations/availability";
 import { absUrl } from "@/lib/site";
@@ -13,6 +13,7 @@ const oneLine = (s?: string | null) => (s ?? "").replace(/\s+/g, " ").trim();
 
 async function header() {
   const store = await getStoreSettings();
+  const categories = await getShopCategories();
   const ship = (store.shippingMethods ?? []).filter(shippingAvailable);
   const pay = (store.paymentMethods ?? []).filter(paymentAvailable);
   const free = freeShippingFrom(store);
@@ -34,7 +35,7 @@ async function header() {
 }
 
 export async function llmsShort() {
-  const [head, counts, brands, posts] = await Promise.all([header(), getCategoryCounts(), getBrands(), getPosts()]);
+  const [head, categories, counts, brands, posts] = await Promise.all([header(), getShopCategories(), getCategoryCounts(), getBrands(), getPosts()]);
   const lines = [...head, "## Informacje dla klienta", ""];
   for (const [path, title, desc] of [
     ["/dostawa-i-platnosci", "Dostawa i płatności", "metody i koszty dostawy, płatności"],
@@ -66,9 +67,10 @@ export async function llmsShort() {
 }
 
 export async function llmsFull() {
-  const [head, products, pages] = await Promise.all([
+  const [head, products, categories, pages] = await Promise.all([
     header(),
     getProducts(),
+    getShopCategories(),
     getCms().then((p) => p.find({ collection: "pages", where: { _status: { equals: "published" } }, limit: 50, depth: 0, select: { title: true, slug: true, intro: true } })),
   ]);
   const lines = [...head, "## Strony informacyjne", ""];

@@ -25,7 +25,12 @@ echo "  $(du -h "$PKG" | cut -f1)"
 
 echo "▸ Wysyłanie na serwer…"
 "${SSH[@]}" "mkdir -p $REMOTE/app $REMOTE/data $REMOTE/media"
-scp -i "$KEY" -o BatchMode=yes -q "$PKG" deploy/docker-compose.yml deploy/Caddyfile "$SERVER:$REMOTE/"
+if [[ "${DEPLOY_SOLO:-}" == "1" ]]; then
+  scp -i "$KEY" -o BatchMode=yes -q "$PKG" deploy/docker-compose.solo.yml deploy/Caddyfile.solo "$SERVER:$REMOTE/"
+  "${SSH[@]}" "cd $REMOTE && mv -f docker-compose.solo.yml docker-compose.yml && mv -f Caddyfile.solo Caddyfile"
+else
+  scp -i "$KEY" -o BatchMode=yes -q "$PKG" deploy/docker-compose.yml deploy/Caddyfile "$SERVER:$REMOTE/"
+fi
 
 if [[ "${1:-}" == "--with-data" ]]; then
   echo "▸ Wysyłanie bazy i plików media (nadpisanie danych na serwerze)…"
@@ -38,12 +43,20 @@ if [[ "${1:-}" == "--with-data" ]]; then
 fi
 
 echo "▸ Uruchamianie…"
-# Bez profilu solo — nie startujemy Caddy (porty 80/443 trzyma Kenochem).
-"${SSH[@]}" "set -e; cd $REMOTE && rm -rf app.new && mkdir app.new && tar -xzf app.tgz -C app.new && rm app.tgz \
-  && rm -rf app.old && mv app app.old && mv app.new app \
-  && docker stop sonax-app >/dev/null 2>&1 || true \
-  && docker compose up -d --build --remove-orphans && docker image prune -f >/dev/null && rm -rf app.old \
-  && docker exec kenochem-caddy-1 caddy reload --config /etc/caddy/Caddyfile >/dev/null || true"
+if [[ "${DEPLOY_SOLO:-}" == "1" ]]; then
+  # Własny Caddy na 80/443. Nie ruszamy Caddy Kenochemu.
+  "${SSH[@]}" "set -e; cd $REMOTE && rm -rf app.new && mkdir app.new && tar -xzf app.tgz -C app.new && rm app.tgz \
+    && if [ -d app ]; then rm -rf app.old && mv app app.old; fi && mv app.new app \
+    && docker stop sonax-app >/dev/null 2>&1 || true \
+    && docker compose up -d --build --remove-orphans && docker image prune -f >/dev/null && rm -rf app.old"
+else
+  # Bez profilu solo — nie startujemy Caddy (porty 80/443 trzyma Kenochem).
+  "${SSH[@]}" "set -e; cd $REMOTE && rm -rf app.new && mkdir app.new && tar -xzf app.tgz -C app.new && rm app.tgz \
+    && rm -rf app.old && mv app app.old && mv app.new app \
+    && docker stop sonax-app >/dev/null 2>&1 || true \
+    && docker compose up -d --build --remove-orphans && docker image prune -f >/dev/null && rm -rf app.old \
+    && docker exec kenochem-caddy-1 caddy reload --config /etc/caddy/Caddyfile >/dev/null || true"
+fi
 
 rm -rf "$(dirname "$PKG")"
 echo "✔ Gotowe: https://$DOMAIN"

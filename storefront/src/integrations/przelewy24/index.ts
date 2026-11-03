@@ -210,6 +210,46 @@ export async function chargeBlikByCode(token: string, blikCode: string): Promise
   }
 }
 
+// Zwrot całej lub części kwoty. orderId to numer transakcji P24 (nie numer zamówienia w sklepie).
+// Podpis: requestId + refundsUuid + crc (kolejność pól jest częścią skrótu).
+export async function refundP24(input: { sessionId: string; orderId: number; amountGrosze: number; description: string }): Promise<{ ok: boolean; message: string }> {
+  const mode = p24Mode();
+  if (mode === "mock") return { ok: true, message: "Tryb testowy – zwrot zapisany w sklepie, do Przelewy24 nic nie poszło." };
+  if (mode === "unconfigured") return { ok: false, message: "Brak kluczy Przelewy24. Zwrot trzeba zrobić ręcznie." };
+  const requestId = `z${Date.now()}`.slice(0, 45);
+  const refundsUuid = crypto.randomUUID();
+  const { crc } = cfg();
+  const sign = createHash("sha384").update(JSON.stringify({ requestId, refundsUuid, crc })).digest("hex");
+  try {
+    const res = await fetch(`${host()}/api/v1/transaction/refund`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: auth() },
+      body: JSON.stringify({
+        requestId,
+        refundsUuid,
+        refunds: [{
+          orderId: input.orderId,
+          sessionId: input.sessionId,
+          amount: input.amountGrosze,
+          description: input.description.slice(0, 95),
+        }],
+        sign,
+      }),
+      signal: AbortSignal.timeout(20_000),
+    });
+    const json = (await res.json().catch(() => ({}))) as { data?: { status?: boolean; message?: string }[]; error?: string };
+    const row = Array.isArray(json.data) ? json.data[0] : undefined;
+    if (res.ok && row?.status) return { ok: true, message: "Przelewy24 przyjęło zwrot. Pieniądze wrócą na konto klienta." };
+    const already = /refund|zwrot|already/i.test(`${row?.message ?? ""} ${json.error ?? ""}`);
+    if (already && /już|already|duplicate/i.test(`${row?.message ?? ""} ${json.error ?? ""}`)) {
+      return { ok: true, message: "Ta płatność była już zwrócona w Przelewy24." };
+    }
+    return { ok: false, message: row?.message || json.error || `Przelewy24 odrzuciło zwrot (HTTP ${res.status}).` };
+  } catch (e) {
+    return { ok: false, message: `Brak połączenia z Przelewy24: ${(e as Error).message}` };
+  }
+}
+
 // Stan transakcji po sessionId: 0 – brak wpłaty, 1 – zaliczka, 2 – opłacona, 3 – zwrócona
 export async function getP24Transaction(sessionId: string): Promise<{ status: number; orderId?: number } | null> {
   if (p24Mode() === "mock" || p24Mode() === "unconfigured") return null;

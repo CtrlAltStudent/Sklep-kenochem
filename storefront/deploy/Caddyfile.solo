@@ -1,0 +1,27 @@
+# Sklep na własnej domenie. Adres próbny zostaje za hasłem.
+sonax.sklep.pl {
+	encode zstd gzip
+	reverse_proxy sonax:3000
+}
+
+# Ten sam sklep co bez www. Nie odsyłamy na adres bez www: stary sklep nadal
+# odsyła odwrotnie, a telefon zapamiętuje oba odesłania i kręci się w kółko.
+www.sonax.sklep.pl {
+	encode zstd gzip
+	reverse_proxy sonax:3000
+}
+
+{$SITE_DOMAIN} {
+	encode zstd gzip
+	header X-Robots-Tag "noindex, nofollow"
+	@otwarte path /api/baselinker/shop /api/payments/p24/notify /api/payments/p24/blik-notify /api/zdrowie
+	handle @otwarte {
+		reverse_proxy sonax:3000
+	}
+	handle {
+		basic_auth {
+			{$BASIC_AUTH_USER} {$BASIC_AUTH_HASH}
+		}
+		reverse_proxy sonax:3000
+	}
+}

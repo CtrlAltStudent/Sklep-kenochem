@@ -171,7 +171,9 @@ function brandOf(producer, name) {
 }
 
 const variantLabel = (name) => {
-  const m = name.match(/(\d+(?:[.,]\d+)?)\s?(ml|l|kg|g|szt)\b/i);
+  // Pomijamy numer modelu przyklejony do literek, np. RO-180L. Bierzemy ostatnią prawdziwą pojemność (5L na końcu nazwy).
+  const all = [...name.matchAll(/(?<![\p{L}\-])(\d+(?:[.,]\d+)?)\s*(ml|l|kg|g|szt)\b/giu)];
+  const m = all.at(-1);
   if (!m) return "1 szt.";
   const unit = m[2].toLowerCase() === "l" ? "L" : m[2].toLowerCase();
   return `${m[1]} ${unit}`;

@@ -6,6 +6,7 @@ export type Category = {
   name: string;
   lucide: IconName; // ikona konturowa (menu, listy)
   color: string; // kolor akcentu kategorii
+  image?: string; // zdjęcie kafelka na stronie głównej
   children: Subcategory[];
 };
 
@@ -17,7 +18,9 @@ export type IconName =
   | "Car" | "Droplets" | "Bug" | "Disc3" | "AppWindow" | "Armchair" | "Sparkles" | "ShieldCheck" | "ShowerHead" | "FlaskConical"
   | "Cog" | "SprayCan" | "Fan" | "Brush" | "Eraser" | "Layers" | "PaintRoller" | "Pipette" | "HardHat" | "Shapes" | "Building2"
   | "Building" | "ChefHat" | "Shirt" | "Sofa" | "Hand" | "Scroll" | "House" | "Bath" | "Trees" | "Frame" | "Flower2" | "Wind"
-  | "AirVent" | "Flame" | "TestTubeDiagonal" | "Wrench" | "Droplet" | "Fuel" | "AudioWaveform" | "Tractor" | "ShieldPlus" | "Truck";
+  | "AirVent" | "Flame" | "TestTubeDiagonal" | "Wrench" | "Droplet" | "Fuel" | "AudioWaveform" | "Tractor" | "ShieldPlus" | "Truck"
+  | "Leaf" | "Citrus" | "Coffee" | "Waves" | "Sun" | "Snowflake" | "Paintbrush" | "Lightbulb" | "Gauge" | "Package"
+  | "Gem" | "CircleDot" | "Beaker" | "Flower" | "CloudRain";
 
 export const VARIANT_DISPLAY = [
   { id: "pojemnosc", label: "Pojemność", hint: "Przyciski 500 ml / 1 L / 5 L", placeholder: "np. 1 L" },
@@ -129,6 +132,14 @@ export const mediaPath = (url?: string | null) => (url ? url.replace(/^https?:\/
 // Adres kategorii 3. poziomu: <podkategoria>-<nazwa>, np. mycie-samochodu-aktywne-piany (nazwy się powtarzają między działami)
 const PL_CHARS: Record<string, string> = { ą: "a", ć: "c", ę: "e", ł: "l", ń: "n", ó: "o", ś: "s", ź: "z", ż: "z" };
 export const slugPart = (s: string) => s.toLowerCase().replace(/[ąćęłńóśźż]/g, (c) => PL_CHARS[c]).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+// Nazwa z panelu. Gdy ktoś zapisze dział z małej litery („neutralizatory”), w sklepie widać wielką.
+export const shopLabel = (name: string) => {
+  const s = name.trim();
+  if (!s) return s;
+  const first = s.charAt(0);
+  return first === first.toLocaleUpperCase("pl") ? s : first.toLocaleUpperCase("pl") + s.slice(1);
+};
 const sub = (slug: string, name: string, lucide: IconName, types: string[]): Subcategory => ({
   slug, name, lucide, types: types.map((t) => ({ slug: `${slug}-${slugPart(t)}`, name: t })),
 });
@@ -242,7 +253,7 @@ export const findType = (typeSlug: string) => {
 
 export const getCategory = (slug: string) => categories.find((c) => c.slug === slug);
 export const minPrice = (p: { variants: Variant[] }) => Math.min(...p.variants.map((x) => x.price));
-// Cena jednostkowa (wymóg ustawy o informowaniu o cenach): zł/l lub zł/kg z etykiety pojemności
+// Cena jednostkowa (wymóg ustawy o informowaniu o cenach): zł/l lub zł/kg z pola „Pojemność”, nie z numeru modelu w nazwie.
 export function unitPrice(price: number, label: string): string | null {
   const m = label.match(/([\d.,]+)\s*(ml|l|kg|g)\b/i);
   if (!m) return null;

@@ -4,10 +4,10 @@ import { getLayout } from "@/integrations/vault";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowDown, BookOpen, Download, FileText, Headset, ShieldAlert, Star, TriangleAlert } from "lucide-react";
-import { brandSlug, freeShippingFrom, getCategory, toCard, usableImages, variantDisplayOf } from "@/lib/data";
-import { getDescription, getProduct, getProducts, getSafety } from "@/lib/catalog";
-import { findRedirect, getReviews, getStoreSettings } from "@/lib/cms";
+import { ArrowDown, BookOpen, Download, FileText, ShieldAlert, Star, TriangleAlert } from "lucide-react";
+import { brandSlug, freeShippingFrom, toCard, usableImages, variantDisplayOf } from "@/lib/data";
+import { getDescription, getProduct, getProducts, getSafety, getShopCategories } from "@/lib/catalog";
+import { findRedirect, getPostsAboutProduct, getReviews, getStoreSettings } from "@/lib/cms";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ProductStage } from "@/components/ProductBuy";
 import { ProductCard } from "@/components/ProductCard";
@@ -69,11 +69,10 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
     notFound();
   }
   const selected = product.variants.find((v) => v.slug === slug) ?? product.variants[0];
-  const [desc, reviews, products, safetyOwn] = await Promise.all([getDescription(product.slug), getReviews(product.slug), getProducts(), getSafety(slug)]);
+  const [desc, reviews, products, safetyOwn, tree] = await Promise.all([getDescription(product.slug), getReviews(product.slug), getProducts(), getSafety(slug), getShopCategories()]);
   const safety = safetyOwn ?? (slug !== product.slug ? await getSafety(product.slug) : undefined);
   const description = desc.html;
-  // Produkt bez kategorii (albo z kategorią spoza menu) też musi się otworzyć – wtedy bez okruszków działu
-  const category = getCategory(product.category);
+  const category = tree.find((c) => c.slug === product.category);
   const sub = category?.children.find((s) => s.slug === product.subcategory);
   const type = sub?.types.find((t) => t.slug === product.type);
   const crumbs = category
@@ -100,6 +99,9 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
   const meta = [product.brand, selected.label, (selected.sku || product.sku) && `SKU ${selected.sku || product.sku}`].filter(Boolean).join(" · ");
   // najtańsza płatna dostawa i próg darmowej – do danych dla Google (koszt dostawy przy wyniku)
   const store = await getStoreSettings();
+  const ship = store as { sameDayShipping?: boolean | number | null; shipCutoff?: string | null };
+  const sameDay = ship.sameDayShipping !== false && ship.sameDayShipping !== 0 && Boolean(ship.shipCutoff?.trim());
+  const materials = await getPostsAboutProduct(product.slug, product.name);
   const paidShip = (store.shippingMethods ?? []).filter((m) => m.enabled !== false && m.price > 0 && !m.code.endsWith("-cod"));
   const shipLd = paidShip.length ? { price: Math.min(...paidShip.map((m) => m.price)), freeFrom: freeShippingFrom(store) } : undefined;
 
@@ -123,7 +125,38 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
           {meta && <p className="mt-3 text-sm text-slate-500">{meta}</p>}
           {product.short && <p className="mt-4 text-[15px] leading-relaxed text-slate-600">{product.short}</p>}
         </>}
+        shipCutoff={ship.shipCutoff}
+        sameDay={sameDay}
         extra={<>
+          {product.variants.length < 2 && !product.bundleParts?.length && (
+            <div className="mt-5 space-y-4">
+              <dl className="grid grid-cols-2 overflow-hidden rounded-xl bg-white ring-1 ring-brand-100">
+                {[
+                  ["Pojemność", selected.label && selected.label !== "1 szt." ? selected.label : ""],
+                  ["SKU", selected.sku || product.sku],
+                  ["EAN", selected.ean || product.ean],
+                  ["Kategoria", type?.name || sub?.name || category?.name || ""],
+                ].filter(([, v]) => v).map(([k, v], i, all) => (
+                  <div key={k} className={`border-b border-brand-50 px-4 py-3 text-sm ${i === all.length - 1 && all.length % 2 ? "col-span-2" : "odd:border-r"}`}>
+                    <dt className="text-xs text-slate-400">{k}</dt>
+                    <dd className="mt-0.5 font-semibold text-navy">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+              {!!safety?.pictograms.length && (
+                <div className="flex flex-wrap items-center gap-3 rounded-xl bg-white p-3 ring-1 ring-brand-100">
+                  {safety.signal && (
+                    <span className={`rounded-lg px-2.5 py-1 text-xs font-black tracking-wide uppercase ${safety.signal === "danger" ? "bg-red-600 text-white" : "bg-amber-400 text-amber-950"}`}>
+                      {safety.signal === "danger" ? "Niebezpieczeństwo" : "Uwaga"}
+                    </span>
+                  )}
+                  {safety.pictograms.map((g) => (
+                    <Image key={g} src={`/ghs/${g}.svg`} alt={ghsLabel[g] ?? g} title={ghsLabel[g] ?? g} width={44} height={44} unoptimized />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           {!!product.bundleParts?.length && (
             <details className="group mt-5 rounded-xl bg-white ring-1 ring-brand-100" open>
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-bold text-navy">
@@ -155,11 +188,16 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
             </details>
           )}
           <a href="#opis" className="mt-2 inline-flex w-fit items-center gap-1 text-sm font-semibold text-accent hover:underline">Pełny opis <ArrowDown className="h-4 w-4" /></a>
-          <div className="mt-6 flex flex-col gap-2 text-sm font-semibold text-slate-600">
-            <a href={safety?.sds ?? "#bezpieczenstwo"} {...(safety?.sds ? { target: "_blank", rel: "noreferrer" } : {})} className="inline-flex items-center gap-1.5 hover:text-accent"><FileText className="h-4 w-4" /> {safety?.sds ? "Karta charakterystyki (PDF)" : "Karta charakterystyki"}</a>
-            <a href="tel:+48500021705" className="inline-flex items-center gap-1.5 hover:text-accent"><Headset className="h-4 w-4" /> Porada: 500 021 705</a>
-            <Link href="/blog" className="inline-flex items-center gap-1.5 hover:text-accent"><BookOpen className="h-4 w-4" /> Jak używać</Link>
-          </div>
+          {materials.length > 0 && (
+            <div className="mt-6">
+              <p className="text-xs font-bold tracking-wide text-slate-400 uppercase">Materiały powiązane</p>
+              <div className="mt-2 flex flex-col gap-2 text-sm font-semibold text-slate-600">
+                {materials.map((m) => (
+                  <Link key={m.slug} href={`/blog/${m.slug}`} className="inline-flex items-start gap-1.5 hover:text-accent"><BookOpen className="mt-0.5 h-4 w-4 shrink-0" /> {m.title}</Link>
+                ))}
+              </div>
+            </div>
+          )}
         </>}
       />
     ),
@@ -169,7 +207,7 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
             { id: "opis", label: "Opis produktu", content: (<>
           <h2 className="sr-only">Opis produktu – {product.name}</h2>
           {description ? (
-            <div className="prose prose-slate max-w-none prose-headings:text-navy prose-h2:text-xl prose-strong:text-ink prose-img:rounded-xl prose-a:text-accent-dark" dangerouslySetInnerHTML={{ __html: description }} />
+            <div className="product-desc prose prose-slate max-w-none prose-headings:text-navy prose-h2:text-xl prose-strong:text-ink prose-img:rounded-xl prose-a:text-accent-dark" dangerouslySetInnerHTML={{ __html: description }} />
           ) : (
             <p className="text-slate-500">Opis produktu zostanie wkrótce uzupełniony.</p>
           )}

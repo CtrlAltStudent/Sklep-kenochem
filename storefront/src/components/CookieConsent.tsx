@@ -60,6 +60,7 @@ export function CookieConsent() {
     window.sonaxConsent = c;
     const g = (b: boolean) => (b ? "granted" : "denied");
     window.gtag?.("consent", "update", { analytics_storage: g(a), ad_storage: g(m), ad_user_data: g(m), ad_personalization: g(m) });
+    window.gtag?.("set", "ads_data_redaction", !m);
     window.dataLayer?.push({ event: "consent_update", consent_analytics: a, consent_marketing: m });
     window.sonaxTags?.(a, m);
     setOpen(false);
@@ -71,7 +72,7 @@ export function CookieConsent() {
         <button
           type="button"
           onClick={openCookieSettings}
-          className="fixed bottom-4 left-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-white text-brand-700 shadow-lg ring-1 ring-brand-100 hover:bg-brand-50"
+          className="cookie-fab fixed bottom-4 left-4 z-40 grid h-12 w-12 place-items-center rounded-full bg-white text-brand-700 shadow-lg ring-1 ring-brand-100 hover:bg-brand-50"
           aria-label="Ustawienia cookies"
           title="Ustawienia cookies"
         >

@@ -29,6 +29,7 @@ import { variantEndpoints } from "./integrations/variants";
 import { bundleEndpoints } from "./integrations/bundles";
 import { productPickerEndpoints } from "./integrations/productPicker";
 import { shopEmailAdapter } from "./integrations/mail/payloadAdapter";
+import { rememberRoles } from "./payload/access";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -49,7 +50,9 @@ export default buildConfig({
       views: {
         dashboard: { Component: "@/payload/components/Dashboard#Dashboard" },
         reports: { Component: "@/payload/components/Reports#Reports", path: "/raporty", meta: { title: "Raporty sprzedaży" } },
+        stats: { Component: "@/payload/components/Stats#Stats", path: "/statystyki", meta: { title: "Statystyki sklepu" } },
         layout: { Component: "@/payload/components/LayoutView#LayoutView", path: "/uklad", meta: { title: "Układ strony" } },
+        brands: { Component: "@/payload/components/BrandsView#BrandsView", path: "/marki", meta: { title: "Marki" } },
         mails: { Component: "@/payload/components/MailView#MailView", path: "/maile", meta: { title: "Maile do klientów" } },
         importExport: { Component: "@/payload/components/ImportView#ImportView", path: "/import", meta: { title: "Import / eksport" } },
         settings: { Component: "@/payload/components/SettingsHub#SettingsHub", path: "/ustawienia", meta: { title: "Ustawienia sklepu" } },
@@ -69,6 +72,10 @@ export default buildConfig({
   editor: lexicalEditor(),
   email: shopEmailAdapter,
   secret: process.env.PAYLOAD_SECRET || "",
+  onInit: async (payload) => {
+    const users = await payload.find({ collection: "users", depth: 0, limit: 200, overrideAccess: true });
+    for (const user of users.docs) rememberRoles(user.id, user.roles);
+  },
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   // DATABASE_URL=postgres://… → PostgreSQL (docker compose / serwer), file:./… → SQLite (lokalnie bez Dockera)
   db: (process.env.DATABASE_URL ?? "").startsWith("postgres")

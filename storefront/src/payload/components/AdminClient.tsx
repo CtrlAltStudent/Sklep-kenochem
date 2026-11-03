@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useAuth, useFormFields, useTheme } from "@payloadcms/ui";
 import { ExternalLink, FileText, Moon, Package, Plus, Receipt, Search, ShoppingBag, Store, Sun, Tag, User } from "lucide-react";
 
@@ -147,7 +148,55 @@ export function AdminActions() {
       <a href="/" target="_blank" rel="noreferrer" className="kc-store-link" title="Otwórz sklep w nowej karcie">
         <Store size={16} /> <span>Sklep</span> <ExternalLink size={12} />
       </a>
+      <AccountMenu />
     </div>
+  );
+}
+
+// Ikona profilu w nagłówku otwiera menu. Samo przejście na konto zostawiało
+// zepsute ciasteczko i nie dało się wejść ponownie.
+function AccountMenu() {
+  const { user } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [box, setBox] = useState<{ top: number; right: number } | null>(null);
+  const menu = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const link = (e.target as Element | null)?.closest?.("a.app-header__account");
+      if (link) {
+        e.preventDefault();
+        e.stopPropagation();
+        const rect = link.getBoundingClientRect();
+        setBox({ top: rect.bottom + 8, right: Math.max(8, window.innerWidth - rect.right) });
+        setOpen((v) => !v);
+        return;
+      }
+      if (menu.current && !menu.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("click", onClick, true);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("click", onClick, true);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
+  const email = (user as { email?: string } | null)?.email;
+  if (!open || !box || typeof document === "undefined") return null;
+
+  return createPortal(
+    <div ref={menu} className="kc-account" style={{ top: box.top, right: box.right }}>
+      <div className="kc-account__menu" role="menu">
+        {email && <p className="kc-account__who">{email}</p>}
+        <a role="menuitem" href="/admin/account">Moje konto</a>
+        <a role="menuitem" className="kc-account__out" href="/api/users/wyjscie">Wyloguj się</a>
+      </div>
+    </div>,
+    document.body,
   );
 }
 

@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { ArrowRight, Home, Phone, Search } from "lucide-react";
-import { categories } from "@/lib/data";
+import { getShopCategories } from "@/lib/catalog";
 import { CatIcon } from "@/components/CatIcon";
 
+export const dynamic = "force-dynamic";
+
 // Strona 404 – zamiast ślepego zaułka: wyszukiwarka, kategorie, kontakt
-export default function NotFound() {
+export default async function NotFound() {
+  const categories = await getShopCategories();
   return (
-    <div className="mx-auto max-w-4xl px-4 py-16 text-center">
+    <div className="mx-auto max-w-4xl px-4 py-16 text-center" data-sonax-404="">
       <p className="text-8xl font-black tracking-tight text-brand-100">404</p>
       <h1 className="-mt-6 text-3xl font-black text-navy sm:text-4xl">Nie znaleźliśmy tej strony</h1>
       <p className="mx-auto mt-3 max-w-lg text-slate-600">Strona mogła zostać przeniesiona albo produkt wycofany. Wyszukaj produkt lub wybierz kategorię.</p>

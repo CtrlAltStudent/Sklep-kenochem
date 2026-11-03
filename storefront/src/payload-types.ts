@@ -275,6 +275,9 @@ export interface Product {
   id: number;
   name: string;
   category?: (number | null) | Category;
+  /**
+   * Lista marek jest taka jak loga na stronie głównej. Innej marki sklep nie pokazuje.
+   */
   brand?: string | null;
   shortDescription?: string | null;
   /**
@@ -311,6 +314,10 @@ export interface Product {
   priceB2B?: number | null;
   vatRate?: number | null;
   /**
+   * Ile jest w opakowaniu: 5 L, 500 ml albo 1 kg. Z tego liczy się cena za 1 l lub 1 kg. Numer modelu w nazwie (np. RO-180L) się nie liczy — wpisz prawdziwą pojemność bańki.
+   */
+  unitLabel?: string | null;
+  /**
    * Zwykle zostaw puste – użyj promocji czasowej poniżej.
    */
   oldPrice?: number | null;
@@ -326,15 +333,21 @@ export interface Product {
     from?: string | null;
     to?: string | null;
   };
+  /**
+   * Rabat jest na ostatniej sztuce w stosie, nie na całym zakupie. Puste daty = bez końca.
+   */
   qtyPromo?: {
     enabled?: boolean | null;
     from?: string | null;
     to?: string | null;
   };
+  /**
+   * Np. co 3. sztuka −30%: przy 12 sztukach rabat jest na 4 sztukach. Co 4. sztuka gratis: przy 12 sztukach 3 sztuki są za darmo. Gdy jest kilka progów, klient dostaje ten z większą zniżką.
+   */
   qtyTiers?:
     | {
-        kind?: ("percent" | "free") | null;
-        qty?: number | null;
+        kind?: ('percent' | 'free') | null;
+        qty: number;
         percent?: number | null;
         id?: string | null;
       }[]
@@ -351,6 +364,11 @@ export interface Product {
     | null;
   sku?: string | null;
   ean?: string | null;
+  stock?: number | null;
+  /**
+   * Waga do wysyłki, nie pojemność do ceny za litr.
+   */
+  weight?: number | null;
   bundle?: boolean | null;
   bundleItems?:
     | {
@@ -360,11 +378,8 @@ export interface Product {
         id?: string | null;
       }[]
     | null;
-  stock?: number | null;
-  unitLabel?: string | null;
-  weight?: number | null;
   /**
-   * Jeśli ustawione, ten produkt jest pojemnością innej karty i nie pokazuje się osobno w sklepie.
+   * Jeśli ustawione, ten produkt należy do grupy wariantów innej karty.
    */
   variantOf?: (number | null) | Product;
   variantSort?: number | null;
@@ -386,20 +401,20 @@ export interface Product {
   safetyNotes?: string | null;
   seo?: {
     /**
-     * Zalecane do 60 znaków. Puste = nazwa.
+     * Jedna fraza, tak jak wpisałby ją klient. Ocena powyżej sprawdzi, czy jest w tytule, opisie i adresie.
+     */
+    focusKeyword?: string | null;
+    /**
+     * Najlepiej 30–60 znaków i fraza na początku. Puste = nazwa.
      */
     title?: string | null;
     /**
-     * Zalecane 120–160 znaków.
+     * Najlepiej 110–160 znaków. Jedno–dwa zdania: co to jest i dlaczego kupić tutaj.
      */
     description?: string | null;
-    focusKeyword?: string | null;
     noindex?: boolean | null;
   };
   seoExtra?: {
-    /**
-     * Na tę frazę produkt ma się wyświetlać – lista kontrolna sprawdzi, czy jest w tytule, opisie i adresie.
-     */
     focusKeyword?: string | null;
     /**
      * Tylko gdy ten produkt to duplikat innego – wpisz adres głównej wersji.
@@ -456,7 +471,7 @@ export interface Category {
   id: number;
   name: string;
   /**
-   * Puste = kategoria główna (widoczna w menu).
+   * Puste = dział w menu i na kafelkach. Na liście najpierw są działy, w tym Dom i ogród.
    */
   parent?: (number | null) | Category;
   order?: number | null;
@@ -505,6 +520,21 @@ export interface Category {
         | 'Tractor'
         | 'ShieldPlus'
         | 'Truck'
+        | 'Leaf'
+        | 'Citrus'
+        | 'Coffee'
+        | 'Waves'
+        | 'Sun'
+        | 'Snowflake'
+        | 'Paintbrush'
+        | 'Lightbulb'
+        | 'Gauge'
+        | 'Package'
+        | 'Gem'
+        | 'CircleDot'
+        | 'Beaker'
+        | 'Flower'
+        | 'CloudRain'
       )
     | null;
   color?: string | null;
@@ -536,14 +566,17 @@ export interface Category {
     | null;
   seo?: {
     /**
-     * Zalecane do 60 znaków. Puste = nazwa.
+     * Jedna fraza, tak jak wpisałby ją klient. Ocena powyżej sprawdzi, czy jest w tytule, opisie i adresie.
+     */
+    focusKeyword?: string | null;
+    /**
+     * Najlepiej 30–60 znaków i fraza na początku. Puste = nazwa.
      */
     title?: string | null;
     /**
-     * Zalecane 120–160 znaków.
+     * Najlepiej 110–160 znaków. Jedno–dwa zdania: co to jest i dlaczego kupić tutaj.
      */
     description?: string | null;
-    focusKeyword?: string | null;
     noindex?: boolean | null;
   };
   /**
@@ -881,6 +914,9 @@ export interface Page {
           }
         | {
             title?: string | null;
+            /**
+             * Wyszukaj po nazwie albo SKU. Kolejność strzałkami.
+             */
             products?: (number | Product)[] | null;
             category?: (number | null) | Category;
             limit?: number | null;
@@ -904,14 +940,17 @@ export interface Page {
     | null;
   seo?: {
     /**
-     * Zalecane do 60 znaków. Puste = nazwa.
+     * Jedna fraza, tak jak wpisałby ją klient. Ocena powyżej sprawdzi, czy jest w tytule, opisie i adresie.
+     */
+    focusKeyword?: string | null;
+    /**
+     * Najlepiej 30–60 znaków i fraza na początku. Puste = nazwa.
      */
     title?: string | null;
     /**
-     * Zalecane 120–160 znaków.
+     * Najlepiej 110–160 znaków. Jedno–dwa zdania: co to jest i dlaczego kupić tutaj.
      */
     description?: string | null;
-    focusKeyword?: string | null;
     noindex?: boolean | null;
   };
   /**
@@ -951,17 +990,23 @@ export interface Post {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Pokazywane pod artykułem. Wyszukaj po nazwie albo SKU.
+   */
   relatedProducts?: (number | Product)[] | null;
   seo?: {
     /**
-     * Zalecane do 60 znaków. Puste = nazwa.
+     * Jedna fraza, tak jak wpisałby ją klient. Ocena powyżej sprawdzi, czy jest w tytule, opisie i adresie.
+     */
+    focusKeyword?: string | null;
+    /**
+     * Najlepiej 30–60 znaków i fraza na początku. Puste = nazwa.
      */
     title?: string | null;
     /**
-     * Zalecane 120–160 znaków.
+     * Najlepiej 110–160 znaków. Jedno–dwa zdania: co to jest i dlaczego kupić tutaj.
      */
     description?: string | null;
-    focusKeyword?: string | null;
     noindex?: boolean | null;
   };
   /**
@@ -999,6 +1044,8 @@ export interface IntegrationLog {
   createdAt: string;
 }
 /**
+ * Każdy pracownik loguje się swoim e-mailem. Rola decyduje, co widzi w menu. Kolor panelu ustawia sobie sam — nie zmienia sklepu dla klientów.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
@@ -1007,7 +1054,13 @@ export interface User {
   name?: string | null;
   jobTitle?: string | null;
   phone?: string | null;
+  /**
+   * Można zaznaczyć kilka. Administrator widzi wszystko. Redaktor: produkty, kategorie, strony. Obsługa zamówień: zamówienia, klienci, zwroty. Marketing: kody, opinie, newsletter. Magazyn: produkty i powiadomienia o stanie.
+   */
   roles: ('admin' | 'editor' | 'orders' | 'marketing' | 'warehouse')[];
+  /**
+   * Tylko dla tego konta. Po zapisaniu odśwież panel, jeśli kolor nie zmieni się od razu.
+   */
   panelTheme?: ('czerwony' | 'zielen' | 'granat' | 'grafit') | null;
   updatedAt: string;
   createdAt: string;
@@ -1019,13 +1072,6 @@ export interface User {
   resetPasswordRequestedAt?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
   password?: string | null;
   collection: 'users';
 }
@@ -1506,6 +1552,7 @@ export interface ProductsSelect<T extends boolean = true> {
   price?: T;
   priceB2B?: T;
   vatRate?: T;
+  unitLabel?: T;
   oldPrice?: T;
   lowestPrice30d?: T;
   sale?:
@@ -1539,6 +1586,8 @@ export interface ProductsSelect<T extends boolean = true> {
       };
   sku?: T;
   ean?: T;
+  stock?: T;
+  weight?: T;
   bundle?: T;
   bundleItems?:
     | T
@@ -1548,9 +1597,6 @@ export interface ProductsSelect<T extends boolean = true> {
         quantity?: T;
         id?: T;
       };
-  stock?: T;
-  unitLabel?: T;
-  weight?: T;
   variantOf?: T;
   variantSort?: T;
   variantDisplay?: T;
@@ -1569,6 +1615,7 @@ export interface ProductsSelect<T extends boolean = true> {
   seo?:
     | T
     | {
+        focusKeyword?: T;
         title?: T;
         description?: T;
         noindex?: T;
@@ -1629,6 +1676,7 @@ export interface CategoriesSelect<T extends boolean = true> {
   seo?:
     | T
     | {
+        focusKeyword?: T;
         title?: T;
         description?: T;
         noindex?: T;
@@ -1750,6 +1798,7 @@ export interface PagesSelect<T extends boolean = true> {
   seo?:
     | T
     | {
+        focusKeyword?: T;
         title?: T;
         description?: T;
         noindex?: T;
@@ -1774,6 +1823,7 @@ export interface PostsSelect<T extends boolean = true> {
   seo?:
     | T
     | {
+        focusKeyword?: T;
         title?: T;
         description?: T;
         noindex?: T;
@@ -1873,13 +1923,6 @@ export interface UsersSelect<T extends boolean = true> {
   resetPasswordRequestedAt?: T;
   loginAttempts?: T;
   lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1997,22 +2040,142 @@ export interface Homepage {
         id?: string | null;
       }[]
     | null;
+  brandsTitle?: string | null;
   brandLogos?:
     | {
         logo: number | Media;
         name: string;
+        /**
+         * Puste = strona marki z nazwy.
+         */
         link?: string | null;
         id?: string | null;
       }[]
     | null;
+  categoryKicker?: string | null;
+  categoryTitle?: string | null;
+  categoryStyle?: ('rowne' | 'pierwsze' | 'szerokie') | null;
+  categoryColumns?: ('4' | '3') | null;
+  showCategoryCount?: boolean | null;
+  showCategoryIcon?: boolean | null;
+  /**
+   * Puste = wszystkie działy, które mają produkty, w kolejności z kategorii. Tu ustawisz własną kolejność albo schowasz dział ze strony głównej. W menu zostaje.
+   */
+  homeCategories?: (number | Category)[] | null;
+  usageKicker?: string | null;
+  usageTitle?: string | null;
+  usageStepsTitle?: string | null;
+  /**
+   * Puste „Co czyścisz?” = sklep sam układa skróty z kategorii, które mają produkty. Nowy dział wchodzi sam. Puste „Krok po kroku” = gotowa kolejność detailingu. Wpisanie własnych skrótów zastępuje tę zakładkę.
+   */
+  shortcuts?:
+    | {
+        label: string;
+        url: string;
+        kind?: ('zadanie' | 'kroki') | null;
+        icon?:
+          | (
+              | 'Car'
+              | 'Droplets'
+              | 'Bug'
+              | 'Disc3'
+              | 'AppWindow'
+              | 'Armchair'
+              | 'Sparkles'
+              | 'ShieldCheck'
+              | 'ShowerHead'
+              | 'FlaskConical'
+              | 'Cog'
+              | 'SprayCan'
+              | 'Fan'
+              | 'Brush'
+              | 'Eraser'
+              | 'Layers'
+              | 'PaintRoller'
+              | 'Pipette'
+              | 'HardHat'
+              | 'Shapes'
+              | 'Building2'
+              | 'Building'
+              | 'ChefHat'
+              | 'Shirt'
+              | 'Sofa'
+              | 'Hand'
+              | 'Scroll'
+              | 'House'
+              | 'Bath'
+              | 'Trees'
+              | 'Frame'
+              | 'Flower2'
+              | 'Wind'
+              | 'AirVent'
+              | 'Flame'
+              | 'TestTubeDiagonal'
+              | 'Wrench'
+              | 'Droplet'
+              | 'Fuel'
+              | 'AudioWaveform'
+              | 'Tractor'
+              | 'ShieldPlus'
+              | 'Truck'
+              | 'Leaf'
+              | 'Citrus'
+              | 'Coffee'
+              | 'Waves'
+              | 'Sun'
+              | 'Snowflake'
+              | 'Paintbrush'
+              | 'Lightbulb'
+              | 'Gauge'
+              | 'Package'
+              | 'Gem'
+              | 'CircleDot'
+              | 'Beaker'
+              | 'Flower'
+              | 'CloudRain'
+            )
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  aboutKicker?: string | null;
+  aboutTitle?: string | null;
+  aboutText?: string | null;
+  aboutLinkLabel?: string | null;
+  aboutLink?: string | null;
+  aboutImage?: (number | null) | Media;
   featuredTitle?: string | null;
   /**
-   * Puste = automatycznie produkty marki SONAX.
+   * Puste = pierwsze produkty marki SONAX.
    */
   featuredProducts?: (number | Product)[] | null;
+  dealsTitle?: string | null;
+  /**
+   * Własna grupa. Puste = produkty z obniżoną ceną.
+   */
   promoProducts?: (number | Product)[] | null;
+  newestTitle?: string | null;
+  /**
+   * Własna grupa. Puste = najnowsze produkty.
+   */
   newestProducts?: (number | Product)[] | null;
+  /**
+   * Własna grupa na stronie Bestsellery.
+   */
   bestsellerProducts?: (number | Product)[] | null;
+  sceneKicker?: string | null;
+  sceneTitle?: string | null;
+  sceneHint?: string | null;
+  sceneImage?: (number | null) | Media;
+  sceneSpots?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   promoBanner?: {
     image?: (number | null) | Media;
     kicker?: string | null;
@@ -2033,6 +2196,9 @@ export interface Navigation {
   id: number;
   announcement?: {
     enabled?: boolean | null;
+    /**
+     * Puste = „Darmowa dostawa od … · wysyłka zwykle w 1 dzień roboczy”. Kwota darmowej dostawy jest w Ustawieniach sklepu → Dostawa.
+     */
     text?: string | null;
     link?: string | null;
   };
@@ -2071,11 +2237,25 @@ export interface StoreSetting {
   address?: string | null;
   hours?: string | null;
   gpsrResponsible?: string | null;
+  /**
+   * Ta kwota jest na czarnym pasku u góry, na etykiecie pod banerem, w koszyku i przy produkcie. Wpisz np. 399 albo 249. Przy kurierze niżej możesz ustawić inną kwotę — puste pole kuriera znaczy: użyj tej.
+   */
   freeShippingThreshold?: number | null;
+  /**
+   * Włączone: przy produkcie widać „zamów do godziny — wyślemy dziś”.
+   */
+  sameDayShipping?: boolean | null;
+  /**
+   * Dzień roboczy, czas polski. Np. 14:00. Po tej godzinie i w weekend sklep pisze, że wyśle w najbliższy dzień roboczy. Puste = nie pokazuj.
+   */
+  shipCutoff?: string | null;
   shippingMethods?:
     | {
         code: string;
         label: string;
+        /**
+         * Tyle klient płaci za tę dostawę. 0 oznacza dostawę bezpłatną.
+         */
         price: number;
         /**
          * Maks. 30 znaków. Musi pasować do reguł kurierskich w BaseLinkerze.
@@ -2084,6 +2264,9 @@ export interface StoreSetting {
         requiresPoint?: boolean | null;
         enabled?: boolean | null;
         freeAboveThreshold?: boolean | null;
+        /**
+         * Puste = kwota sklepu z góry. Np. InPost od 199, GLS od 399.
+         */
         freeFrom?: number | null;
         id?: string | null;
       }[]
@@ -2172,11 +2355,52 @@ export interface HomepageSelect<T extends boolean = true> {
         text?: T;
         id?: T;
       };
+  brandsTitle?: T;
+  brandLogos?:
+    | T
+    | {
+        logo?: T;
+        name?: T;
+        link?: T;
+        id?: T;
+      };
+  categoryKicker?: T;
+  categoryTitle?: T;
+  categoryStyle?: T;
+  categoryColumns?: T;
+  showCategoryCount?: T;
+  showCategoryIcon?: T;
+  homeCategories?: T;
+  usageKicker?: T;
+  usageTitle?: T;
+  usageStepsTitle?: T;
+  shortcuts?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        kind?: T;
+        icon?: T;
+        id?: T;
+      };
+  aboutKicker?: T;
+  aboutTitle?: T;
+  aboutText?: T;
+  aboutLinkLabel?: T;
+  aboutLink?: T;
+  aboutImage?: T;
   featuredTitle?: T;
   featuredProducts?: T;
+  dealsTitle?: T;
   promoProducts?: T;
+  newestTitle?: T;
   newestProducts?: T;
   bestsellerProducts?: T;
+  sceneKicker?: T;
+  sceneTitle?: T;
+  sceneHint?: T;
+  sceneImage?: T;
+  sceneSpots?: T;
   promoBanner?:
     | T
     | {
@@ -2240,6 +2464,8 @@ export interface StoreSettingsSelect<T extends boolean = true> {
   hours?: T;
   gpsrResponsible?: T;
   freeShippingThreshold?: T;
+  sameDayShipping?: T;
+  shipCutoff?: T;
   shippingMethods?:
     | T
     | {

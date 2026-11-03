@@ -1,6 +1,7 @@
 import { getCms } from "@/lib/cms";
 import { checkoutInput, placeOrder } from "@/integrations/checkout/placeOrder";
 import { currentCustomer } from "@/integrations/account";
+import { isStaff, newSession, readSession, recordHit } from "@/lib/stats";
 
 const hits = new Map<string, number[]>();
 function limited(ip: string) {
@@ -32,6 +33,14 @@ export async function POST(request: Request) {
     const payload = await getCms();
     const customer = await currentCustomer(payload, request.headers);
     const result = await placeOrder(payload, parsed.data, { ip, userAgent: request.headers.get("user-agent") ?? "" }, customer?.id);
+    if (result.ok) {
+      const cookie = request.headers.get("cookie");
+      const session = readSession(cookie) ?? newSession();
+      const email = parsed.data.email;
+      const staff = isStaff(cookie);
+      for (const item of parsed.data.items) recordHit({ session, path: `/produkt/${item.slug}`, kind: "buy", product: item.slug, email, orderNo: result.orderNumber, qty: item.qty, staff });
+      recordHit({ session, path: "/zamowienie", kind: "order", email, orderNo: result.orderNumber, staff });
+    }
     return Response.json(result, { status: result.ok ? 200 : 400 });
   } catch (e) {
     console.error("checkout", e);

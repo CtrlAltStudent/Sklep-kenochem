@@ -17,7 +17,7 @@ export async function LayoutView(props: AdminViewServerProps) {
           <div>
             <p className="kc-hero__date">Treści i wygląd</p>
             <h1 className="kc-hero__title">Układ strony</h1>
-            <p className="kc-hero__text">Ustaw kolejność sekcji na stronie głównej, w karcie produktu i w kategorii. Ukryj to, czego nie potrzebujesz. Treść sekcji zmienisz przyciskiem „Edytuj treść”.</p>
+            <p className="kc-hero__text">Ustaw kolejność sekcji. Po prawej jest pełny podgląd strony głównej — zmienia się od razu i nie wchodzi na sklep, dopóki nie klikniesz „Zapisz układ”. Wygląd kafelków i skrótów jest w Stronie głównej.</p>
           </div>
         </section>
         <LayoutEditor sampleProduct={p.docs[0]?.slug ?? undefined} sampleCategory={c.docs[0]?.slug ?? undefined} />

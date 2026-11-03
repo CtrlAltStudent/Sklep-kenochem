@@ -126,7 +126,7 @@ export const providers: Provider[] = [
     whenOff: "Dostawa ORLEN Paczka znika z koszyka i zamówienia.",
     guide: [
       "Konto ORLEN Paczki podłącza się w BaseLinkerze: Integracje → Dodaj integrację → Kurierzy → ORLEN Paczka.",
-      "Klucz mapy punktów dostaniesz od opiekuna ORLEN Paczki. Bez niego klient wpisuje kod punktu – ten sam kod idzie do BaseLinkera.",
+      "Klucz mapy punktów dostaniesz od opiekuna ORLEN Paczki (mail po podaniu domeny sklepu). Wklej go obok. Bez klucza klient wpisuje kod punktu – ten sam kod idzie do BaseLinkera.",
     ],
     logo: "/marks/orlen-paczka.png",
     what: "Mapa punktów ORLEN Paczka przy zamówieniu. Bez klucza klient wpisuje kod punktu.",

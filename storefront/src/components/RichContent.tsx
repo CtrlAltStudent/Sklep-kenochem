@@ -3,12 +3,19 @@ import Image from "next/image";
 import { RichText, type JSXConvertersFunction } from "@payloadcms/richtext-lexical/react";
 import type { SerializedEditorState } from "@payloadcms/richtext-lexical/lexical";
 import { headingId, nodeText } from "@/lib/cms";
+import { currentHref } from "@/lib/legacyLinks";
 import { mediaPath } from "@/lib/data";
 import type { Media } from "@/payload-types";
 
 // Treść z edytora panelu. Nagłówki dostają kotwice (#id) dla spisu treści.
 const converters: JSXConvertersFunction = ({ defaultConverters }) => ({
   ...defaultConverters,
+  link: (args) => {
+    const fields = args.node.fields as { url?: string };
+    if (typeof fields?.url === "string") fields.url = currentHref(fields.url);
+    const draw = defaultConverters.link;
+    return typeof draw === "function" ? draw(args) : null;
+  },
   heading: ({ node, nodesToJSX }) =>
     createElement(
       node.tag,

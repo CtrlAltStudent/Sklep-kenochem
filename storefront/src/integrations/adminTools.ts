@@ -13,6 +13,8 @@ import { cleanSite } from "./siteSettings";
 import { getLayout, getSite, setLayout, setSite, vaultPath } from "./vault";
 import { cleanLayout, SECTIONS, type PageKind } from "@/lib/layoutSections";
 import { blActive, blCall } from "./baselinker/client";
+import { getP24Transaction, p24Mode, refundP24 } from "./przelewy24";
+import { addHistory } from "./history";
 import type { BLProductData } from "./baselinker/types";
 import { mailConfig, sendMail } from "./mail/send";
 import * as T from "./mail/templates";
@@ -350,6 +352,70 @@ export const adminToolEndpoints: Endpoint[] = [
         revenue += Number(i.quantity ?? 0) * Number(i.priceGross ?? 0);
       }
       return Response.json({ ok: true, orders: orders.docs.length, qty, revenue, waiting: waiting.totalDocs });
+    },
+  },
+  {
+    path: "/return-tools/:id/refund",
+    method: "post",
+    handler: async (req) => {
+      if (!hasRole(req, "orders")) return deny();
+      const ret = await req.payload.findByID({ collection: "returns", id: idOf(req), depth: 0, overrideAccess: true }).catch(() => null);
+      if (!ret) return Response.json({ ok: false, message: "Nie ma takiego zgłoszenia." });
+      if (ret.status === "refunded") return Response.json({ ok: true, message: "Zwrot był już oznaczony jako wykonany." });
+      const orderId = typeof ret.order === "object" && ret.order ? ret.order.id : ret.order;
+      const order = orderId
+        ? await req.payload.findByID({ collection: "orders", id: orderId, depth: 0, overrideAccess: true }).catch(() => null)
+        : (await req.payload.find({ collection: "orders", where: { orderNumber: { equals: ret.orderNumber } }, limit: 1, depth: 0, overrideAccess: true })).docs[0];
+      if (!order) return Response.json({ ok: false, message: "Nie znalazłem zamówienia powiązanego z tym zgłoszeniem." });
+      if (order.payment?.status === "refunded") {
+        await req.payload.update({ collection: "returns", id: ret.id, overrideAccess: true, data: { status: "refunded" } });
+        return Response.json({ ok: true, message: "Płatność była już zwrócona. Zgłoszenie oznaczone jako zwrot wykonany." });
+      }
+      if (ret.type === "complaint" && ret.resolution && ret.resolution !== "refund") {
+        return Response.json({ ok: false, message: "To zgłoszenie nie jest zwrotem pieniędzy. Oznacz je bez wysyłania przelewu." });
+      }
+      if (order.payment?.provider !== "przelewy24" || !order.payment.sessionId) {
+        return Response.json({ ok: false, message: "To zamówienie nie było płatne online. Zwróć przelewem na konto z zgłoszenia i kliknij „Oznacz jako zwrócone (bez Przelewy24)”." });
+      }
+      const full = Math.round(Number(order.total ?? 0) * 100);
+      const body = ((await req.json?.().catch(() => ({}))) ?? {}) as { amount?: number | string };
+      let amount = full;
+      if (body.amount != null && String(body.amount).trim() !== "") {
+        const asked = Math.round(Number(String(body.amount).replace(",", ".")) * 100);
+        if (!Number.isFinite(asked) || asked <= 0) return Response.json({ ok: false, message: "Podaj kwotę większą od zera." });
+        if (asked > full) return Response.json({ ok: false, message: "Kwota jest większa niż wartość zamówienia." });
+        amount = asked;
+      }
+      if (amount <= 0) return Response.json({ ok: false, message: "Zamówienie ma kwotę 0 zł – nie ma czego zwracać." });
+      let p24OrderId = Number(order.payment.transactionId);
+      if (!p24OrderId) {
+        const tx = await getP24Transaction(order.payment.sessionId);
+        p24OrderId = tx?.orderId ?? 0;
+        if (tx?.status === 3) {
+          await req.payload.update({ collection: "orders", id: order.id, overrideAccess: true, data: { payment: { ...order.payment, status: "refunded", transactionId: String(p24OrderId || order.payment.transactionId || "") } } });
+          await req.payload.update({ collection: "returns", id: ret.id, overrideAccess: true, data: { status: "refunded" } });
+          return Response.json({ ok: true, message: "Przelewy24 ma już ten zwrot. Oznaczyłem zamówienie i zgłoszenie." });
+        }
+      }
+      if (!p24OrderId) return Response.json({ ok: false, message: "Brak numeru transakcji Przelewy24. Zwrot trzeba zrobić w panelu P24." });
+      const result = await refundP24({
+        sessionId: order.payment.sessionId,
+        orderId: p24OrderId,
+        amountGrosze: amount,
+        description: `Zwrot ${ret.number || order.orderNumber}`,
+      });
+      if (!result.ok) return Response.json(result);
+      const partial = amount < full;
+      if (!partial) await req.payload.update({ collection: "orders", id: order.id, overrideAccess: true, data: { payment: { ...order.payment, status: "refunded", transactionId: String(p24OrderId) } } });
+      if (!partial) await req.payload.update({ collection: "returns", id: ret.id, overrideAccess: true, data: { status: "refunded" } });
+      const who = req.user && "email" in req.user ? String(req.user.email) : "panel";
+      const zl = (amount / 100).toFixed(2).replace(".", ",");
+      await addHistory(req.payload, order.id, partial
+        ? `Częściowy zwrot ${zl} zł przez Przelewy24 (zostało ${((full - amount) / 100).toFixed(2).replace(".", ",")} zł)`
+        : `Zwrot ${zl} zł przez Przelewy24 (${ret.number || "zgłoszenie"})`, who);
+      const test = p24Mode() === "mock" ? " Tryb testowy – pieniądze nie wyszły." : "";
+      const left = partial ? ` Zostało ${((full - amount) / 100).toFixed(2).replace(".", ",")} zł. Zgłoszenie zostaje otwarte.` : "";
+      return Response.json({ ok: true, message: `${result.message} Kwota: ${zl} zł.${left}${test}` });
     },
   },
   {

@@ -15,20 +15,22 @@ export type SectionDef = {
 };
 
 const HOMEPAGE = "/admin/globals/homepage";
+const part = (id: string) => `${HOMEPAGE}?sekcja=${id}`;
 
 export const SECTIONS: Record<PageKind, SectionDef[]> = {
   home: [
-    { id: "hero", label: "Baner główny", desc: "Karuzela banerów z tytułem i przyciskiem. Zdjęcie 1920 × 625 px.", edit: { href: HOMEPAGE, label: "Banery" }, size: "l" },
-    { id: "perks", label: "Atuty sklepu", desc: "4 krótkie hasła pod banerem (wysyłka, odbiór, płatności, doradztwo).", edit: { href: HOMEPAGE, label: "Atuty" }, size: "s" },
-    { id: "categories", label: "Kafelki kategorii", desc: "Działy sklepu ze zdjęciami i liczbą produktów.", edit: { href: "/admin/collections/categories", label: "Kategorie" }, size: "l" },
-    { id: "usage", label: "Dobierz produkt do zadania", desc: "Szybki wybór: mycie, polerowanie, wnętrze, felgi…", size: "m" },
-    { id: "featured", label: "Polecane produkty", desc: "Lista w Stronie głównej. Puste = produkty SONAX.", edit: { href: HOMEPAGE, label: "Polecane" }, size: "m" },
-    { id: "deals", label: "Promocje", desc: "Własna grupa albo, gdy pusta, produkty z obniżoną ceną.", edit: { href: HOMEPAGE, label: "Promocje" }, size: "m" },
-    { id: "promo", label: "Baner promocyjny", desc: "Szeroki baner akcji. Tło 1600 × 500 px. Widoczny, gdy ma tytuł.", edit: { href: HOMEPAGE, label: "Baner promocyjny" }, size: "m" },
-    { id: "newest", label: "Nowości", desc: "Własna grupa albo, gdy pusta, najnowsze produkty dodane w panelu.", edit: { href: HOMEPAGE, label: "Nowości" }, size: "m" },
-    { id: "brands", label: "Marki w sklepie", desc: "Loga marek. Bez logo = nazwy marek z produktów.", edit: { href: "/admin/globals/homepage", label: "Loga marek" }, size: "s" },
+    { id: "hero", label: "Baner główny", desc: "Karuzela banerów z tytułem i przyciskiem. Zdjęcie 1920 × 625 px.", edit: { href: part("banery"), label: "Banery" }, size: "l" },
+    { id: "perks", label: "Atuty sklepu", desc: "4 krótkie hasła pod banerem (wysyłka, odbiór, płatności, doradztwo).", edit: { href: part("etykiety"), label: "Atuty" }, size: "s" },
+    { id: "categories", label: "Kafelki kategorii", desc: "Działy, układ i kolejność kafelków.", edit: { href: part("kafelki"), label: "Kafelki" }, size: "l" },
+    { id: "scene", label: "Zdjęcie z produktem", desc: "Grafika i pulsujące kropki z produktami.", edit: { href: part("scena"), label: "Zdjęcie" }, size: "l" },
+    { id: "usage", label: "Dobierz produkt do zadania", desc: "Skróty z podkategorii albo własna lista.", edit: { href: part("skroty"), label: "Skróty" }, size: "m" },
+    { id: "featured", label: "Polecane produkty", desc: "Własna lista. Puste = produkty SONAX.", edit: { href: part("polecane"), label: "Polecane" }, size: "m" },
+    { id: "deals", label: "Promocje", desc: "Własna grupa albo, gdy pusta, produkty z obniżoną ceną.", edit: { href: part("promocje"), label: "Promocje" }, size: "m" },
+    { id: "promo", label: "Baner promocyjny", desc: "Szeroki baner akcji. Tło 1600 × 500 px. Widoczny, gdy ma tytuł.", edit: { href: part("promo"), label: "Baner promocyjny" }, size: "m" },
+    { id: "newest", label: "Nowości", desc: "Własna grupa albo, gdy pusta, najnowsze produkty dodane w panelu.", edit: { href: part("nowosci"), label: "Nowości" }, size: "m" },
+    { id: "brands", label: "Marki w sklepie", desc: "Loga marek. Bez logo = nazwy marek z produktów.", edit: { href: part("loga"), label: "Loga marek" }, size: "s" },
     { id: "reviews", label: "Opinie klientów", desc: "Ostatnie zatwierdzone opinie.", edit: { href: "/admin/collections/reviews", label: "Opinie" }, size: "m" },
-    { id: "about", label: "O nas", desc: "Krótko o sklepie ze zdjęciem i linkiem do strony „O nas”.", size: "m" },
+    { id: "about", label: "O nas", desc: "Krótko o sklepie ze zdjęciem i linkiem do strony „O nas”.", edit: { href: part("onas"), label: "O nas" }, size: "m" },
     { id: "blog", label: "Poradniki z bloga", desc: "3 najnowsze wpisy.", edit: { href: "/admin/collections/posts", label: "Blog" }, size: "m" },
   ],
   product: [
@@ -56,12 +58,27 @@ export const PAGE_LABEL: Record<PageKind, string> = { home: "Strona główna", p
 
 export const defaultLayout = (kind: PageKind): LayoutItem[] => SECTIONS[kind].map((s) => ({ id: s.id, visible: !s.defaultHidden }));
 
-// Zapisany układ + nowe sekcje (dodane w kolejnych wersjach sklepu) na końcu; sekcje „locked” zawsze widoczne, „fixed” zawsze pierwsze
+// Zapisany układ zostaje. Nowa sekcja wchodzi w miejsce z listy powyżej, nie na sam koniec. Sekcje „locked” zawsze widoczne, „fixed” zawsze pierwsze.
+// Podgląd: lista widocznych sekcji z edytora, jeszcze niezapisana. Reszta zostaje ukryta.
+export function layoutFromIds(kind: PageKind, ids: string[]): LayoutItem[] {
+  const known = new Set(SECTIONS[kind].map((d) => d.id));
+  const visible = ids.filter((id, i) => known.has(id) && ids.indexOf(id) === i);
+  const hidden = SECTIONS[kind].filter((d) => !visible.includes(d.id)).map((d) => ({ id: d.id, visible: false }));
+  return mergeLayout(kind, [...visible.map((id) => ({ id, visible: true })), ...hidden]);
+}
+
 export function mergeLayout(kind: PageKind, saved?: LayoutItem[]): LayoutItem[] {
   const defs = SECTIONS[kind];
   const known = new Set(defs.map((d) => d.id));
   const list = (saved ?? []).filter((i) => known.has(i.id));
-  for (const d of defs) if (!list.some((i) => i.id === d.id)) list.push({ id: d.id, visible: !d.defaultHidden });
+  for (const [index, d] of defs.entries()) {
+    if (list.some((i) => i.id === d.id)) continue;
+    const later = new Set(defs.slice(index + 1).map((x) => x.id));
+    const at = list.findIndex((i) => later.has(i.id));
+    const item = { id: d.id, visible: !d.defaultHidden };
+    if (at < 0) list.push(item);
+    else list.splice(at, 0, item);
+  }
   const fixed = defs.filter((d) => d.fixed).map((d) => d.id);
   return [...list.filter((i) => fixed.includes(i.id)), ...list.filter((i) => !fixed.includes(i.id))]
     .map((i) => (defs.find((d) => d.id === i.id)?.locked ? { ...i, visible: true } : i));

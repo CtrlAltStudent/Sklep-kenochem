@@ -5,8 +5,10 @@
 import "server-only";
 import { getCms } from "./cms";
 import { catalogVersion } from "./catalogCache";
-import { brandSlug, mediaPath, usableImages, variantDisplayOf, variantNavOf, type Product, type QtyTier, type Variant } from "./data";
+import { brandSlug, categories as fallbackCategories, mediaPath, shopLabel, usableImages, variantDisplayOf, variantNavOf, type Category, type IconName, type Product, type QtyTier, type Variant } from "./data";
+import { categoryPhoto } from "./photos";
 import { relId, volumeMl } from "@/integrations/variants";
+import { tidyDescription } from "@/payload/productHooks";
 import type { Product as CmsProduct } from "@/payload-types";
 
 const TTL = 60_000;
@@ -18,6 +20,7 @@ type Catalog = {
   index: { p: Product; text: string }[];
   counts: Record<string, number>;
   total: number;
+  tree: Category[];
 };
 
 const g = globalThis as typeof globalThis & { __kcCatalog?: { at: number; version: number; data: Promise<Catalog> } };
@@ -51,7 +54,7 @@ async function load(): Promise<Catalog> {
         variantOf: true, variantSort: true, variantDisplay: true, variantNav: true, bundle: true, bundleItems: true,
       },
     }),
-    payload.find({ collection: "categories", limit: 0, pagination: false, depth: 0, overrideAccess: true, select: { slug: true, parent: true } }),
+    payload.find({ collection: "categories", limit: 0, pagination: false, depth: 1, overrideAccess: true, select: { slug: true, name: true, parent: true, order: true, lucide: true, color: true, icon: true } }),
   ]);
 
   // id kategorii → [dział, podkategoria, typ] (slugi zgodne z menu sklepu). Produkt może wisieć na dowolnym poziomie.
@@ -200,7 +203,50 @@ async function load(): Promise<Catalog> {
     index: products.map((p) => ({ p, text: norm(`${p.name} ${p.brand} ${p.sku} ${p.ean} ${p.variants.map((v) => `${v.sku ?? ""} ${v.ean ?? ""} ${v.label}`).join(" ")}`) })),
     counts,
     total: rows.length,
+    tree: shopTree(cats.docs),
   };
+}
+
+const tilePhoto = (slug: string, icon: unknown) => {
+  const media = typeof icon === "object" && icon && "url" in icon ? mediaPath((icon as { url?: string | null }).url) : undefined;
+  return media || categoryPhoto[slug] || undefined;
+};
+
+// Menu, kafelki i strony kategorii biorą drzewo z panelu (Kategorie). Pusta baza = lista zapisana w kodzie.
+function shopTree(docs: { id: number; slug?: string | null; name: string; parent?: unknown; order?: number | null; lucide?: string | null; color?: string | null; icon?: unknown }[]): Category[] {
+  const parentId = (c: (typeof docs)[number]) => {
+    const p = c.parent;
+    if (p == null) return undefined;
+    return typeof p === "object" && p && "id" in p ? Number((p as { id: number }).id) : Number(p);
+  };
+  const kids = new Map<number, typeof docs>();
+  const roots: typeof docs = [];
+  for (const c of docs) {
+    const pid = parentId(c);
+    if (pid == null || Number.isNaN(pid)) roots.push(c);
+    else {
+      const list = kids.get(pid) ?? [];
+      list.push(c);
+      kids.set(pid, list);
+    }
+  }
+  const byOrder = (a: (typeof docs)[number], b: (typeof docs)[number]) => (a.order ?? 0) - (b.order ?? 0) || a.name.localeCompare(b.name, "pl");
+  const icon = (v?: string | null): IconName => (v || "Shapes") as IconName;
+  const built = roots.filter((c) => c.slug).sort(byOrder).map((c) => ({
+    slug: c.slug!,
+    name: shopLabel(c.name),
+    lucide: icon(c.lucide),
+    color: c.color || "#0b5cd5",
+    image: tilePhoto(c.slug!, c.icon),
+    children: (kids.get(c.id) ?? []).filter((s) => s.slug).sort(byOrder).map((s) => ({
+      slug: s.slug!,
+      name: shopLabel(s.name),
+      lucide: icon(s.lucide),
+      types: (kids.get(s.id) ?? []).filter((t) => t.slug).sort(byOrder).map((t) => ({ slug: t.slug!, name: shopLabel(t.name) })),
+    })),
+  }));
+  if (built.length) return built;
+  return fallbackCategories.map((c) => ({ ...c, image: tilePhoto(c.slug, null) }));
 }
 
 export function getCatalog(): Promise<Catalog> {
@@ -218,6 +264,7 @@ export function getCatalog(): Promise<Catalog> {
 export const getProducts = async () => (await getCatalog()).products;
 export const getProduct = async (slug: string) => (await getCatalog()).bySlug.get(slug);
 export const getCategoryCounts = async () => (await getCatalog()).counts;
+export const getShopCategories = async () => (await getCatalog()).tree;
 export const getProductTotal = async () => (await getCatalog()).total;
 
 // Bezpieczeństwo (CLP/GPSR): karta charakterystyki, piktogramy GHS, hasło ostrzegawcze – z zakładki „Bezpieczeństwo” w panelu
@@ -234,7 +281,7 @@ export const getSafety = async (slug: string) => {
 export async function getDescription(slug: string) {
   const payload = await getCms();
   const d = (await payload.find({ collection: "products", where: { slug: { equals: slug } }, limit: 1, depth: 0, overrideAccess: true, select: { descriptionHtml: true, content: true } })).docs[0];
-  return { html: d?.descriptionHtml ?? "", rich: d?.content };
+  return { html: tidyDescription(d?.descriptionHtml ?? ""), rich: d?.content };
 }
 
 export async function getRelated(slug: string) {
@@ -282,6 +329,10 @@ async function homepageLists() {
     return data;
   }
   return cached.data;
+}
+
+export function productsFromIds(ids: unknown, products: Product[]) {
+  return pickListed(relIds(ids), products);
 }
 
 function pickListed(ids: (number | string)[], products: Product[]) {

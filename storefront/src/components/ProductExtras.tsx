@@ -5,9 +5,16 @@ import { useEffect, useState } from "react";
 import { Bell, Check, Clock, History, MessageCircleQuestion, Share2, Truck } from "lucide-react";
 import type { ProductCardData } from "@/lib/data";
 import { actions, useStore } from "@/lib/store";
-import { ProductCard } from "./ProductCard";
+import { ProductRail } from "./home/HomeBits";
 
-const CUTOFF_HOUR = 14; // zamówienia do 14:00 w dni robocze wysyłane tego samego dnia
+function parseCutoff(value?: string | null) {
+  const m = (value ?? "").trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return null;
+  const hour = Number(m[1]);
+  const minute = Number(m[2]);
+  if (hour > 23 || minute > 59) return null;
+  return { hour, minute, label: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}` };
+}
 
 // Czas w Polsce niezależnie od strefy przeglądarki
 function warsawNow() {
@@ -27,7 +34,7 @@ const month = (d: Date) => d.toLocaleDateString("pl-PL", { month: "short" });
 const range = (a: Date, b: Date) => (a.getMonth() === b.getMonth() ? `${a.getDate()}–${b.getDate()} ${month(b)}` : `${a.getDate()} ${month(a)} – ${b.getDate()} ${month(b)}`);
 
 // „Zamów w ciągu 2 h 15 min – wyślemy dziś” + przewidywana data dostawy
-export function DispatchInfo({ inStock }: { inStock: boolean }) {
+export function DispatchInfo({ inStock, cutoff, enabled = true }: { inStock: boolean; cutoff?: string | null; enabled?: boolean }) {
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
     const tick = () => setNow(warsawNow());
@@ -35,23 +42,24 @@ export function DispatchInfo({ inStock }: { inStock: boolean }) {
     const t = setInterval(tick, 30_000);
     return () => clearInterval(t);
   }, []);
-  if (!now || !inStock) return null;
+  const limit = parseCutoff(cutoff);
+  if (!now || !inStock || !enabled || !limit) return null;
 
-  const cutoff = new Date(now); cutoff.setHours(CUTOFF_HOUR, 0, 0, 0);
-  const today = isWorkday(now) && now < cutoff;
+  const deadline = new Date(now); deadline.setHours(limit.hour, limit.minute, 0, 0);
+  const today = isWorkday(now) && now < deadline;
   const ship = today ? now : addWorkdays(now, 1);
   const from = addWorkdays(ship, 1);
   const to = addWorkdays(ship, 2);
-  const left = Math.max(0, cutoff.getTime() - now.getTime());
+  const left = Math.max(0, deadline.getTime() - now.getTime());
   const h = Math.floor(left / 3_600_000);
   const m = Math.floor((left % 3_600_000) / 60_000);
 
   return (
-    <div className="grid grid-cols-2 overflow-hidden rounded-lg text-sm ring-1 ring-brand-100" title="Zamówienia złożone do 14:00 w dni robocze wysyłamy tego samego dnia">
+    <div className="grid grid-cols-2 overflow-hidden rounded-lg text-sm ring-1 ring-brand-100" title={`Zamówienia złożone do ${limit.label} w dni robocze wysyłamy tego samego dnia`}>
       <div className="bg-slate-50 px-3.5 py-3">
         <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-slate-500 uppercase"><Clock className="h-3.5 w-3.5 text-accent" /> Wysyłka</p>
         <p className="mt-0.5 font-bold whitespace-nowrap text-navy">{today ? "dziś" : fmt(ship)}</p>
-        {today && <p className="text-[11px] text-slate-500">zamów w {h > 0 ? `${h} h ` : ""}{m} min</p>}
+        <p className="text-[11px] leading-snug text-slate-500">{today ? `zamów do ${limit.label}${left > 0 ? ` · zostało ${h > 0 ? `${h} h ` : ""}${m} min` : ""}` : isWorkday(now) ? `po ${limit.label} — kolejny dzień roboczy` : "weekend — najbliższy dzień roboczy"}</p>
       </div>
       <div className="border-l border-brand-100 bg-white px-3.5 py-3">
         <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-slate-500 uppercase"><Truck className="h-3.5 w-3.5 text-accent" /> Dostawa</p>
@@ -95,9 +103,7 @@ export function RecentlyViewed({ current }: { current?: ProductCardData }) {
   return (
     <section className="mt-14">
       <h2 className="mb-6 flex items-center gap-2 text-2xl font-extrabold text-navy"><History className="h-6 w-6 text-accent" /> Ostatnio oglądane</h2>
-      <div className="no-scrollbar -mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2">
-        {items.map((p) => <div key={p.slug} className="w-52 shrink-0 snap-start sm:w-60"><ProductCard product={p} /></div>)}
-      </div>
+      <ProductRail products={items} itemClass="w-56 sm:w-64" />
     </section>
   );
 }

@@ -9,6 +9,9 @@ const names: Record<IconName, string> = {
   Hand: "Dłoń", Scroll: "Rolka", House: "Dom", Bath: "Wanna", Trees: "Drzewa", Frame: "Rama / okno", Flower2: "Kwiat",
   Wind: "Wiatr", AirVent: "Kratka wentylacyjna", Flame: "Płomień", TestTubeDiagonal: "Probówka", Wrench: "Klucz",
   Droplet: "Kropla", Fuel: "Smar / paliwo", AudioWaveform: "Fale (ultradźwięki)", Tractor: "Traktor", ShieldPlus: "Tarcza z plusem", Truck: "Ciężarówka",
+  Leaf: "Liść", Citrus: "Cytryna", Coffee: "Kawa", Waves: "Fale", Sun: "Słońce", Snowflake: "Śnieg", Paintbrush: "Pędzel",
+  Lightbulb: "Żarówka", Gauge: "Wskaźnik", Package: "Paczka", Gem: "Kamień / skóra", CircleDot: "Koło", Beaker: "Zlewka",
+  Flower: "Kwiatek", CloudRain: "Deszcz",
 };
 
 export const iconOptions = Object.entries(names).map(([value, label]) => ({ value, label }));

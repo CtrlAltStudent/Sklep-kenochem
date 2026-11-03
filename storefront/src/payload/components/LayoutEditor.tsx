@@ -6,7 +6,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, ExternalLink, Eye, EyeOff, GripVertical, LayoutTemplate, Lock, Menu, Package, Pencil, RotateCcw, Save, ShoppingBag, Tags } from "lucide-react";
+import { ArrowDown, ArrowUp, ExternalLink, Eye, EyeOff, GripVertical, LayoutTemplate, Lock, Menu, Monitor, Package, Pencil, RotateCcw, Save, ShoppingBag, Smartphone, Tablet, Tags } from "lucide-react";
 import { defaultLayout, mergeLayout, PAGE_LABEL, SECTIONS, type LayoutItem, type PageKind } from "@/lib/layoutSections";
 
 type Tab = "home" | "product" | "category" | "menu";
@@ -18,8 +18,9 @@ const TABS: { id: Tab; label: string; icon: typeof Package }[] = [
   { id: "menu", label: "Menu i stopka", icon: Menu },
 ];
 
-function SectionList({ kind, items, onChange, active, onActive }: {
+function SectionList({ kind, items, onChange, active, onActive, editing, onEdit }: {
   kind: PageKind; items: LayoutItem[]; onChange: (items: LayoutItem[]) => void; active: string; onActive: (id: string) => void;
+  editing?: string; onEdit?: (id: string) => void;
 }) {
   const drag = useRef<number | null>(null);
   const [over, setOver] = useState<number | null>(null);
@@ -38,7 +39,7 @@ function SectionList({ kind, items, onChange, active, onActive }: {
         const d = defs.find((x) => x.id === it.id)!;
         return (
           <li key={it.id}
-            className={`kc-lay__row ${it.visible ? "" : "is-hidden"} ${active === it.id ? "is-active" : ""} ${over === i ? "is-over" : ""} ${d.fixed ? "is-fixed" : ""}`}
+            className={`kc-lay__row ${it.visible ? "" : "is-hidden"} ${active === it.id ? "is-active" : ""} ${over === i ? "is-over" : ""} ${d.fixed ? "is-fixed" : ""} ${editing === it.id ? "is-editing" : ""}`}
             draggable={!d.fixed}
             onDragStart={(e) => { drag.current = i; e.dataTransfer.effectAllowed = "move"; }}
             onDragOver={(e) => { e.preventDefault(); setOver(i); }}
@@ -53,7 +54,11 @@ function SectionList({ kind, items, onChange, active, onActive }: {
               <small>{d.desc}</small>
             </span>
             <span className="kc-lay__tools" onClick={(e) => e.stopPropagation()}>
-              {d.edit && <Link href={d.edit.href} className="kc-lay__edit" title={`Zmień treść: ${d.edit.label}`}><Pencil size={13} /> Edytuj treść</Link>}
+              {d.edit && (d.edit.href.includes("sekcja=") ? (
+                <button type="button" className={`kc-lay__edit ${editing === it.id ? "is-on" : ""}`} title={`Zmień treść: ${d.edit.label}`} onClick={() => onEdit?.(it.id)}><Pencil size={13} /> Edytuj treść</button>
+              ) : (
+                <Link href={d.edit.href} className="kc-lay__edit" title={`Zmień treść: ${d.edit.label}`}><Pencil size={13} /> Edytuj treść</Link>
+              ))}
               <button type="button" title="Wyżej" disabled={d.fixed || i === 0 || defs.find((x) => x.id === items[i - 1]?.id)?.fixed} onClick={() => move(i, i - 1)}><ArrowUp size={15} /></button>
               <button type="button" title="Niżej" disabled={d.fixed || i === items.length - 1} onClick={() => move(i, i + 1)}><ArrowDown size={15} /></button>
               <button type="button" className={`kc-lay__eye ${it.visible ? "is-on" : ""}`} disabled={d.locked}
@@ -69,7 +74,47 @@ function SectionList({ kind, items, onChange, active, onActive }: {
   );
 }
 
-// Szkic strony: bloki w kolejności, wysokość wg rodzaju sekcji; ukryte nie są pokazywane
+function EditPane({ title, src, onClose }: { title: string; src: string; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  return (
+    <div className="kc-lay__preview">
+      <div className="kc-lay__browser">
+        <span /><span /><span />
+        <em>{title}</em>
+        <button type="button" className="kc-lay__close" onClick={onClose}>Zamknij — podgląd</button>
+      </div>
+      <iframe className="kc-lay__frame" style={{ width: "100%" }} title={title} src={src} />
+    </div>
+  );
+}
+
+function LiveHome({ items }: { items: LayoutItem[] }) {
+  const [width, setWidth] = useState<"" | "768px" | "390px">("");
+  const ids = items.filter((i) => i.visible).map((i) => i.id).join(",");
+  const src = `/podglad?wersja=szkic&sekcje=${encodeURIComponent(ids)}`;
+  return (
+    <div className="kc-lay__preview">
+      <div className="kc-lay__browser">
+        <span /><span /><span />
+        <em>Pełny podgląd — klienci tego nie widzą</em>
+        <span className="kc-lay__widths">
+          <button type="button" className={!width ? "is-on" : ""} title="Komputer" onClick={() => setWidth("")}><Monitor size={14} /></button>
+          <button type="button" className={width === "768px" ? "is-on" : ""} title="Tablet" onClick={() => setWidth("768px")}><Tablet size={14} /></button>
+          <button type="button" className={width === "390px" ? "is-on" : ""} title="Telefon" onClick={() => setWidth("390px")}><Smartphone size={14} /></button>
+        </span>
+      </div>
+      <div className="kc-lay__stage">
+        <iframe key={src + width} title="Podgląd strony głównej" src={src} className="kc-lay__frame" style={{ width: width || "100%" }} />
+      </div>
+      <p className="kc-lay__note">Przeciąganie sekcji odświeża podgląd od razu i nie zapisuje sklepu. Banery i kafelki biorą się z zapisanego szkicu strony głównej. Klienci zobaczą zmianę po „Zapisz układ” tutaj i „Publikuj” na stronie głównej.</p>
+    </div>
+  );
+}
+
 function Preview({ kind, items, active, onActive, tabs }: { kind: PageKind; items: LayoutItem[]; active: string; onActive: (id: string) => void; tabs?: LayoutItem[] }) {
   const defs = SECTIONS[kind];
   return (
@@ -97,6 +142,8 @@ export function LayoutEditor({ sampleProduct, sampleCategory }: { sampleProduct?
   const [saved, setSaved] = useState<Layouts | null>(null);
   const [draft, setDraft] = useState<Layouts | null>(null);
   const [active, setActive] = useState("");
+  const [editing, setEditing] = useState("");
+  const [previewKey, setPreviewKey] = useState(0);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; message: string } | null>(null);
 
@@ -128,39 +175,49 @@ export function LayoutEditor({ sampleProduct, sampleCategory }: { sampleProduct?
     setDraft({ ...draft, ...Object.fromEntries(kinds.map((k) => [k, defaultLayout(k)])) });
   };
   const preview = tab === "home" ? "/" : tab === "product" ? (sampleProduct ? `/produkt/${sampleProduct}` : "/") : tab === "category" ? (sampleCategory ? `/kategoria/${sampleCategory}` : "/") : "/";
+  const closeEdit = () => { setEditing(""); setPreviewKey((k) => k + 1); };
+  const homeEdit = tab === "home" ? SECTIONS.home.find((s) => s.id === editing && s.edit?.href.includes("sekcja=")) : undefined;
+  const menuEdit = tab === "menu" && (["pasek", "menu", "stopka"] as string[]).includes(editing)
+    ? { title: editing === "pasek" ? "Pasek na górze" : editing === "menu" ? "Linki w menu" : "Stopka", src: `/admin/globals/navigation?sekcja=${editing}` }
+    : undefined;
+  const pane = homeEdit?.edit ? { title: homeEdit.label, src: homeEdit.edit.href } : menuEdit;
 
   return (
     <div className="kc-lay">
       <nav className="kc-lay__tabs-nav" role="tablist">
         {TABS.map(({ id, label, icon: Icon }) => (
-          <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? "is-active" : ""} onClick={() => { setTab(id); setActive(""); }}>
+          <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? "is-active" : ""} onClick={() => { setTab(id); setActive(""); setEditing(""); }}>
             <Icon size={16} /> {label}
           </button>
         ))}
       </nav>
 
       {tab === "menu" ? (
-        <div className="kc-card kc-lay__menu">
-          <Menu size={22} />
-          <div>
-            <b>Menu w nagłówku, pasek informacyjny i stopka</b>
-            <p>Linki w menu, kolumny stopki i krótki pasek z komunikatem nad nagłówkiem (np. „Darmowa dostawa od 249 zł”). Kategorie w menu tworzą się same z drzewa kategorii.</p>
-            <div className="kc-lay__menu-actions">
-              <Link href="/admin/globals/navigation" className="kc-msg__send"><Pencil size={14} /> Edytuj menu i stopkę</Link>
-              <Link href="/admin/collections/categories" className="kc-act__btn">Kategorie w menu</Link>
-              <Link href="/admin/collections/pages" className="kc-act__btn">Podstrony w stopce</Link>
-            </div>
+        <div className="kc-lay__grid is-live">
+          <div className="kc-lay__col">
+            <section className="kc-card kc-lay__menu">
+              <header className="kc-card__head"><h2>Menu i stopka</h2></header>
+              <p>Kategorie w menu tworzą się same z drzewa kategorii. Tu zmieniasz pasek, linki obok i stopkę — po jednym elemencie.</p>
+              <div className="kc-lay__menu-actions">
+                {([["pasek", "Pasek na górze"], ["menu", "Linki w menu"], ["stopka", "Stopka"]] as const).map(([id, label]) => (
+                  <button key={id} type="button" className={`kc-act__btn ${editing === id ? "is-on" : ""}`} onClick={() => setEditing(id)}><Pencil size={14} /> {label}</button>
+                ))}
+                <Link href="/admin/collections/categories" className="kc-act__btn">Kategorie w menu</Link>
+                <Link href="/admin/collections/pages" className="kc-act__btn">Podstrony w stopce</Link>
+              </div>
+            </section>
           </div>
+          {pane ? <EditPane title={pane.title} src={pane.src} onClose={closeEdit} /> : <LiveHome key={previewKey} items={draft.home} />}
         </div>
       ) : (
-        <div className="kc-lay__grid">
+        <div className={`kc-lay__grid ${tab === "home" ? "is-live" : ""}`}>
           <div className="kc-lay__col">
             <section className="kc-card">
               <header className="kc-card__head">
                 <h2>{tab === "product" ? "Bloki karty produktu" : `Sekcje: ${PAGE_LABEL[tab]}`}</h2>
                 <span className="kc-muted">przeciągnij albo użyj strzałek</span>
               </header>
-              <SectionList kind={tab} items={draft[tab]} onChange={(it) => set(tab, it)} active={active} onActive={setActive} />
+              <SectionList kind={tab} items={draft[tab]} onChange={(it) => set(tab, it)} active={active} onActive={setActive} editing={editing} onEdit={setEditing} />
             </section>
             {tab === "product" && (
               <section className="kc-card">
@@ -169,7 +226,7 @@ export function LayoutEditor({ sampleProduct, sampleCategory }: { sampleProduct?
               </section>
             )}
           </div>
-          <Preview kind={tab} items={draft[tab]} active={active} onActive={setActive} tabs={tab === "product" ? draft.productTabs : undefined} />
+          {pane ? <EditPane title={pane.title} src={pane.src} onClose={closeEdit} /> : tab === "home" ? <LiveHome key={previewKey} items={draft.home} /> : <Preview kind={tab} items={draft[tab]} active={active} onActive={setActive} tabs={tab === "product" ? draft.productTabs : undefined} />}
         </div>
       )}
 

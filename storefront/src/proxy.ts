@@ -7,7 +7,16 @@ import { getSite } from "@/integrations/vault";
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
+const probe = /^\/(?:wp-admin|wp-login\.php|wp-content|wp-includes|xmlrpc\.php|phpmyadmin)(?:\/|$)|^\/\.(?:env|git)/i;
+
 export function proxy(req: NextRequest) {
+  // Stare adresy WordPressa i typowe próby włamania nie dostają strony sklepu ani panelu.
+  if (probe.test(req.nextUrl.pathname)) {
+    return new NextResponse("Nie znaleziono.", {
+      status: 404,
+      headers: { "Content-Type": "text/plain; charset=utf-8", "X-Robots-Tag": "noindex", "Cache-Control": "no-store" },
+    });
+  }
   const site = getSite();
   if (!site.maintenance || req.cookies.has("payload-token")) return NextResponse.next();
   const html = `<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">

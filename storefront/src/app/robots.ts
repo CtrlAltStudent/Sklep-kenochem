@@ -18,8 +18,9 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
-        // filtry list (marka, cena, sortowanie…) tworzą tysiące kopii tych samych stron – podkategorie (?sub=, &typ=) zostają dostępne
+        allow: ["/", "/api/media/"],
+        // filtry list (marka, cena, sortowanie…) tworzą tysiące kopii tych samych stron – podkategorie (?sub=, &typ=) zostają dostępne.
+        // Zdjęcia produktów są pod /api/media/ – Google (wyszukiwarka i Zakupy) musi je móc pobrać. Reszta /api/ zostaje zamknięta.
         disallow: ["/admin", "/api/", "/koszyk", "/zamowienie", "/konto", "/ulubione", "/szukaj", ...FILTERS.map((f) => `/*?*${f}=`), ...extra],
       },
       ...(site.aiBots ? [] : [{ userAgent: AI_BOTS, disallow: "/" }]),

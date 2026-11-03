@@ -20,7 +20,7 @@ const QUICK = [
 ];
 
 export function MessageView() {
-  const { id, editing, edit, done } = useRecordView();
+  const { id, editing } = useRecordView();
   const f = useFormFields(([fields]) => fields);
   const status = useField<string>({ path: "status" });
   const { submit } = useForm();
@@ -46,7 +46,7 @@ export function MessageView() {
   const setStatus = (s: string) => { status.setValue(s); setTimeout(() => void submit(), 50); };
 
   return (
-    <RecordShell editing={editing} onEdit={edit} onDone={done} editLabel="Edytuj dane"
+    <RecordShell editing={editing} sections={[{ id: "dane-wiadomosci", title: "Dane zgłoszenia" }]}
       title={v("subject") || (v("type") === "b2b" ? "Wniosek B2B" : "Wiadomość")}
       subtitle={<span className="kc-msg__from">
         <b>{v("name")}</b> · <a href={`mailto:${email}`}><Mail size={13} /> {email}</a>

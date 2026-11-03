@@ -54,12 +54,14 @@ function VariantChoices({ product, variantId, onChange }: { product: Product; va
 }
 
 // Środek karty (opis, warianty, zestaw) i skrzynka z ceną obok. Warianty są na środku, żeby nie rozpychały ceny.
-export function ProductStage({ product, initialVariantId, gallery, lead, extra }: {
+export function ProductStage({ product, initialVariantId, gallery, lead, extra, shipCutoff, sameDay = true }: {
   product: Product;
   initialVariantId?: string;
   gallery: ReactNode;
   lead: ReactNode;
   extra: ReactNode;
+  shipCutoff?: string | null;
+  sameDay?: boolean;
 }) {
   const first = product.variants.find((v) => v.id === initialVariantId) ?? product.variants[0];
   const [variantId, setVariantId] = useState(first.id);
@@ -72,14 +74,14 @@ export function ProductStage({ product, initialVariantId, gallery, lead, extra }
         {extra}
       </div>
       <div className="lg:sticky lg:top-28">
-        <ProductBuy product={product} variantId={variantId} />
+        <ProductBuy product={product} variantId={variantId} shipCutoff={shipCutoff} sameDay={sameDay} />
       </div>
     </div>
   );
 }
 
 // Pole zakupu (prawa kolumna) + przyklejony pasek „Dodaj do koszyka” na telefonie
-export function ProductBuy({ product, variantId }: { product: Product; variantId: string }) {
+export function ProductBuy({ product, variantId, shipCutoff, sameDay = true }: { product: Product; variantId: string; shipCutoff?: string | null; sameDay?: boolean }) {
   const freeShipping = useFreeShipping();
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
@@ -111,6 +113,17 @@ export function ProductBuy({ product, variantId }: { product: Product; variantId
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1023px)");
+    const sync = () => document.documentElement.toggleAttribute("data-buybar", showBar && inStock && mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => {
+      mq.removeEventListener("change", sync);
+      document.documentElement.removeAttribute("data-buybar");
+    };
+  }, [showBar, inStock]);
 
   const add = () => {
     if (!inStock) return;
@@ -191,7 +204,7 @@ export function ProductBuy({ product, variantId }: { product: Product; variantId
           className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-brand-50 hover:text-brand-800">
           <Heart className={`h-4.5 w-4.5 ${liked ? "animate-pop fill-red-500 text-red-500" : ""}`} /> {liked ? "W ulubionych" : "Dodaj do ulubionych"}
         </button>
-        <div className="mt-3">{inStock ? <DispatchInfo inStock /> : <StockAlertForm slug={variant.slug || product.slug} />}</div>
+        <div className="mt-3">{inStock ? <DispatchInfo inStock cutoff={shipCutoff} enabled={sameDay} /> : <StockAlertForm slug={variant.slug || product.slug} />}</div>
 
         <ul className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2 border-t border-brand-100 pt-4 text-[12px] text-slate-600">
           {trust.map(({ icon: Icon, text }, i) => (

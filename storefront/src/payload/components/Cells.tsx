@@ -120,9 +120,10 @@ export function ReturnTypeCell(props: DefaultCellComponentProps) {
 export function CategoryNameCell(props: DefaultCellComponentProps) {
   const row = props.rowData as { parent?: unknown; lucide?: IconName | null; depth?: number | null };
   const isRoot = !row?.parent;
+  const depth = Number(row?.depth ?? (isRoot ? 0 : 1));
   return (
     <Cell props={props}>
-      <span className={`kc-catname ${isRoot ? "kc-catname--root" : "kc-catname--child"}`}>
+      <span className={`kc-catname ${isRoot ? "kc-catname--root" : "kc-catname--child"}`} style={{ paddingLeft: depth * 14 }}>
         {!isRoot && <span className="kc-catname__branch" aria-hidden>└</span>}
         <span className="kc-catname__icon">{row?.lucide ? <CatIcon name={row.lucide} className="h-4 w-4" /> : null}</span>
         <span className={isRoot ? "kc-strong" : ""}>{String(props.cellData ?? "")}</span>

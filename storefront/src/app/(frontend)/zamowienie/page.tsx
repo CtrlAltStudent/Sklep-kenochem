@@ -4,6 +4,7 @@ import { freeShippingFrom } from "@/lib/data";
 import { Checkout, type PayMethod, type ShipMethod } from "@/components/checkout/Checkout";
 import { paymentAvailable, shippingAvailable } from "@/integrations/availability";
 import { inpostWidgetToken } from "@/integrations/inpost";
+import { orlenMapKey } from "@/integrations/orlen";
 import { moduleEnabled } from "@/integrations/vault";
 import { cartRemindersOn } from "@/integrations/carts";
 
@@ -23,5 +24,6 @@ export default async function CheckoutPage() {
     .map((m) => ({ code: m.code, label: m.label, provider: m.provider ?? "przelewy24" }));
   // Token Geowidget jest publiczny (InPost wiąże go z domeną sklepu) – trafia do przeglądarki z założenia
   const inpostToken = moduleEnabled("inpost") ? inpostWidgetToken() : "";
-  return <Checkout shipping={shipping} payments={payments} freeThreshold={freeShippingFrom(s)} inpostToken={inpostToken} cartReminder={cartRemindersOn()} />;
+  const orlenToken = moduleEnabled("orlen") ? orlenMapKey() : "";
+  return <Checkout shipping={shipping} payments={payments} freeThreshold={freeShippingFrom(s)} inpostToken={inpostToken} orlenToken={orlenToken} cartReminder={cartRemindersOn()} />;
 }

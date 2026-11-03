@@ -57,17 +57,22 @@ export const Pages: CollectionConfig = {
   // po zapisie strona w sklepie odświeża się od razu
   hooks: { afterChange: [({ doc }) => { try { revalidatePath("/", "layout"); } catch { /* skrypt poza Next */ } return doc; }] },
   fields: [
+    { type: "ui", name: "pageBoard", admin: { components: { Field: { path: "@/payload/components/SectionSheet#SectionBoard", clientProps: { sections: [
+      { id: "naglowek-strony", title: "Nagłówek", hint: "Tytuł i wstęp." },
+      { id: "zawartosc-strony", title: "Zawartość", hint: "Bloki: tekst, zdjęcie, produkty, FAQ." },
+      { id: "google-strony", title: "Wygląd w Google", hint: "Tytuł i opis w wyszukiwarce." },
+    ] } } } } },
     section("Nagłówek strony", "Tytuł i wstęp wyświetlane na górze strony.", "text", [
       { name: "title", label: "Tytuł", type: "text", required: true },
       { name: "intro", label: "Wstęp (pod tytułem)", type: "textarea" },
-    ]),
+    ], { id: "naglowek-strony" }),
     section("Zawartość strony", "Układaj stronę z bloków: tekst, zdjęcie z tekstem, produkty, FAQ…", "sparkles", [
       { name: "layout", label: "Bloki", type: "blocks", blocks },
-    ]),
+    ], { id: "zawartosc-strony" }),
     section("Wygląd w Google", "Ocena i podpowiedzi, co poprawić, żeby strona lepiej się pozycjonowała.", "seo", [
       { type: "ui", name: "pageSeo", admin: { components: { Field: { path: "@/payload/components/SeoPanel#SeoPanel", clientProps: { kind: "page" } } } } },
       seoFields,
-    ], { collapsed: true }),
+    ], { id: "google-strony" }),
     slugField("title"),
     { name: "template", label: "Układ strony", type: "select", defaultValue: "standard", admin: { position: "sidebar" }, options: [
       { label: "Standardowy", value: "standard" },
@@ -84,23 +89,30 @@ export const Posts: CollectionConfig = {
   versions: { drafts: { schedulePublish: true }, maxPerDoc: 20 },
   access: { read: publishedOrStaff, create: isEditor, update: isEditor, delete: isEditor },
   fields: [
+    { type: "ui", name: "postBoard", admin: { components: { Field: { path: "@/payload/components/SectionSheet#SectionBoard", clientProps: { sections: [
+      { id: "naglowek-wpisu", title: "Nagłówek", hint: "Tytuł i zajawka." },
+      { id: "zdjecie-wpisu", title: "Zdjęcie główne", hint: "Poziome, min. 1600 × 900 px." },
+      { id: "tresc-wpisu", title: "Treść", hint: "Artykuł." },
+      { id: "produkty-wpisu", title: "Polecane produkty", hint: "Pod artykułem." },
+      { id: "google-wpisu", title: "Wygląd w Google", hint: "Tytuł i opis w wyszukiwarce." },
+    ] } } } } },
     section("Nagłówek wpisu", "Tytuł i krótka zajawka widoczne na liście artykułów.", "text", [
       { name: "title", label: "Tytuł", type: "text", required: true, admin: { placeholder: "np. Jak umyć auto bezdotykowo – krok po kroku" } },
       { name: "excerpt", label: "Zajawka", type: "textarea", admin: { placeholder: "2–3 zdania zachęcające do przeczytania", description: "Pokazywana na kafelku bloga i w podglądzie w Google." } },
-    ]),
+    ], { id: "naglowek-wpisu" }),
     section("Zdjęcie główne", "Najlepiej poziome, min. 1600 × 900 px.", "image", [
       { name: "cover", label: "Zdjęcie", type: "upload", relationTo: "media" },
-    ]),
+    ], { id: "zdjecie-wpisu" }),
     section("Treść artykułu", "Pisz śródtytułami (H2/H3) – łatwiej się czyta i lepiej pozycjonuje. Wpisz „/”, żeby wstawić element.", "sparkles", [
       { name: "content", label: "Treść", type: "richText" },
-    ]),
+    ], { id: "tresc-wpisu" }),
     section("Polecane produkty", "Produkty pokazywane pod artykułem – zamieniają czytelników w klientów.", "cart", [
       productList("relatedProducts", "Produkty", "Pokazywane pod artykułem. Wyszukaj po nazwie albo SKU."),
-    ]),
+    ], { id: "produkty-wpisu" }),
     section("Wygląd w Google", "Ocena i podpowiedzi pod ten wpis.", "seo", [
       { type: "ui", name: "postSeo", admin: { components: { Field: { path: "@/payload/components/SeoPanel#SeoPanel", clientProps: { kind: "post" } } } } },
       seoFields,
-    ], { collapsed: true }),
+    ], { id: "google-wpisu" }),
     slugField("title"),
     { name: "tag", label: "Kategoria wpisu", type: "select", admin: { position: "sidebar" }, options: [
       { label: "Poradnik", value: "poradnik" }, { label: "Detailing", value: "detailing" }, { label: "Myjnie", value: "myjnie" },

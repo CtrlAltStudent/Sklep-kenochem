@@ -15,6 +15,23 @@ export function effectivePrice(price: number, sale: Sale, at = Date.now()) {
 }
 
 // Historia cen + najniższa cena z 30 dni (dyrektywa Omnibus): liczona z cen sprzed rozpoczęcia promocji
+const brandKey = (s: string) => s.toLowerCase().replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
+
+// Marka produktu musi być jedną z marek z logiem na stronie głównej. Inna nazwa jest czyszczona.
+export const brandHook: CollectionBeforeChangeHook = async ({ data, req }) => {
+  if (!data || !("brand" in data) || data.brand == null || String(data.brand).trim() === "") return data;
+  const ctx = req.context as { brandNames?: string[] };
+  if (!ctx.brandNames) {
+    const home = await req.payload.findGlobal({ slug: "homepage", depth: 0, overrideAccess: true }).catch(() => null);
+    ctx.brandNames = ((home as { brandLogos?: { name?: string | null }[] } | null)?.brandLogos ?? [])
+      .map((b) => b.name?.trim()).filter((n): n is string => Boolean(n));
+  }
+  if (!ctx.brandNames.length) return data;
+  const hit = ctx.brandNames.find((n) => brandKey(n) === brandKey(String(data.brand)));
+  data.brand = hit ?? "";
+  return data;
+};
+
 export const priceHistoryHook: CollectionBeforeChangeHook = ({ data, originalDoc }) => {
   const price = Number(data.price ?? originalDoc?.price ?? 0);
   const sale = (data.sale ?? originalDoc?.sale) as Sale;
@@ -52,6 +69,56 @@ export const stockAlertHook: CollectionAfterChangeHook = async ({ doc, previousD
   });
   backInStockMails(req.payload, doc.id);
   return doc;
+};
+
+const imageBlock = /<(?:picture|figure)\b[^>]*>[\s\S]*?<\/(?:picture|figure)>|<img\b[^>]*>|!\[[^\]]*\]\([^)]+\)/gi;
+const emptyTag = /<(p|strong|em|b|span|div|h[1-6])\b[^>]*>(?:\s|&nbsp;|<br\s*\/?>)*<\/\1>/gi;
+
+// W opisie zostaje sam tekst. Obrazki z opisu (także wklejone ze starego sklepu) są usuwane.
+export function stripDescriptionImages(html: string) {
+  let out = html.replace(imageBlock, "");
+  for (let i = 0; i < 5; i++) {
+    const next = out.replace(emptyTag, "");
+    if (next === out) break;
+    out = next;
+  }
+  return out.replace(/(?:<br\s*\/?>\s*){3,}/gi, "<br><br>").trim();
+}
+
+const droppedBlock = /<\/?(?:script|style|iframe|object|embed|form|input|button|textarea|svg|canvas|link|meta|head|html|body)\b[^>]*>/gi;
+const chromeWrap = /<\/?(?:pre|code|div|span|section|article|font|center|blockquote)\b[^>]*>/gi;
+
+// Opis wklejony z czatu albo ze starego sklepu niesie ze sobą znaczniki kodu, ramki i klasy.
+// Zostawiamy sam tekst z nagłówkami, listami i tabelą – inaczej karta produktu się rozjeżdża.
+export function tidyDescription(html: string) {
+  let s = stripDescriptionImages(html).replace(/<!--[\s\S]*?-->/g, "").replace(droppedBlock, "").replace(chromeWrap, "");
+  s = s.replace(/<([a-zA-Z][a-zA-Z0-9]*)(\s[^>]*)?>/g, (_full, raw: string, attrs: string | undefined) => {
+    const tag = raw.toLowerCase() === "h1" ? "h2" : raw.toLowerCase();
+    if (tag === "br" || tag === "hr") return `<${tag}>`;
+    if (tag === "a") {
+      const href = /href\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(attrs ?? "");
+      const url = (href?.[1] ?? href?.[2] ?? "").trim();
+      if (/^(https?:|mailto:|\/)/i.test(url)) return `<a href="${url.replace(/"/g, "")}">`;
+      return "<a>";
+    }
+    if (tag === "td" || tag === "th") {
+      const col = /colspan\s*=\s*"?(\d+)"?/i.exec(attrs ?? "");
+      const row = /rowspan\s*=\s*"?(\d+)"?/i.exec(attrs ?? "");
+      const span = [col ? `colspan="${col[1]}"` : "", row ? `rowspan="${row[1]}"` : ""].filter(Boolean).join(" ");
+      return span ? `<${tag} ${span}>` : `<${tag}>`;
+    }
+    return `<${tag}>`;
+  });
+  s = s.replace(/<\/h1>/gi, "</h2>");
+  s = s.replace(/<p>(?:\s|&nbsp;|<br>)*<\/p>/gi, "");
+  return s.replace(/(?:<br>\s*){3,}/gi, "<br><br>").trim();
+}
+
+export const stripDescriptionImagesHook: CollectionBeforeChangeHook = ({ data }) => {
+  if (typeof data?.descriptionHtml === "string" && /<img\b|<picture\b|<figure\b|!\[[^\]]*\]\(/i.test(data.descriptionHtml)) {
+    data.descriptionHtml = stripDescriptionImages(data.descriptionHtml);
+  }
+  return data;
 };
 
 // Opis zmieniony ręcznie w panelu → zaznacz „Nie nadpisuj opisu”, żeby synchronizacja z BaseLinkerem go nie skasowała

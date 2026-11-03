@@ -1,8 +1,8 @@
 import type { CollectionConfig } from "payload";
 import { anyone, isCatalog, isEditor } from "../access";
-import { productList, seoFields, slugField } from "../fields";
+import { productList, section, seoFields, slugField } from "../fields";
 import { VARIANT_DISPLAY, VARIANT_NAV } from "@/lib/data";
-import { keepEditedDescription, priceHistoryHook, stockAlertHook, invalidateCatalogHook, variantParentHook, uniqueSkuHook, unlinkVariantsHook } from "../productHooks";
+import { brandHook, keepEditedDescription, priceHistoryHook, stockAlertHook, invalidateCatalogHook, stripDescriptionImagesHook, variantParentHook, uniqueSkuHook, unlinkVariantsHook } from "../productHooks";
 
 // Produkt sklepu. Pola z zakładki „Ceny i magazyn” oraz nazwa/opis/zdjęcia są nadpisywane
 // przez synchronizację z BaseLinkerem – chyba że zaznaczysz „Nie nadpisuj” w zakładce BaseLinker.
@@ -22,23 +22,24 @@ export const Products: CollectionConfig = {
   },
   access: { read: anyone, create: isEditor, update: isCatalog, delete: isEditor },
   hooks: {
-    beforeChange: [uniqueSkuHook, priceHistoryHook, keepEditedDescription, variantParentHook],
+    beforeChange: [stripDescriptionImagesHook, uniqueSkuHook, priceHistoryHook, keepEditedDescription, variantParentHook, brandHook],
     afterChange: [stockAlertHook, invalidateCatalogHook],
     afterDelete: [unlinkVariantsHook, invalidateCatalogHook],
   },
   fields: [
     // Podgląd produktu w kartach; formularz pokazuje się po „Edytuj”
     { type: "ui", name: "overview", admin: { disableListColumn: true, components: { Field: "@/payload/components/Overview#ProductOverview" } } },
-    { name: "name", label: "Nazwa", type: "text", required: true, admin: { components: { Cell: "@/payload/components/Cells#ProductCell" } } },
     {
       type: "tabs",
       tabs: [
         {
           label: "Dane podstawowe",
           fields: [
+            section("Nazwa i opis", "Nazwa, kategoria, marka i opisy widoczne w sklepie.", "text", [
+            { name: "name", label: "Nazwa", type: "text", required: true, admin: { components: { Cell: "@/payload/components/Cells#ProductCell" } } },
             { type: "row", fields: [
               { name: "category", label: "Kategoria", type: "relationship", relationTo: "categories", index: true, admin: { width: "50%", components: { Cell: "@/payload/components/Cells#CategoryCell" } } },
-              { name: "brand", label: "Marka", type: "text", index: true, admin: { width: "50%" } },
+              { name: "brand", label: "Marka", type: "text", index: true, admin: { width: "50%", components: { Field: "@/payload/components/BrandSelect#BrandSelect" }, description: "Lista marek jest taka jak loga na stronie głównej. Innej marki sklep nie pokazuje." } },
             ] },
             { name: "shortDescription", label: "Krótki opis (pod nazwą)", type: "textarea" },
             // Stare pole edytora – sklep go nie używa; widoczne tylko, jeśli ktoś coś w nim zapisał
@@ -46,18 +47,21 @@ export const Products: CollectionConfig = {
             { name: "descriptionHtml", label: "Opis produktu", type: "code", admin: { language: "html", components: { Field: "@/payload/components/HtmlEditor#HtmlEditor" }, description: "Synchronizacja z BaseLinkerem może nadpisać opis – zaznacz „Nie nadpisuj opisu” w zakładce BaseLinker, jeśli zmieniasz go tutaj." } },
             productList("related", "Produkty powiązane („Kup razem”)", "Akcesoria i produkty uzupełniające – pokazywane na stronie produktu."),
             { name: "badges", label: "Etykiety", type: "select", hasMany: true, options: [
-              { label: "Nowość", value: "nowosc" }, { label: "Promocja", value: "promocja" }, { label: "Bestseller", value: "bestseller" },
+              { label: "Nowość", value: "nowosc" }, { label: "Promocja", value: "promocja" },               { label: "Bestseller", value: "bestseller" },
             ] },
+            ], { id: "opis" }),
           ],
         },
         {
           label: "Ceny i magazyn",
           fields: [
+            section("Cena", "Cena detaliczna, pojemność do ceny za litr, promocja i progi ilościowe.", "tag", [
             { type: "row", fields: [
               { name: "price", label: "Cena brutto (detal) zł", type: "number", required: true, min: 0, admin: { step: 0.01, width: "33%", components: { Cell: "@/payload/components/Cells#ProductPriceCell" } } },
               { name: "priceB2B", label: "Cena brutto B2B zł", type: "number", min: 0, admin: { step: 0.01, width: "33%", description: "Grupa cenowa B2B z BaseLinkera" } },
               { name: "vatRate", label: "VAT %", type: "number", defaultValue: 23, admin: { width: "33%" } },
             ] },
+            { name: "unitLabel", label: "Pojemność", type: "text", admin: { width: "50%", placeholder: "np. 5 L", description: "Ile jest w opakowaniu: 5 L, 500 ml albo 1 kg. Z tego liczy się cena za 1 l lub 1 kg. Numer modelu w nazwie (np. RO-180L) się nie liczy — wpisz prawdziwą pojemność bańki." } },
             { type: "row", fields: [
               { name: "oldPrice", label: "Cena przekreślona (ręcznie) zł", type: "number", min: 0, admin: { step: 0.01, width: "50%", description: "Zwykle zostaw puste – użyj promocji czasowej poniżej." } },
               { name: "lowestPrice30d", label: "Najniższa cena z 30 dni (Omnibus) zł", type: "number", min: 0, admin: { step: 0.01, width: "50%", readOnly: true, description: "Liczona automatycznie z historii cen." } },
@@ -114,20 +118,21 @@ export const Products: CollectionConfig = {
                 { name: "price", label: "Cena", type: "number", admin: { width: "50%" } },
               ] }],
             },
+            ], { id: "cena" }),
+            section("Magazyn", "Kody, stan i waga przesyłki.", "package", [
             { type: "row", fields: [
               { name: "sku", label: "SKU", type: "text", index: true, admin: { width: "33%" } },
               { name: "ean", label: "EAN", type: "text", index: true, admin: { width: "33%" } },
               { name: "stock", label: "Stan magazynowy", type: "number", defaultValue: 0, admin: { width: "33%", components: { Cell: "@/payload/components/Cells#StockCell" } } },
             ] },
-            { type: "row", fields: [
-              { name: "unitLabel", label: "Pojemność / wariant", type: "text", admin: { width: "50%", placeholder: "np. 5 L" } },
-              { name: "weight", label: "Waga (kg)", type: "number", min: 0, admin: { width: "50%" } },
-            ] },
+            { name: "weight", label: "Waga przesyłki (kg)", type: "number", min: 0, admin: { width: "50%", description: "Waga do wysyłki, nie pojemność do ceny za litr." } },
+            ], { id: "magazyn" }),
           ],
         },
         {
           label: "Zestaw",
           fields: [
+            section("Zestaw", "Z jakich produktów składa się ten zestaw.", "package", [
             { type: "ui", name: "bundleEditor", label: "Skład zestawu", admin: { disableListColumn: true, components: { Field: "@/payload/components/BundleEditor#BundleEditor" } } },
             { name: "bundle", label: "To jest zestaw", type: "checkbox", defaultValue: false, index: true, admin: { hidden: true, disableListColumn: true } },
             {
@@ -141,21 +146,25 @@ export const Products: CollectionConfig = {
                 { name: "quantity", label: "Ilość", type: "number", defaultValue: 1, min: 1 },
               ],
             },
+            ], { id: "zestaw" }),
           ],
         },
         {
           label: "Warianty",
           fields: [
+            section("Warianty", "Wersje tego towaru na jednej karcie w sklepie.", "settings", [
             { type: "ui", name: "variantEditor", label: "Warianty na karcie", admin: { disableListColumn: true, components: { Field: "@/payload/components/VariantEditor#VariantEditor" } } },
             { name: "variantOf", label: "Karta w sklepie", type: "relationship", relationTo: "products", index: true, filterOptions: ({ id }) => (id ? { id: { not_equals: id } } : true), admin: { hidden: true, disableListColumn: true, description: "Jeśli ustawione, ten produkt należy do grupy wariantów innej karty." } },
             { name: "variantSort", label: "Kolejność wariantu", type: "number", admin: { hidden: true, disableListColumn: true } },
             { name: "variantDisplay", label: "Wygląd wyboru w sklepie", type: "select", defaultValue: "pojemnosc", options: VARIANT_DISPLAY.map((d) => ({ label: d.label, value: d.id })), admin: { hidden: true, disableListColumn: true } },
             { name: "variantNav", label: "Strony wariantów", type: "select", defaultValue: "switch", options: VARIANT_NAV.map((d) => ({ label: d.label, value: d.id })), admin: { hidden: true, disableListColumn: true } },
+            ], { id: "warianty" }),
           ],
         },
         {
           label: "Zdjęcia",
           fields: [
+            section("Zdjęcia", "Pierwsze zdjęcie jest główne.", "image", [
             { type: "ui", name: "imageStrip", admin: { components: { Field: "@/payload/components/ImagePreview#ImageStrip" } } },
             {
               name: "images",
@@ -173,11 +182,13 @@ export const Products: CollectionConfig = {
                 ] },
               ],
             },
+            ], { id: "zdjecia" }),
           ],
         },
         {
           label: "Bezpieczeństwo (CLP/GPSR)",
           fields: [
+            section("Bezpieczeństwo", "Piktogramy, hasło i karta charakterystyki.", "shield", [
             { name: "hazardPictograms", label: "Piktogramy GHS", type: "select", hasMany: true, options: [
               { label: "GHS01 – materiały wybuchowe", value: "GHS01" }, { label: "GHS02 – łatwopalne", value: "GHS02" },
               { label: "GHS03 – utleniające", value: "GHS03" }, { label: "GHS04 – gazy pod ciśnieniem", value: "GHS04" },
@@ -190,11 +201,13 @@ export const Products: CollectionConfig = {
             ] },
             { name: "sds", label: "Karta charakterystyki (PDF)", type: "upload", relationTo: "media" },
             { name: "safetyNotes", label: "Zwroty H/P i uwagi", type: "textarea" },
+            ], { id: "bezpieczenstwo" }),
           ],
         },
         {
           label: "SEO i Google",
           fields: [
+            section("SEO i Google", "Tytuł, opis i dane do Zakupów Google.", "seo", [
             // Podgląd wyniku w Google + lista kontrolna (bez zmian w bazie)
             { type: "ui", name: "seoPanel", admin: { components: { Field: "@/payload/components/SeoPanel#SeoPanel" } } },
             seoFields,
@@ -225,11 +238,13 @@ export const Products: CollectionConfig = {
                 { name: "highlights", label: "Najważniejsze cechy (po jednej w linii, do 10)", type: "textarea", admin: { placeholder: "Usuwa owady w 60 sekund\nBezpieczny dla lakieru i plastików\nGotowy do użycia", description: "Pokazywane w Zakupach Google jako lista zalet produktu." } },
               ],
             },
+            ], { id: "seo" }),
           ],
         },
         {
           label: "BaseLinker",
           fields: [
+            section("BaseLinker", "Połączenie z katalogiem i pola, których synchronizacja nie nadpisuje.", "package", [
             { type: "row", fields: [
               { name: "baselinkerId", label: "ID produktu w BaseLinkerze", type: "number", index: true, unique: true, admin: { width: "50%" } },
               { name: "source", label: "Źródło danych", type: "select", defaultValue: "manual", admin: { width: "50%" }, options: [
@@ -253,6 +268,7 @@ export const Products: CollectionConfig = {
               ],
             },
             { name: "lastSyncedAt", label: "Ostatnia synchronizacja", type: "date", admin: { readOnly: true, date: { pickerAppearance: "dayAndTime" } } },
+            ], { id: "baselinker-produkt" }),
           ],
         },
       ],

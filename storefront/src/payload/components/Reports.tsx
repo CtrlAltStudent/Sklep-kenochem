@@ -5,7 +5,7 @@ import {
   ArrowDownRight, ArrowUpRight, BarChart3, Ban, Boxes, CalendarDays, Clock, CreditCard, Download, MapPin, Package, Receipt, RotateCcw, ShoppingBag,
   TrendingUp, Truck, UserPlus, Users, Wallet,
 } from "lucide-react";
-import { categories } from "@/lib/data";
+import { getShopCategories } from "@/lib/catalog";
 import type { Order } from "@/payload-types";
 
 // Widok /admin/raporty – sprzedaż w wybranym okresie z porównaniem do poprzedniego okresu tej samej długości.
@@ -134,7 +134,8 @@ export async function Reports(props: AdminViewServerProps) {
   const hours = Array(24).fill(0) as number[];
   const statuses = new Map<string, number>();
   let returning = 0, fresh = 0;
-  const catName = new Map(categories.flatMap((c) => [[c.slug, c.name] as const, ...c.children.map((s) => [s.slug, c.name] as const)]));
+  const tree = await getShopCategories();
+  const catName = new Map(tree.flatMap((c) => [[c.slug, c.name] as const, ...c.children.map((s) => [s.slug, c.name] as const)]));
 
   for (const o of cur.docs) statuses.set(ORDER_ST[o.status ?? ""] ?? o.status ?? "—", (statuses.get(ORDER_ST[o.status ?? ""] ?? o.status ?? "—") ?? 0) + 1);
   for (const o of now.valid) {

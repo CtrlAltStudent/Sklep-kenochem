@@ -14,7 +14,8 @@ export const getPage = cache(async (slug: string) => {
 });
 
 export const getStoreSettings = cache(async () => (await getCms()).findGlobal({ slug: "store-settings" }));
-export const getHomepage = cache(async () => (await getCms()).findGlobal({ slug: "homepage", depth: 1 }).catch(() => null));
+export const getHomepage = cache(async (draft = false) =>
+  (await getCms()).findGlobal({ slug: "homepage", depth: 1, draft, overrideAccess: draft }).catch(() => null));
 export const getNavigation = cache(async () => (await getCms()).findGlobal({ slug: "navigation", depth: 0 }).catch(() => null));
 
 export const getFooterPages = cache(async () => {
@@ -68,6 +69,26 @@ export const getPosts = cache(async () => {
     select: { title: true, slug: true, excerpt: true, cover: true, tag: true, publishedAt: true, updatedAt: true },
   });
   return docs;
+});
+
+// Wpisy, w których produkt jest podlinkowany, wskazany jako polecany albo wymieniony z nazwy.
+export const getPostsAboutProduct = cache(async (slug: string, name: string) => {
+  const payload = await getCms();
+  const { docs } = await payload.find({
+    collection: "posts", where: { _status: { equals: "published" } }, sort: "-publishedAt", limit: 80, depth: 1,
+    select: { title: true, slug: true, content: true, relatedProducts: true },
+  });
+  const needle = name.trim().toLowerCase();
+  const hits: { title: string; slug: string }[] = [];
+  for (const post of docs) {
+    if (!post.slug || !post.title) continue;
+    const related = (post.relatedProducts ?? []).some((r) => typeof r === "object" && r != null && "slug" in r && r.slug === slug);
+    const linked = linkedProductSlugs(post.content).includes(slug);
+    const written = needle.length >= 8 && nodeText((post.content as { root?: LexNode } | null)?.root ?? {}).toLowerCase().includes(needle);
+    if (related || linked || written) hits.push({ title: post.title, slug: post.slug });
+    if (hits.length >= 3) break;
+  }
+  return hits;
 });
 
 export const getPost = cache(async (slug: string) => {

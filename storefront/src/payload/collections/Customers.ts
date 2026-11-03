@@ -47,7 +47,7 @@ export const Customers: CollectionConfig = {
     { name: "accountType", label: "Typ konta", type: "radio", defaultValue: "individual", admin: { layout: "horizontal", condition: () => false }, options: [
       { label: "Klient indywidualny", value: "individual" }, { label: "Firma (B2B)", value: "business" },
     ] },
-    ]),
+    ], { id: "dane" }),
     section("Firma i warunki B2B", "Weryfikacja konta hurtowego, termin płatności i rabat.", "shield", [
     {
       name: "b2b",
@@ -74,7 +74,7 @@ export const Customers: CollectionConfig = {
         ] },
       ],
     },
-    ], { condition: () => false }), // B2B nie jest używane w sklepie Sonax – dane zostają, sekcja ukryta
+    ], { id: "firma", condition: () => false }), // B2B nie jest używane w sklepie Sonax – dane zostają, sekcja ukryta
     section("Adresy dostaw", "Zapisane adresy – klient wybiera je w koszyku.", "pin", [
     {
       name: "addresses",
@@ -96,7 +96,7 @@ export const Customers: CollectionConfig = {
         ] },
       ],
     },
-    ]),
+    ], { id: "adresy" }),
     section("Zgody (RODO)", "Daty wyrażenia zgód – ważne przy kontroli.", "check", [
     {
       name: "consents",
@@ -108,6 +108,6 @@ export const Customers: CollectionConfig = {
         { name: "termsAcceptedAt", label: "Akceptacja regulaminu", type: "date" },
       ],
     },
-    ]),
+    ], { id: "zgody" }),
   ],
 };

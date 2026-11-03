@@ -1,15 +1,18 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
 import { ProductImage } from "./ProductImage";
 
 // Kwadratowe zdjęcie wypełnia kolumnę, miniatury pod spodem. Całość mieści się na ekranie.
+// Przybliżenie tylko myszą. Na telefonie palec przesuwa zdjęcie, strzałka je zmienia — bez przybliżania.
 export function ProductGallery({ images, alt }: { images: string[]; alt: string }) {
   const [active, setActive] = useState(0);
   const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
   const [lightbox, setLightbox] = useState(false);
+  const drag = useRef<{ x: number; y: number } | null>(null);
+  const swiped = useRef(false);
   const go = useCallback((n: number) => setActive((n + images.length) % images.length), [images.length]);
 
   useEffect(() => {
@@ -30,14 +33,34 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
   return (
     <div>
       <div
-        className="group relative mx-auto aspect-square w-full max-w-[min(100%,calc(100dvh-12rem))] cursor-zoom-in overflow-hidden rounded-lg bg-[#f6f7f8] ring-1 ring-brand-100"
-        onMouseMove={(e) => {
-          if (!src) return;
+        className="group relative mx-auto aspect-square w-full max-w-[min(100%,calc(100dvh-12rem))] cursor-zoom-in touch-pan-y overflow-hidden rounded-lg bg-[#f6f7f8] ring-1 ring-brand-100"
+        onPointerDown={(e) => {
+          if (e.pointerType === "mouse" || (e.target as HTMLElement).closest("button")) return;
+          drag.current = { x: e.clientX, y: e.clientY };
+          e.currentTarget.setPointerCapture(e.pointerId);
+        }}
+        onPointerMove={(e) => {
+          if (e.pointerType !== "mouse" || !src) return;
           const r = e.currentTarget.getBoundingClientRect();
           setZoom({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 });
         }}
-        onMouseLeave={() => setZoom(null)}
-        onClick={() => src && setLightbox(true)}
+        onPointerUp={(e) => {
+          const from = drag.current;
+          drag.current = null;
+          if (!from || !many) return;
+          const dx = e.clientX - from.x;
+          const dy = e.clientY - from.y;
+          if (Math.abs(dx) > 36 && Math.abs(dx) > Math.abs(dy)) {
+            swiped.current = true;
+            go(dx < 0 ? active + 1 : active - 1);
+          }
+        }}
+        onPointerLeave={() => setZoom(null)}
+        onPointerCancel={() => { drag.current = null; setZoom(null); }}
+        onClick={() => {
+          if (swiped.current) { swiped.current = false; return; }
+          if (src) setLightbox(true);
+        }}
       >
         <div className="h-full w-full transition-transform duration-200 ease-out" style={zoom ? { transform: "scale(2)", transformOrigin: `${zoom.x}% ${zoom.y}%` } : undefined}>
           <ProductImage src={src} alt={alt} priority className="h-full w-full !bg-transparent" sizes="(min-width: 1024px) 36vw, 90vw" />
@@ -49,11 +72,11 @@ export function ProductGallery({ images, alt }: { images: string[]; alt: string 
         )}
         {many && (
           <>
-            <button type="button" onClick={(e) => { e.stopPropagation(); go(active - 1); }} aria-label="Poprzednie zdjęcie"
+            <button type="button" onClick={(e) => { e.stopPropagation(); setZoom(null); go(active - 1); }} aria-label="Poprzednie zdjęcie"
               className="absolute top-1/2 left-2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-navy shadow hover:bg-white">
               <ChevronLeft className="h-5 w-5" />
             </button>
-            <button type="button" onClick={(e) => { e.stopPropagation(); go(active + 1); }} aria-label="Następne zdjęcie"
+            <button type="button" onClick={(e) => { e.stopPropagation(); setZoom(null); go(active + 1); }} aria-label="Następne zdjęcie"
               className="absolute top-1/2 right-2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-navy shadow hover:bg-white">
               <ChevronRight className="h-5 w-5" />
             </button>

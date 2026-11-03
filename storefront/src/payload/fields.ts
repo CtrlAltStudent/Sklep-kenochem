@@ -49,14 +49,18 @@ export const section = (
   hint: string,
   icon: string,
   fields: Field[],
-  opts: { collapsed?: boolean; condition?: (data: Record<string, unknown>) => boolean } = {},
+  opts: { id?: string; collapsed?: boolean; condition?: (data: Record<string, unknown>) => boolean } = {},
 ): Field => ({
   type: "collapsible",
   label: title,
   admin: {
-    initCollapsed: opts.collapsed ?? false,
+    initCollapsed: false,
+    className: `kc-sec kc-sec--${opts.id ?? slugify(title)}`,
     condition: opts.condition ? (data) => opts.condition!(data) : undefined,
-    components: { Label: { path: "@/payload/components/FormBits#SectionLabel", clientProps: { title, hint, icon } } },
+    components: {
+      Field: { path: "@/payload/components/SectionSheet#InlineSection", clientProps: { sectionId: opts.id ?? slugify(title) } },
+      Label: { path: "@/payload/components/FormBits#SectionLabel", clientProps: { title, hint, icon } },
+    },
   },
   fields,
 });

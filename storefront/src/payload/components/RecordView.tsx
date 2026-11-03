@@ -6,33 +6,25 @@
 
 import { useDocumentInfo, useField, useForm, useFormFields } from "@payloadcms/ui";
 import Link from "next/link";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { Ban, CheckCircle2, ExternalLink, Mail, MapPin, Package, Pencil, Phone, Receipt, Star, User } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import { Ban, CheckCircle2, ExternalLink, Mail, MapPin, Package, Phone, Receipt, Star, User } from "lucide-react";
+import { SectionButtons, type SheetSection } from "@/payload/components/SectionSheet";
 
 export function useRecordView() {
   const { id } = useDocumentInfo();
-  const [editing, setEditing] = useState(!id);
   useEffect(() => {
     const html = document.documentElement;
     html.dataset.kcView = "record";
-    return () => { delete html.dataset.kcView; delete html.dataset.kcEdit; };
-  }, []);
-  useEffect(() => {
-    const html = document.documentElement;
-    if (editing) html.dataset.kcEdit = "1";
+    if (!id) html.dataset.kcEdit = "1";
     else delete html.dataset.kcEdit;
-  }, [editing]);
-  const edit = useCallback(() => {
-    setEditing(true);
-    setTimeout(() => document.querySelector(".kc-recview__editbar")?.scrollIntoView({ behavior: "smooth", block: "start" }), 30);
-  }, []);
-  const done = useCallback(() => { setEditing(false); window.scrollTo({ top: 0, behavior: "smooth" }); }, []);
-  return { id, editing, edit, done };
+    return () => { delete html.dataset.kcView; delete html.dataset.kcEdit; delete html.dataset.kcSheet; };
+  }, [id]);
+  return { id, editing: !id };
 }
 
 // Karta podglądu z przyciskiem „Edytuj” w rogu; w trybie edycji – pasek „Zakończ edycję”
-export function RecordShell({ title, subtitle, badge, editing, onEdit, onDone, children, editLabel = "Edytuj" }: {
-  title: ReactNode; subtitle?: ReactNode; badge?: ReactNode; editing: boolean; onEdit: () => void; onDone: () => void; children: ReactNode; editLabel?: string;
+export function RecordShell({ title, subtitle, badge, editing, sections, children }: {
+  title: ReactNode; subtitle?: ReactNode; badge?: ReactNode; editing: boolean; sections?: SheetSection[]; children: ReactNode;
 }) {
   return (
     <div className="kc-recview">
@@ -41,15 +33,9 @@ export function RecordShell({ title, subtitle, badge, editing, onEdit, onDone, c
           <h2>{title} {badge}</h2>
           {subtitle && <p>{subtitle}</p>}
         </div>
-        {!editing && <button type="button" className="kc-recview__edit" onClick={onEdit}><Pencil size={14} /> {editLabel}</button>}
       </header>
       {children}
-      {editing && (
-        <div className="kc-recview__editbar">
-          <span><Pencil size={15} /> Edytujesz dane poniżej. Zapisz przyciskiem <b>Zapisz</b> u góry.</span>
-          <button type="button" onClick={onDone}>Zakończ edycję</button>
-        </div>
-      )}
+      {!editing && sections && <SectionButtons items={sections} />}
     </div>
   );
 }
@@ -80,7 +66,7 @@ function Contact({ name, email, phone }: { name?: string; email?: string; phone?
 const REVIEW_STATUS: Record<string, [string, string]> = { pending: ["Do moderacji", "amber"], approved: ["Opublikowana", "green"], rejected: ["Odrzucona", "gray"] };
 
 export function ReviewView() {
-  const { id, editing, edit, done } = useRecordView();
+  const { id, editing } = useRecordView();
   const v = useV();
   const reply = useField<string>({ path: "reply" });
   const status = useField<string>({ path: "status" });
@@ -106,7 +92,7 @@ export function ReviewView() {
   const text = draft ?? s(reply.value);
 
   return (
-    <RecordShell editing={editing} onEdit={edit} onDone={done}
+    <RecordShell editing={editing} sections={[{ id: "opinia", title: "Treść opinii" }, { id: "odpowiedz", title: "Odpowiedź sklepu" }]}
       title={<><span className="kc-recview__stars" aria-label={`${rating} na 5`}>{[1, 2, 3, 4, 5].map((i) => <Star key={i} size={18} className={i <= rating ? "is-on" : ""} />)}</span> {s(v("title"))}</>}
       badge={<span className={`kc-pill kc-pill--${tone}`}>{label}</span>}
       subtitle={<>{s(v("author"))}{v("verified") ? " · potwierdzony zakup" : ""} · {when(v("createdAt"))}</>}>
@@ -140,14 +126,14 @@ const RETURN_STATUS: Record<string, [string, string]> = {
 };
 
 export function ReturnView() {
-  const { id, editing, edit, done } = useRecordView();
+  const { id, editing } = useRecordView();
   const v = useV();
   if (!id) return null;
   const order = v("order");
   const orderId = typeof order === "object" && order ? (order as { id: number }).id : (order as number | undefined);
   const [label, tone] = RETURN_STATUS[s(v("status"))] ?? ["—", "gray"];
   return (
-    <RecordShell editing={editing} onEdit={edit} onDone={done}
+    <RecordShell editing={editing} sections={[{ id: "zgloszenie", title: "Zgłoszenie" }, { id: "klient-zwrotu", title: "Klient" }, { id: "powod", title: "Produkty i powód" }, { id: "notatka", title: "Notatka" }]}
       title={<>{v("type") === "complaint" ? "Reklamacja" : "Zwrot"} {s(v("number"))}</>}
       badge={<span className={`kc-pill kc-pill--${tone}`}>{label}</span>}
       subtitle={when(v("createdAt"))}>
@@ -170,7 +156,7 @@ export function ReturnView() {
 type Address = { label?: string; fullName?: string; company?: string; street?: string; postcode?: string; city?: string };
 
 export function CustomerView() {
-  const { id, editing, edit, done } = useRecordView();
+  const { id, editing } = useRecordView();
   const v = useV();
   const f = useFormFields(([fields]) => fields);
   if (!id) return null;
@@ -181,7 +167,7 @@ export function CustomerView() {
     ["label", "fullName", "company", "street", "postcode", "city"].map((k) => [k, s(f[`addresses.${i}.${k}`]?.value)]),
   ) as Address);
   return (
-    <RecordShell editing={editing} onEdit={edit} onDone={done} title={name || s(v("email"))} subtitle={`Konto od ${when(v("createdAt"))}`} editLabel="Edytuj dane klienta">
+    <RecordShell editing={editing} sections={[{ id: "dane", title: "Dane osobowe" }, { id: "adresy", title: "Adresy" }, { id: "zgody", title: "Zgody" }, { id: "konto", title: "E-mail i hasło" }]} title={name || s(v("email"))} subtitle={`Konto od ${when(v("createdAt"))}`}>
       <Contact email={s(v("email"))} phone={s(v("phone"))} />
       <div className="kc-recview__grid">
         <Row k="Newsletter">{v("consents.newsletter") ? `tak (od ${when(v("consents.newsletterAt"))})` : "nie"}</Row>

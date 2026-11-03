@@ -15,12 +15,14 @@ export default async function FaqPage() {
   const s = await getStoreSettings();
   const free = formatPrice(freeShippingFrom(s));
   const hours = s.hours ?? "Pn–Pt 8:00–16:00";
+  const ship = s as { sameDayShipping?: boolean | number | null; shipCutoff?: string | null };
+  const cutoff = ship.sameDayShipping !== false && ship.sameDayShipping !== 0 ? ship.shipCutoff?.trim() : "";
 
   const groups: { title: string; items: [string, React.ReactNode, string][] }[] = [
     {
       title: "Dostawa",
       items: [
-        ["Kiedy wyślecie moje zamówienie?", <>Większość dostępnych produktów przekazujemy do wysyłki w ciągu 1 dnia roboczego od zaksięgowania płatności. Szczegóły: <Link href="/czas-realizacji" className="font-semibold text-accent-dark underline">czas realizacji</Link>.</>, "Większość dostępnych produktów wysyłamy w ciągu 1 dnia roboczego od zaksięgowania płatności."],
+        ["Kiedy wyślecie moje zamówienie?", <>{cutoff ? <>Zamówienie złożone do {cutoff} w dzień roboczy wysyłamy tego samego dnia. Po tej godzinie i w weekend — w najbliższy dzień roboczy.</> : <>Większość dostępnych produktów przekazujemy do wysyłki w ciągu 1 dnia roboczego od zaksięgowania płatności.</>} Szczegóły: <Link href="/czas-realizacji" className="font-semibold text-accent-dark underline">czas realizacji</Link>.</>, cutoff ? `Do ${cutoff} w dzień roboczy wysyłamy tego samego dnia.` : "Większość dostępnych produktów wysyłamy w ciągu 1 dnia roboczego od zaksięgowania płatności."],
         ["Jakie są formy i koszty dostawy?", <>Paczkomat InPost, ORLEN Paczka, kurier InPost (także za pobraniem) oraz odbiór osobisty w Białymstoku. Aktualne ceny znajdziesz na stronie <Link href="/dostawa-i-platnosci" className="font-semibold text-accent-dark underline">Dostawa i płatności</Link>. Nie wysyłamy za granicę.</>, "Paczkomat InPost, ORLEN Paczka, kurier InPost (także za pobraniem) oraz odbiór osobisty w Białymstoku. Nie wysyłamy za granicę."],
         ["Od jakiej kwoty dostawa jest darmowa?", <>Od {free} brutto dla Paczkomatu InPost, ORLEN Paczki i kuriera InPost (z wyłączeniem przesyłek za pobraniem).</>, `Od ${free} brutto, z wyłączeniem przesyłek za pobraniem.`],
         ["Czy wysyłacie za granicę?", <>Nie. Zamówienia wysyłamy tylko na terenie Polski.</>, "Nie, tylko na terenie Polski."],

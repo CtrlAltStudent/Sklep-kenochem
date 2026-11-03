@@ -92,11 +92,11 @@ export const Orders: CollectionConfig = {
               { name: "total", label: "Wartość i płatność", type: "number", admin: { readOnly: true, width: "50%", condition: () => false, components: { Cell: "@/payload/components/Cells#OrderTotalCell" } } },
             ] },
             { type: "ui", name: "summary", admin: { components: { Field: "@/payload/components/FormBits#OrderSummary" } } },
-            ]),
+            ], { id: "pozycje" }),
             section("Uwagi i notatki", "Wiadomość od klienta oraz notatka dla magazynu.", "message", [
               { name: "customerNote", label: "Uwagi klienta", type: "textarea", maxLength: 510, admin: { placeholder: "np. proszę o telefon przed dostawą" } },
               { name: "adminNote", label: "Notatka wewnętrzna (trafia do BaseLinkera)", type: "textarea", maxLength: 200, admin: { placeholder: "Widoczna tylko dla pracowników" } },
-            ]),
+            ], { id: "uwagi" }),
           ],
         },
         {
@@ -108,7 +108,7 @@ export const Orders: CollectionConfig = {
               { name: "email", label: "E-mail", type: "email", required: true, admin: { width: "50%", placeholder: "klient@firma.pl" } },
               { name: "phone", label: "Telefon", type: "text", admin: { width: "50%", placeholder: "+48 …" } },
             ] },
-            ]),
+            ], { id: "klient" }),
             section("Dostawa", "Sposób dostawy, adres odbiorcy albo paczkomat.", "truck", [
             {
               name: "shipping",
@@ -147,7 +147,7 @@ export const Orders: CollectionConfig = {
                 },
               ],
             },
-            ]),
+            ], { id: "dostawa" }),
             section("Faktura", "Zaznacz, jeśli klient chce fakturę VAT na firmę.", "invoice", [
             {
               name: "invoice",
@@ -170,7 +170,7 @@ export const Orders: CollectionConfig = {
                 ] },
               ],
             },
-            ]),
+            ], { id: "faktura" }),
           ],
         },
         {
@@ -200,12 +200,13 @@ export const Orders: CollectionConfig = {
                 { name: "paidAt", label: "Data opłacenia", type: "date", admin: { date: { pickerAppearance: "dayAndTime" } } },
               ],
             },
-            ]),
+            ], { id: "platnosc" }),
           ],
         },
         {
           label: "BaseLinker",
           fields: [
+            section("BaseLinker", "Przekazanie zamówienia i ostatni komunikat.", "package", [
             { type: "ui", name: "baselinkerPanel", admin: { components: { Field: "@/payload/components/OrderBaseLinkerPanel#OrderBaseLinkerPanel" } } },
             {
               name: "baselinker",
@@ -224,6 +225,7 @@ export const Orders: CollectionConfig = {
                 { name: "lastError", label: "Ostatnie błędy / ostrzeżenia", type: "textarea", admin: { readOnly: true } },
               ],
             },
+            ], { id: "baselinker" }),
           ],
         },
       ],

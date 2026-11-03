@@ -4,7 +4,8 @@ import { toItem, track } from "@/lib/track";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDownUp, ArrowRight, BookOpen, Check, ChevronDown, LayoutGrid, List, Search, SlidersHorizontal, X } from "lucide-react";
-import { categories, findType, minPrice, type Category, type ProductCardData } from "@/lib/data";
+import { minPrice, type Category, type ProductCardData } from "@/lib/data";
+import { useShopCategories } from "@/lib/shopConfig";
 import { productForm, sizeBucket, sizeBuckets } from "@/lib/facets";
 import { CatIcon } from "./CatIcon";
 import { ProductCard } from "./ProductCard";
@@ -87,12 +88,17 @@ function PriceRange({ min, max, value, onChange }: { min: number; max: number; v
   );
 }
 
-// typ (3. poziom) → podkategoria
-const typeSub = new Map(categories.flatMap((c) => c.children.flatMap((s) => s.types.map((t) => [t.slug, s.slug] as const))));
-
 export function Listing({ products, category, counts, params = {} }: {
   products: ProductCardData[]; category?: Category; counts?: Record<string, number>; params?: Params;
 }) {
+  const categories = useShopCategories();
+  const typeSub = useMemo(() => new Map(categories.flatMap((c) => c.children.flatMap((s) => s.types.map((t) => [t.slug, s.slug] as const)))), [categories]);
+  const findType = (typeSlug: string) => {
+    for (const c of categories) for (const s of c.children) {
+      const type = s.types.find((t) => t.slug === typeSlug);
+      if (type) return { type };
+    }
+  };
   // Stan filtrów – startowo z adresu strony (?marka=…&cena=…)
   const [subs, setSubs] = useState<string[]>(list(params.sub));
   const [types, setTypes] = useState<string[]>(list(params.typ));

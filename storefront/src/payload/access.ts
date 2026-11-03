@@ -8,12 +8,41 @@ import type { Access, FieldAccess, PayloadRequest } from "payload";
 //  warehouse  – produkty (stany, ceny, opisy) i powiadomienia o dostępności
 export type Role = "admin" | "editor" | "orders" | "marketing" | "warehouse";
 
-type StaffUser = { collection?: string; roles?: Role[] | null };
+type StaffUser = { id?: number | string; collection?: string; roles?: Role[] | null };
+
+const ALL: Role[] = ["admin", "editor", "orders", "marketing", "warehouse"];
+// Rola bywa pusta na zalogowanym użytkowniku (token), choć w karcie konta jest „Administrator”.
+// Trzymamy role odczytane z bazy i używamy ich, gdy na żądaniu listy nie ma.
+const roleCache = new Map<string, Role[]>();
+
+export const roleList = (roles: unknown): Role[] => {
+  const raw = Array.isArray(roles) ? roles : roles ? [roles] : [];
+  return raw
+    .map((r) => (typeof r === "string" ? r : r && typeof r === "object" && "value" in r ? String((r as { value: unknown }).value) : ""))
+    .filter((r): r is Role => ALL.includes(r as Role));
+};
+
+export const rememberRoles = (id: unknown, roles: unknown) => {
+  const list = roleList(roles);
+  if (id != null && list.length) roleCache.set(String(id), list);
+};
 
 const staff = (req: PayloadRequest) => (req.user?.collection === "users" ? (req.user as StaffUser) : null);
+
 export const hasRole = (req: PayloadRequest, ...roles: Role[]) => {
   const u = staff(req);
-  return Boolean(u && (u.roles?.includes("admin") || roles.some((r) => u.roles?.includes(r))));
+  if (!u) return false;
+  const live = roleList(u.roles);
+  const known = u.id != null ? roleCache.get(String(u.id)) : undefined;
+  const list = live.length ? live : known ?? [];
+  if (!live.length && known?.length) u.roles = known;
+  return list.includes("admin") || roles.some((r) => list.includes(r));
+};
+
+export const isAdminUser = (user?: { id?: unknown; roles?: unknown } | null) => {
+  const live = roleList(user?.roles);
+  if (live.includes("admin")) return true;
+  return user?.id != null && roleCache.get(String(user.id))?.includes("admin") === true;
 };
 
 export const isAdmin: Access = ({ req }) => hasRole(req, "admin");

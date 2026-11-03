@@ -1,18 +1,20 @@
 import { Fragment, Suspense } from "react";
+import { connection } from "next/server";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect, redirect } from "next/navigation";
 import type { Metadata } from "next";
-import { categories, getCategory, toCard, usableImages } from "@/lib/data";
-import { getByCategory, getCategoryCounts } from "@/lib/catalog";
-import { getCms, getPosts } from "@/lib/cms";
+import { ChevronDown } from "lucide-react";
+import { toCard, usableImages } from "@/lib/data";
+import { getByCategory, getCategoryCounts, getShopCategories } from "@/lib/catalog";
+import { findRedirect, getCms, getPosts } from "@/lib/cms";
 import { getLayout } from "@/integrations/vault";
 import { ProductGrid } from "@/components/home/HomeBits";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Listing } from "@/components/Listing";
 import { RichContent } from "@/components/RichContent";
 
-export function generateStaticParams() {
-  return categories.map((c) => ({ slug: c.slug }));
+export async function generateStaticParams() {
+  return (await getShopCategories()).map((c) => ({ slug: c.slug }));
 }
 
 // Podkategoria (?sub=) i typ (&typ=) mają własny tytuł, opis i adres kanoniczny – Google traktuje je jak osobne strony,
@@ -20,7 +22,7 @@ export function generateStaticParams() {
 export async function generateMetadata(props: PageProps<"/kategoria/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
   const sp = await props.searchParams;
-  const c = getCategory(slug);
+  const c = (await getShopCategories()).find((x) => x.slug === slug);
   if (!c) return {};
   const sub = c.children.find((s) => s.slug === sp.sub);
   const type = sub?.types.find((t) => t.slug === sp.typ);
@@ -41,9 +43,14 @@ async function getCategoryDescription(slug: string) {
 }
 
 export default async function CategoryPage(props: PageProps<"/kategoria/[slug]">) {
+  await connection();
   const { slug } = await props.params;
-  const category = getCategory(slug);
-  if (!category) notFound();
+  const category = (await getShopCategories()).find((c) => c.slug === slug);
+  if (!category) {
+    const r = await findRedirect(`/kategoria/${decodeURIComponent(slug)}`);
+    if (r) (r.permanent ? permanentRedirect : redirect)(r.to);
+    notFound();
+  }
   const [items, counts, description, posts] = await Promise.all([getByCategory(slug), getCategoryCounts(), getCategoryDescription(slug), getPosts()]);
   const bestsellers = items.filter((p) => p.badges?.includes("bestseller") && p.stock > 0 && usableImages(p.images).length).slice(0, 4);
 
@@ -98,46 +105,61 @@ async function CategoryListing({ searchParams, slug, items, counts }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>; slug: string; items: ReturnType<typeof toCard>[]; counts: Record<string, number>;
 }) {
   const params = await searchParams;
-  const category = getCategory(slug)!;
+  const category = (await getShopCategories()).find((c) => c.slug === slug)!;
   const activeSub = typeof params.sub === "string" ? params.sub : "";
   const activeType = typeof params.typ === "string" ? params.typ : "";
   const activeSubDef = category.children.find((s) => s.slug === activeSub);
   const subs = category.children.filter((s) => counts[`${slug}/${s.slug}`]);
+  const pickedType = activeSubDef?.types.find((t) => t.slug === activeType);
+  const subNav = () => subs.length > 0 && (
+    <nav aria-label="Podkategorie" className="flex flex-wrap gap-2">
+      <Link href={`/kategoria/${slug}`} scroll={false}
+        className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${!activeSub ? "bg-accent text-white" : "bg-white text-slate-700 ring-1 ring-brand-100 hover:ring-accent"}`}>
+        Wszystkie
+      </Link>
+      {subs.map((s) => {
+        const n = counts[`${slug}/${s.slug}`] ?? 0;
+        const on = activeSub === s.slug;
+        return (
+          <Link key={s.slug} href={on ? `/kategoria/${slug}` : `/kategoria/${slug}?sub=${s.slug}`} scroll={false}
+            className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${on ? "bg-accent text-white" : "bg-white text-slate-700 ring-1 ring-brand-100 hover:ring-accent"}`}>
+            {s.name} <span className={on ? "text-white/80" : "text-slate-400"}>{n}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+  const typeNav = () => activeSubDef && (
+    <div className="flex flex-wrap gap-x-1 gap-y-1">
+      {activeSubDef.types.map((ty) => {
+        const n = counts[`${slug}/${activeSub}/${ty.slug}`] ?? 0;
+        if (!n) return null;
+        const on = activeType === ty.slug;
+        return (
+          <Link key={ty.slug} href={on ? `/kategoria/${slug}?sub=${activeSub}` : `/kategoria/${slug}?sub=${activeSub}&typ=${ty.slug}`} scroll={false}
+            className={`px-3 py-1.5 text-[13px] font-semibold transition ${on ? "border-b-2 border-accent text-navy" : "text-slate-500 hover:text-navy"}`}>
+            {ty.name} <span className="text-slate-400">{n}</span>
+          </Link>
+        );
+      })}
+    </div>
+  );
   return (
     <>
-      {subs.length > 0 && (
-        <nav aria-label="Podkategorie" className="mb-5 flex flex-wrap gap-2">
-          <Link href={`/kategoria/${slug}`} scroll={false}
-            className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${!activeSub ? "bg-accent text-white" : "bg-white text-slate-700 ring-1 ring-brand-100 hover:ring-accent"}`}>
-            Wszystkie
-          </Link>
-          {subs.map((s) => {
-            const n = counts[`${slug}/${s.slug}`] ?? 0;
-            const on = activeSub === s.slug;
-            return (
-              <Link key={s.slug} href={on ? `/kategoria/${slug}` : `/kategoria/${slug}?sub=${s.slug}`} scroll={false}
-                className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${on ? "bg-accent text-white" : "bg-white text-slate-700 ring-1 ring-brand-100 hover:ring-accent"}`}>
-                {s.name} <span className={on ? "text-white/80" : "text-slate-400"}>{n}</span>
-              </Link>
-            );
-          })}
-        </nav>
+      {(subs.length > 0 || activeSubDef) && (
+        <details className="group mb-4 lg:hidden">
+          <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl bg-white px-4 py-3 text-sm font-bold text-navy ring-1 ring-brand-100 [&::-webkit-details-marker]:hidden">
+            <span>{pickedType ? `${activeSubDef!.name}: ${pickedType.name}` : activeSubDef ? activeSubDef.name : "Podkategorie"} <span className="font-normal text-slate-400">{subs.length}</span></span>
+            <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition group-open:rotate-180" />
+          </summary>
+          <div className="mt-3 space-y-3">
+            {subNav()}
+            {typeNav()}
+          </div>
+        </details>
       )}
-      {activeSubDef && (
-        <div className="-mt-2 mb-5 flex flex-wrap gap-x-1 gap-y-1 border-b border-brand-100 pb-4">
-          {activeSubDef.types.map((ty) => {
-            const n = counts[`${slug}/${activeSub}/${ty.slug}`] ?? 0;
-            if (!n) return null;
-            const on = activeType === ty.slug;
-            return (
-              <Link key={ty.slug} href={on ? `/kategoria/${slug}?sub=${activeSub}` : `/kategoria/${slug}?sub=${activeSub}&typ=${ty.slug}`} scroll={false}
-                className={`px-3 py-1.5 text-[13px] font-semibold transition ${on ? "border-b-2 border-accent text-navy" : "text-slate-500 hover:text-navy"}`}>
-                {ty.name} <span className="text-slate-400">{n}</span>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+      {subs.length > 0 && <div className="mb-5 hidden lg:block">{subNav()}</div>}
+      {activeSubDef && <div className="-mt-2 mb-5 hidden border-b border-brand-100 pb-4 lg:block">{typeNav()}</div>}
       <Listing key={`${slug}|${activeSub}|${activeType}`} products={items} category={category} counts={counts} params={params} />
     </>
   );

@@ -11,6 +11,7 @@ import { BrandMark, carrierFromCode, type MarkName } from "./BrandMarks";
 import { CheckoutSteps } from "./CheckoutSteps";
 import { BlikCodeField, BlikWaiting } from "./BlikPayment";
 import { InpostMap, type InpostPoint } from "./InpostMap";
+import { OrlenMap } from "./OrlenMap";
 import { useMe, type Me } from "@/components/account/Account";
 import { cartItem, track, trackPurchaseOnce } from "@/lib/track";
 
@@ -38,7 +39,7 @@ function Title({ n, children, aside }: { n: number; children: React.ReactNode; a
 }
 
 // Krok 2 – wszystko na jednym ekranie: dane, dostawa, płatność, uwagi i podsumowanie
-export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", cartReminder = false }: { shipping: ShipMethod[]; payments: PayMethod[]; freeThreshold: number; inpostToken?: string; cartReminder?: boolean }) {
+export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", orlenToken = "", cartReminder = false }: { shipping: ShipMethod[]; payments: PayMethod[]; freeThreshold: number; inpostToken?: string; orlenToken?: string; cartReminder?: boolean }) {
   const { cart } = useStore();
   // Zgoda na przypomnienie o porzuconym koszyku (pamiętana w przeglądarce – src/lib/store.ts)
   const remindTo = useRemind();
@@ -78,11 +79,12 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", 
   // BLIK z kodem na stronie (metoda „blik”) – bez przekierowania do Przelewy24
   const [blikCode, setBlikCode] = useState("");
   const [p24Terms, setP24Terms] = useState(false);
-  const [blik, setBlik] = useState<{ sessionId?: string; orderNumber: string; total: number; ok: boolean; message: string } | null>(null);
+  const [blik, setBlik] = useState<{ sessionId?: string; orderNumber: string; total: number; ok: boolean; message: string; analytics?: Parameters<typeof trackPurchaseOnce>[0]; email?: string; phone?: string } | null>(null);
   const onBlikPaid = useCallback(() => {
+    if (blik?.analytics) trackPurchaseOnce(blik.analytics, { email: blik.email, phone: blik.phone });
     setOrdered(blik?.orderNumber ?? "");
     setBlik(null);
-  }, [blik?.orderNumber]);
+  }, [blik]);
   const isBlik = !cod && pay === "blik";
 
   // Zalogowany klient: dane i adres z konta wpisują się same (pola formularza są niekontrolowane)
@@ -189,13 +191,19 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", 
           if (!res.ok) { setFormError(res.message ?? "Nie udało się złożyć zamówienia."); return; }
           // zamówienie złożone – przypomnienie o koszyku już niepotrzebne
           actions.setRemind(null);
-          // zakup (wartości policzone na serwerze) – raz na zamówienie, przed przejściem do płatności
-          if (res.analytics) trackPurchaseOnce(res.analytics, { email: String(fd.get("email") ?? ""), phone: String(fd.get("phone") ?? "") });
-          if (res.redirectUrl) { const url = res.redirectUrl as string; setTimeout(() => { window.location.href = url; }, 350); return; }
+          const buyer = { email: String(fd.get("email") ?? ""), phone: String(fd.get("phone") ?? "") };
+          // Przelewy24 i BLIK: zakup liczymy dopiero po opłaceniu. Pobranie i przelew – w momencie złożenia zamówienia.
+          if (res.analytics && !res.redirectUrl && !res.blik) trackPurchaseOnce(res.analytics, buyer);
+          if (res.redirectUrl) {
+            actions.clear();
+            const url = res.redirectUrl as string;
+            setTimeout(() => { window.location.href = url; }, 350);
+            return;
+          }
           if (res.blik) {
             // zamówienie już zapisane – koszyk czyścimy, dalej tylko płatność BLIK
             actions.clear();
-            setBlik({ sessionId: res.blik.sessionId, orderNumber: res.orderNumber, total: res.total, ok: res.blik.ok, message: res.blik.message });
+            setBlik({ sessionId: res.blik.sessionId, orderNumber: res.orderNumber, total: res.total, ok: res.blik.ok, message: res.blik.message, analytics: res.analytics, email: buyer.email, phone: buyer.phone });
             window.scrollTo({ top: 0, behavior: "smooth" });
             return;
           }
@@ -289,7 +297,8 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", 
             </div>
             {method?.requiresPoint && (() => {
               const isInpost = !method.code.startsWith("orlen");
-              const withMap = isInpost && Boolean(inpostToken) && !manualPoint;
+              const mapToken = isInpost ? inpostToken : orlenToken;
+              const withMap = Boolean(mapToken) && !manualPoint;
               const lookup = async (code: string) => {
                 if (code.length < 3) { setPointInfo(null); return; }
                 const r = await fetch(`/api/checkout/point?carrier=${isInpost ? "inpost" : "orlen"}&code=${encodeURIComponent(code)}`).then((x) => x.json()).catch(() => null);
@@ -304,7 +313,7 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", 
                       <div className="flex items-center gap-3 rounded-2xl border border-leaf bg-leaf-50 p-3">
                         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white ring-1 ring-leaf/30"><MapPin className="h-5 w-5 text-leaf" /></span>
                         <span className="min-w-0 flex-1">
-                          <b className="block text-sm">Paczkomat {pointCode}</b>
+                          <b className="block text-sm">{isInpost ? "Paczkomat" : "ORLEN Paczka"} {pointCode}</b>
                           {pointInfo && <span className="block truncate text-xs text-slate-600">{pointInfo}</span>}
                         </span>
                         <button type="button" onClick={() => setMapOpen(true)} className="shrink-0 rounded-xl px-3 py-2 text-xs font-semibold text-accent-dark ring-1 ring-brand-100 transition hover:bg-white">Zmień</button>
@@ -314,7 +323,7 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", 
                         className="flex w-full items-center gap-3 rounded-2xl border-2 border-dashed border-leaf/50 p-3 text-left transition hover:border-leaf hover:bg-leaf-50">
                         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-leaf text-white"><MapPin className="h-5 w-5" /></span>
                         <span className="min-w-0 flex-1">
-                          <b className="block text-sm">Wybierz paczkomat na mapie</b>
+                          <b className="block text-sm">{isInpost ? "Wybierz paczkomat na mapie" : "Wybierz punkt ORLEN Paczka na mapie"}</b>
                           <span className="block text-xs text-slate-500">Znajdź najbliższy punkt po mieście lub ulicy</span>
                         </span>
                       </button>
@@ -327,12 +336,13 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", 
                     </div>
                   )}
                   {!withMap && pointInfo && <p className="mt-1.5 pl-6 text-xs text-slate-600">{pointInfo}</p>}
-                  {isInpost && inpostToken && (
+                  {mapToken && (
                     <button type="button" onClick={() => { setManualPoint(!manualPoint); setPointInfo(null); setPointCode(""); }} className="mt-1.5 text-xs font-medium text-slate-500 underline-offset-2 hover:underline">
-                      {manualPoint ? "Wybierz na mapie" : "Znam kod paczkomatu – wpiszę ręcznie"}
+                      {manualPoint ? "Wybierz na mapie" : isInpost ? "Znam kod paczkomatu – wpiszę ręcznie" : "Znam kod punktu – wpiszę ręcznie"}
                     </button>
                   )}
-                  {mapOpen && <InpostMap token={inpostToken} cod={cod} onSelect={pickPoint} onClose={closeMap} />}
+                  {mapOpen && isInpost && <InpostMap token={inpostToken} cod={cod} onSelect={pickPoint} onClose={closeMap} />}
+                  {mapOpen && !isInpost && <OrlenMap token={orlenToken} onSelect={pickPoint} onClose={closeMap} />}
                 </div>
               );
             })()}

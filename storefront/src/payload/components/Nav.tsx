@@ -2,13 +2,13 @@
 // Moduły integracji są w zakładce Integracje → Moduły (nie w menu – menu zostaje krótkie).
 
 import { NavHamburger, NavWrapper } from "@payloadcms/next/client";
-import { Logout } from "@payloadcms/ui";
 import type { Payload, SanitizedPermissions, Where } from "payload";
+import { isAdminUser } from "@/payload/access";
 import { navSections, type NavItem } from "@/payload/nav";
 import { NavBrand } from "./Branding";
 import { NavLinks, type NavLinkData, type NavSectionData } from "./NavLinks";
 
-type Props = { payload: Payload; permissions?: SanitizedPermissions; user?: { roles?: string[] | null } | null };
+type Props = { payload: Payload; permissions?: SanitizedPermissions; user?: { id?: number | string; roles?: string[] | null } | null };
 
 const canSee = (item: NavItem, permissions: SanitizedPermissions | undefined, isAdmin: boolean) => {
   if (item.adminOnly && !isAdmin) return false;
@@ -28,7 +28,7 @@ async function badge(payload: Payload, item: NavItem) {
 }
 
 export async function Nav({ payload, permissions, user }: Props) {
-  const isAdmin = Boolean(user?.roles?.includes("admin"));
+  const isAdmin = isAdminUser(user);
 
   const sections: NavSectionData[] = [];
   for (const section of navSections) {
@@ -46,7 +46,14 @@ export async function Nav({ payload, permissions, user }: Props) {
         <NavBrand />
         <NavLinks sections={sections} />
         <div className="nav__controls">
-          <Logout />
+          <a className="nav__log-out kc-logout" href="/api/users/wyjscie" title="Wyloguj">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <path d="M16 17l5-5-5-5" />
+              <path d="M21 12H9" />
+            </svg>
+            Wyloguj
+          </a>
         </div>
       </nav>
       <div className="nav__header">
