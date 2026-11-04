@@ -3,7 +3,7 @@ import { BadgePercent } from "lucide-react";
 import { getCategoryCounts, getDeals, getFeatured } from "@/lib/catalog";
 import { CollectionPage } from "@/components/CollectionPage";
 
-export const metadata: Metadata = { title: "Promocje", description: "Aktualne promocje w sklepie Sonax – chemia samochodowa i kosmetyki detailingowe w obniżonych cenach." };
+export const metadata: Metadata = { title: "Promocje", description: "Aktualne promocje w sklepie Sonax – chemia samochodowa i kosmetyki detailingowe w obniżonych cenach.", alternates: { canonical: "/promocje" } };
 
 // Produkty z ceną przekreśloną: promocja czasowa lub „cena przed obniżką” ustawione w panelu
 export default async function PromotionsPage() {

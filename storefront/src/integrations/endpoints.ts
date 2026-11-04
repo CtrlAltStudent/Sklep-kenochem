@@ -45,13 +45,13 @@ export const integrationEndpoints: Endpoint[] = [
   {
     path: "/integrations",
     method: "get",
-    handler: async (req) => (hasRole(req, "admin") ? Response.json({ ...describeVault(), scheduler: schedulerActive() }) : deny()),
+    handler: async (req) => ((await hasRole(req, "admin")) ? Response.json({ ...describeVault(), scheduler: schedulerActive() }) : deny()),
   },
   {
     path: "/integrations",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "admin")) return deny();
+      if (!(await hasRole(req, "admin"))) return deny();
       const b = (await body(req)) as { keys?: Record<string, unknown>; modes?: Record<string, unknown>; auto?: Record<string, unknown> };
       const patch: VaultPatch = {
         keys: b.keys ? Object.fromEntries(Object.entries(b.keys).map(([k, v]) => [k, v == null ? null : String(v)])) : undefined,
@@ -71,7 +71,7 @@ export const integrationEndpoints: Endpoint[] = [
     path: "/integrations/modules/:id",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "admin")) return deny();
+      if (!(await hasRole(req, "admin"))) return deny();
       const mod = moduleById(String(req.routeParams?.id));
       if (!mod) return Response.json({ ok: false, message: "Nieznany moduł" }, { status: 404 });
       const b = (await body(req)) as { installed?: unknown; enabled?: unknown };
@@ -98,7 +98,7 @@ export const integrationEndpoints: Endpoint[] = [
     path: "/integrations/test/:provider",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "admin")) return deny();
+      if (!(await hasRole(req, "admin"))) return deny();
       switch (req.routeParams?.provider) {
         case "baselinker": {
           const r = await testConnection(req.payload);
@@ -121,7 +121,7 @@ export const integrationEndpoints: Endpoint[] = [
     path: "/integrations/baselinker-statuses",
     method: "get",
     handler: async (req) => {
-      if (!hasRole(req, "admin")) return deny();
+      if (!(await hasRole(req, "admin"))) return deny();
       try {
         const r = await blCall<{ statuses: { id: number; name: string }[] }>("getOrderStatusList");
         return Response.json({ ok: true, statuses: r.statuses.map((s) => ({ id: s.id, name: s.name })) });
@@ -134,7 +134,7 @@ export const integrationEndpoints: Endpoint[] = [
     path: "/integrations/run/:job",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "admin")) return deny();
+      if (!(await hasRole(req, "admin"))) return deny();
       const job = String(req.routeParams?.job) as JobId;
       if (!["stock", "products", "orders", "statuses"].includes(job)) return Response.json({ ok: false, message: "Nieznane zadanie" }, { status: 400 });
       const r = await runJob(req.payload, job);

@@ -2,21 +2,25 @@ import type { Metadata } from "next";
 import { Building2, Handshake, Phone, Truck } from "lucide-react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { B2BForm } from "@/components/forms/Forms";
+import { getStoreSettings } from "@/lib/cms";
+import { SHOP_PHONE } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Dla firm – konto hurtowe (B2B)",
   description: "Chemia SONAX dla myjni, detailingu, warsztatów i firm sprzątających. Złóż wniosek o konto hurtowe – warunki ustalamy indywidualnie.",
+  alternates: { canonical: "/b2b" },
 };
 
-const perks = [
-  { icon: Handshake, title: "Warunki ustalane indywidualnie", text: "Ceny i rabaty dopasowane do skali zakupów Twojej firmy." },
-  { icon: Building2, title: "Faktura VAT na firmę", text: "Dokumenty przez nasz system księgowy – bez dodatkowych formalności." },
-  { icon: Truck, title: "Szybka wysyłka", text: "Większość produktów wysyłamy w 1 dzień roboczy, także w większych ilościach." },
-  { icon: Phone, title: "Doradztwo", text: "Pomożemy dobrać chemię do myjni, detailingu czy serwisu: +48 500 021 705." },
-];
-
 // Wniosek o konto hurtowe: formularz trafia do panelu (Wiadomości) z mailem do sklepu
-export default function B2BPage() {
+export default async function B2BPage() {
+  const store = await getStoreSettings();
+  const phone = store.phone || SHOP_PHONE;
+  const perks = [
+    { icon: Handshake, title: "Warunki ustalane indywidualnie", text: "Ceny i rabaty dopasowane do skali zakupów Twojej firmy." },
+    { icon: Building2, title: "Faktura VAT na firmę", text: "Dokumenty przez nasz system księgowy – bez dodatkowych formalności." },
+    { icon: Truck, title: "Szybka wysyłka", text: "Większość produktów wysyłamy w 1 dzień roboczy, także w większych ilościach." },
+    { icon: Phone, title: "Doradztwo", text: `Pomożemy dobrać chemię do myjni, detailingu czy serwisu: ${phone}.` },
+  ];
   return (
     <div className="mx-auto max-w-shop px-4 pt-6">
       <Breadcrumbs items={[{ label: "Dla firm (B2B)" }]} />

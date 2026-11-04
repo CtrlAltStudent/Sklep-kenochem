@@ -9,11 +9,15 @@ import { getShopBrands } from "@/lib/brands";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CatIcon } from "@/components/CatIcon";
 import { Listing } from "@/components/Listing";
+import { JsonLd } from "@/components/JsonLd";
+import { siteBase } from "@/lib/site";
 
 export async function generateMetadata(props: PageProps<"/marki/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
   const brand = (await getShopBrands()).find((b) => b.slug === slug);
-  return brand ? { title: `${brand.name} – produkty`, description: `${brand.name}: ${brand.count} produktów w sklepie Sonax. Oryginalne produkty, wysyłka zwykle w 1 dzień roboczy.` } : {};
+  const title = brand ? `${brand.name} – produkty` : undefined;
+  const description = brand ? `${brand.name}: ${brand.count} produktów w sklepie Sonax. Oryginalne produkty, wysyłka zwykle w 1 dzień roboczy.` : undefined;
+  return brand ? { title, description, alternates: { canonical: `/marki/${brand.slug}` }, openGraph: { type: "website", siteName: "Sklep Sonax", locale: "pl_PL", title, description } } : {};
 }
 
 export default async function BrandPage(props: PageProps<"/marki/[slug]">) {
@@ -23,15 +27,25 @@ export default async function BrandPage(props: PageProps<"/marki/[slug]">) {
   if (!brand) notFound();
   const cats = categories.filter((c) => brand.categories.includes(c.slug));
 
+  const origin = siteBase();
   return (
     <div className="mx-auto max-w-shop px-4 pt-6">
+      <JsonLd data={[
+        { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Sklep", item: origin },
+          { "@type": "ListItem", position: 2, name: "Marki", item: `${origin}/marki` },
+          { "@type": "ListItem", position: 3, name: brand.name, item: `${origin}/marki/${brand.slug}` },
+        ] },
+        { "@context": "https://schema.org", "@type": "CollectionPage", name: brand.name, url: `${origin}/marki/${brand.slug}`,
+          mainEntity: { "@type": "ItemList", numberOfItems: items.length, itemListElement: items.slice(0, 24).map((p, i) => ({ "@type": "ListItem", position: i + 1, name: p.name, url: `${origin}/produkt/${p.slug}` })) } },
+      ]} />
       <Breadcrumbs items={[{ label: "Marki", href: "/marki" }, { label: brand.name }]} />
       <header className="mt-4 mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="flex items-center gap-1.5 text-xs font-bold tracking-widest text-accent uppercase"><BadgeCheck className="h-4 w-4" /> Oryginalne produkty</p>
           {brand.image && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={brand.image} alt="" className="mb-3 h-14 w-40 object-contain object-left" />
+            <img src={brand.image} alt={brand.name} className="mb-3 h-14 w-40 object-contain object-left" />
           )}
           <h1 className="text-3xl font-black tracking-tight text-navy uppercase sm:text-5xl">{brand.name}</h1>
           <p className="mt-1 text-sm text-slate-500">{brand.count} produktów w {cats.length} {cats.length === 1 ? "kategorii" : "kategoriach"}</p>

@@ -12,10 +12,10 @@ import { siteBase, siteIndexable } from "@/lib/site";
 import { cleanSite } from "./siteSettings";
 import { getLayout, getSite, setLayout, setSite, vaultPath } from "./vault";
 import { cleanLayout, SECTIONS, type PageKind } from "@/lib/layoutSections";
-import { blActive, blCall } from "./baselinker/client";
+import { blActive } from "./baselinker/client";
+import { fetchOffer } from "./baselinker/sync";
 import { getP24Transaction, p24Mode, refundP24 } from "./przelewy24";
 import { addHistory } from "./history";
-import type { BLProductData } from "./baselinker/types";
 import { mailConfig, sendMail } from "./mail/send";
 import * as T from "./mail/templates";
 import { LEGAL_PAGES, toLexical } from "./legalTexts";
@@ -85,7 +85,7 @@ export const adminToolEndpoints: Endpoint[] = [
     path: "/site-layout",
     method: "get",
     handler: async (req) => {
-      if (!hasRole(req, "admin", "editor")) return deny();
+      if (!(await hasRole(req, "admin", "editor"))) return deny();
       return Response.json({ ok: true, layout: Object.fromEntries((Object.keys(SECTIONS) as PageKind[]).map((k) => [k, getLayout(k)])) });
     },
   },
@@ -93,7 +93,7 @@ export const adminToolEndpoints: Endpoint[] = [
     path: "/site-layout",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "admin", "editor")) return deny();
+      if (!(await hasRole(req, "admin", "editor"))) return deny();
       const body = ((await req.json?.().catch(() => ({}))) ?? {}) as Record<string, unknown>;
       setLayout(cleanLayout(body.layout), (req.user as { email?: string } | null)?.email);
       refreshAll();
@@ -105,7 +105,7 @@ export const adminToolEndpoints: Endpoint[] = [
     path: "/site-settings",
     method: "get",
     handler: async (req) => {
-      if (!hasRole(req, "admin")) return deny();
+      if (!(await hasRole(req, "admin"))) return deny();
       const active = { status: { equals: "active" } } as const;
       const count = (where: object) => req.payload.count({ collection: "products", overrideAccess: true, where: where as never }).then((r) => r.totalDocs);
       const [products, inStock, imgs] = await Promise.all([
@@ -124,7 +124,7 @@ export const adminToolEndpoints: Endpoint[] = [
     path: "/site-settings",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "admin")) return deny();
+      if (!(await hasRole(req, "admin"))) return deny();
       const body = ((await req.json?.().catch(() => ({}))) ?? {}) as Record<string, unknown>;
       setSite(cleanSite(body), (req.user as { email?: string } | null)?.email);
       refreshAll();
@@ -136,7 +136,7 @@ export const adminToolEndpoints: Endpoint[] = [
     path: "/site-tools/refresh",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "admin", "editor")) return deny();
+      if (!(await hasRole(req, "admin", "editor"))) return deny();
       refreshAll();
       return Response.json({ ok: true, message: "Sklep odświeżony – zmiany widać od razu" });
     },
@@ -146,7 +146,7 @@ export const adminToolEndpoints: Endpoint[] = [
     path: "/message-tools/:id/reply",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "orders")) return deny();
+      if (!(await hasRole(req, "orders"))) return deny();
       const body = ((await req.json?.().catch(() => ({}))) ?? {}) as { text?: string };
       const text = String(body.text ?? "").trim().slice(0, 8000);
       if (text.length < 2) return Response.json({ ok: false, message: "Wpisz treść odpowiedzi" }, { status: 400 });
@@ -169,7 +169,7 @@ export const adminToolEndpoints: Endpoint[] = [
     path: "/content-tools/page-template",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "editor")) return deny();
+      if (!(await hasRole(req, "editor"))) return deny();
       const body = ((await req.json?.().catch(() => ({}))) ?? {}) as { template?: string; title?: string };
       const title = String(body.title ?? "").trim().slice(0, 120);
       const layout = PAGE_TEMPLATES[String(body.template)];
@@ -186,7 +186,7 @@ export const adminToolEndpoints: Endpoint[] = [
     path: "/content-tools/legal-drafts",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "admin")) return deny();
+      if (!(await hasRole(req, "admin"))) return deny();
       const done: { slug: string; id: number | string }[] = [];
       for (const p of LEGAL_PAGES) {
         const { docs } = await req.payload.find({ collection: "pages", where: { slug: { equals: p.slug } }, limit: 1, depth: 0, overrideAccess: true });
@@ -207,7 +207,7 @@ export const adminToolEndpoints: Endpoint[] = [
     path: "/order-tools/:id/history",
     method: "get",
     handler: async (req) => {
-      if (!hasRole(req, "orders")) return deny();
+      if (!(await hasRole(req, "orders"))) return deny();
       const { docs } = await req.payload.find({
         collection: "integration-logs", where: { order: { equals: idOf(req) } }, sort: "createdAt", limit: 200, depth: 0, overrideAccess: true,
       });
@@ -222,7 +222,7 @@ export const adminToolEndpoints: Endpoint[] = [
     path: "/customer-tools/:id/stats",
     method: "get",
     handler: async (req) => {
-      if (!hasRole(req, "orders")) return deny();
+      if (!(await hasRole(req, "orders"))) return deny();
       const c = await req.payload.findByID({ collection: "customers", id: idOf(req), depth: 0, overrideAccess: true });
       const { docs } = await req.payload.find({
         collection: "orders", depth: 0, limit: 1000, pagination: false, overrideAccess: true, sort: "-createdAt",
@@ -240,7 +240,7 @@ export const adminToolEndpoints: Endpoint[] = [
     path: "/customer-tools/:id/b2b",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "orders")) return deny();
+      if (!(await hasRole(req, "orders"))) return deny();
       const body = ((await req.json?.().catch(() => ({}))) ?? {}) as { decision?: string };
       const approved = body.decision === "approved";
       if (!approved && body.decision !== "rejected") return Response.json({ ok: false, message: "Nieznana decyzja" }, { status: 400 });
@@ -267,7 +267,7 @@ export const adminToolEndpoints: Endpoint[] = [
       const since = ids.length ? { id: { in: ids } } : days > 0 ? { createdAt: { greater_than: new Date(Date.now() - days * 86_400_000).toISOString() } } : undefined;
       let rows: unknown[][] = [];
       if (kind === "orders") {
-        if (!hasRole(req, "orders")) return deny();
+        if (!(await hasRole(req, "orders"))) return deny();
         const store = await req.payload.findGlobal({ slug: "store-settings", overrideAccess: true });
         const ship = (c?: string | null) => store.shippingMethods?.find((m) => m.code === c)?.label ?? c ?? "";
         const pay = (c?: string | null) => store.paymentMethods?.find((m) => m.code === c)?.label ?? c ?? "";
@@ -279,7 +279,7 @@ export const adminToolEndpoints: Endpoint[] = [
           (o.items ?? []).reduce((s, i) => s + Number(i.quantity ?? 0), 0), plNum(o.subtotal), plNum(o.shipping?.price), plNum(o.total), o.baselinker?.orderId,
         ]);
       } else if (kind === "products") {
-        if (!hasRole(req, "editor", "orders")) return deny();
+        if (!(await hasRole(req, "editor", "orders"))) return deny();
         const { docs } = await req.payload.find({ collection: "products", depth: 1, limit: 0, pagination: false, overrideAccess: true, sort: "name" });
         rows = [["Nazwa", "SKU", "EAN", "Marka", "Kategoria", "Cena (zł)", "Cena promocyjna", "Cena B2B", "VAT %", "Stan", "Widoczność", "ID BaseLinker", "Adres w sklepie"]];
         for (const p of docs) rows.push([
@@ -287,7 +287,7 @@ export const adminToolEndpoints: Endpoint[] = [
           ({ active: "widoczny", hidden: "ukryty", archived: "wycofany" } as Record<string, string>)[p.status ?? ""] ?? p.status, p.baselinkerId, p.slug ? `/produkt/${p.slug}` : "",
         ]);
       } else if (kind === "customers") {
-        if (!hasRole(req, "orders")) return deny();
+        if (!(await hasRole(req, "orders"))) return deny();
         const { docs } = await req.payload.find({ collection: "customers", depth: 0, limit: 0, pagination: false, overrideAccess: true, sort: "-createdAt", where: since as never });
         rows = [["E-mail", "Imię", "Nazwisko", "Telefon", "Typ konta", "Firma", "NIP", "Status B2B", "Newsletter", "Założone"]];
         for (const c of docs) rows.push([
@@ -304,7 +304,7 @@ export const adminToolEndpoints: Endpoint[] = [
     path: "/order-tools/:id/print",
     method: "get",
     handler: async (req) => {
-      if (!hasRole(req, "orders")) return deny();
+      if (!(await hasRole(req, "orders"))) return deny();
       const o = await req.payload.findByID({ collection: "orders", id: idOf(req), depth: 0, overrideAccess: true });
       const store = await req.payload.findGlobal({ slug: "store-settings", overrideAccess: true });
       const html = printPage(`Zamówienie ${o.orderNumber}`, [printSection(o, store)]);
@@ -315,7 +315,7 @@ export const adminToolEndpoints: Endpoint[] = [
     path: "/order-tools/:id/resend",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "orders")) return deny();
+      if (!(await hasRole(req, "orders"))) return deny();
       if (!mailConfig()) return Response.json({ ok: false, message: "Poczta nie jest skonfigurowana (Integracje → Poczta)." });
       const o = await req.payload.findByID({ collection: "orders", id: idOf(req), depth: 0, overrideAccess: true });
       const store = await req.payload.findGlobal({ slug: "store-settings", overrideAccess: true });
@@ -333,7 +333,7 @@ export const adminToolEndpoints: Endpoint[] = [
     path: "/product-tools/:id/stats",
     method: "get",
     handler: async (req) => {
-      if (!hasRole(req, "editor", "orders")) return deny();
+      if (!(await hasRole(req, "editor", "orders"))) return deny();
       const id = idOf(req);
       const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
       const [orders, waiting] = await Promise.all([
@@ -358,7 +358,7 @@ export const adminToolEndpoints: Endpoint[] = [
     path: "/return-tools/:id/refund",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "orders")) return deny();
+      if (!(await hasRole(req, "orders"))) return deny();
       const ret = await req.payload.findByID({ collection: "returns", id: idOf(req), depth: 0, overrideAccess: true }).catch(() => null);
       if (!ret) return Response.json({ ok: false, message: "Nie ma takiego zgłoszenia." });
       if (ret.status === "refunded") return Response.json({ ok: true, message: "Zwrot był już oznaczony jako wykonany." });
@@ -422,22 +422,21 @@ export const adminToolEndpoints: Endpoint[] = [
     path: "/product-tools/:id/refresh",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "editor", "orders")) return deny();
+      if (!(await hasRole(req, "editor", "orders"))) return deny();
       if (!blActive()) return Response.json({ ok: false, message: "Moduł BaseLinker jest wyłączony albo nieskonfigurowany." });
       const p = await req.payload.findByID({ collection: "products", id: idOf(req), depth: 0, overrideAccess: true });
       if (!p.baselinkerId) return Response.json({ ok: false, message: "Produkt nie jest powiązany z BaseLinkerem." });
-      const s = await req.payload.findGlobal({ slug: "baselinker-settings", overrideAccess: true });
       try {
-        const res = await blCall<{ products: Record<string, BLProductData> }>("getInventoryProductsData", { inventory_id: Number(s.inventoryId), products: [p.baselinkerId] });
-        const d = res.products?.[String(p.baselinkerId)];
-        if (!d) return Response.json({ ok: false, message: "BaseLinker nie zwrócił tego produktu." });
+        const offer = await fetchOffer(req.payload, Number(p.baselinkerId));
+        if (!offer) return Response.json({ ok: false, message: "BaseLinker nie zwrócił tego produktu w żadnym katalogu." });
+        const { data: d, catalog, settings: s } = offer;
         const warehouse = s.warehouseId as string | undefined;
         const stock = warehouse ? Number(d.stock?.[warehouse] ?? 0) : Object.values(d.stock ?? {}).reduce((a, b) => a + Number(b), 0);
         const priceRaw = s.priceGroupId ? d.prices?.[String(s.priceGroupId)] : Object.values(d.prices ?? {})[0];
         const data: { stock: number; price?: number; lastSyncedAt: string } = { stock: Math.max(0, stock), lastSyncedAt: new Date().toISOString() };
         if (priceRaw != null && !p.keep?.price) data.price = Number(priceRaw);
         await req.payload.update({ collection: "products", id: p.id, overrideAccess: true, data });
-        return Response.json({ ok: true, message: `Stan: ${data.stock} szt.${data.price != null ? `, cena: ${T.pln(data.price)}` : ""} (z BaseLinkera)` });
+        return Response.json({ ok: true, message: `Stan: ${data.stock} szt.${data.price != null ? `, cena: ${T.pln(data.price)}` : ""} (katalog ${catalog})` });
       } catch (e) {
         return Response.json({ ok: false, message: (e as Error).message });
       }

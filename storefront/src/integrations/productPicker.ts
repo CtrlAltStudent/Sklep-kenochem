@@ -30,7 +30,7 @@ export const productPickerEndpoints: Endpoint[] = [
     path: "/product-picker",
     method: "get",
     handler: async (req) => {
-      if (!hasRole(req, "editor", "orders")) return deny();
+      if (!(await hasRole(req, "editor", "orders"))) return deny();
       const ids = String(req.searchParams.get("ids") ?? "").split(",").map((n) => Number(n)).filter((n) => n > 0).slice(0, 80);
       const q = String(req.searchParams.get("q") ?? "").trim();
       if (!ids.length && q.length < 2) return Response.json({ ok: true, hits: [] });

@@ -24,7 +24,7 @@ export const bundleEndpoints: Endpoint[] = [
     path: "/product-tools/:id/bundle",
     method: "get",
     handler: async (req) => {
-      if (!hasRole(req, "editor", "orders")) return deny();
+      if (!(await hasRole(req, "editor", "orders"))) return deny();
       const id = idOf(req.routeParams?.id);
       const doc = await load(req.payload, id).catch(() => null);
       if (!doc) return Response.json({ ok: false, message: "Nie ma takiego produktu." }, { status: 404 });
@@ -46,7 +46,7 @@ export const bundleEndpoints: Endpoint[] = [
     path: "/product-tools/:id/bundle/search",
     method: "get",
     handler: async (req) => {
-      if (!hasRole(req, "editor", "orders")) return deny();
+      if (!(await hasRole(req, "editor", "orders"))) return deny();
       const id = idOf(req.routeParams?.id);
       const q = String(req.searchParams.get("q") ?? "").trim();
       if (q.length < 2) return Response.json({ ok: true, hits: [] });
@@ -77,7 +77,7 @@ export const bundleEndpoints: Endpoint[] = [
     path: "/product-tools/:id/bundle",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "editor")) return deny();
+      if (!(await hasRole(req, "editor"))) return deny();
       const id = idOf(req.routeParams?.id);
       const body = (await req.json?.()) as { items?: { productId?: number; quantity?: number }[] } | null;
       const current = await load(req.payload, id).catch(() => null);

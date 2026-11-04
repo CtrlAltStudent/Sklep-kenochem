@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import type { Block, CollectionConfig } from "payload";
 import { isAdmin, isEditor, publishedOrStaff } from "../access";
 import { productList, section, seoFields, slugField } from "../fields";
+import { rememberOldAddress } from "../slugRedirect";
 
 // Bloki do budowania stron (regulamin, o nas, landing page promocji…)
 const blocks: Block[] = [
@@ -55,7 +56,7 @@ export const Pages: CollectionConfig = {
   versions: { drafts: true, maxPerDoc: 20 },
   access: { read: publishedOrStaff, create: isEditor, update: isEditor, delete: isEditor },
   // po zapisie strona w sklepie odświeża się od razu
-  hooks: { afterChange: [({ doc }) => { try { revalidatePath("/", "layout"); } catch { /* skrypt poza Next */ } return doc; }] },
+  hooks: { afterChange: [({ doc }) => { try { revalidatePath("/", "layout"); } catch { /* skrypt poza Next */ } return doc; }, rememberOldAddress("/")] },
   fields: [
     { type: "ui", name: "pageBoard", admin: { components: { Field: { path: "@/payload/components/SectionSheet#SectionBoard", clientProps: { sections: [
       { id: "naglowek-strony", title: "Nagłówek", hint: "Tytuł i wstęp." },
@@ -88,6 +89,7 @@ export const Posts: CollectionConfig = {
   admin: { group: "Treści", useAsTitle: "title", defaultColumns: ["title", "tag", "publishedAt", "_status"] },
   versions: { drafts: { schedulePublish: true }, maxPerDoc: 20 },
   access: { read: publishedOrStaff, create: isEditor, update: isEditor, delete: isEditor },
+  hooks: { afterChange: [rememberOldAddress("/blog/")] },
   fields: [
     { type: "ui", name: "postBoard", admin: { components: { Field: { path: "@/payload/components/SectionSheet#SectionBoard", clientProps: { sections: [
       { id: "naglowek-wpisu", title: "Nagłówek", hint: "Tytuł i zajawka." },

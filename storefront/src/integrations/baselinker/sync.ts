@@ -21,6 +21,24 @@ async function settings(payload: Payload): Promise<Settings> {
   return s;
 }
 
+// Najpierw katalog ustawiony w panelu. Gdy produktu tam nie ma (został powiązany
+// z innym katalogiem tego samego konta), szukamy po tym samym numerze dalej.
+export async function fetchOffer(payload: Payload, blId: number) {
+  const s = await settings(payload);
+  const preferred = Number(s.inventoryId);
+  const inv = await blCall<{ inventories: { inventory_id: number; name?: string }[] }>("getInventories");
+  const catalogs = [...(inv.inventories ?? [])].sort((a, b) => (a.inventory_id === preferred ? -1 : b.inventory_id === preferred ? 1 : 0));
+  for (const c of catalogs) {
+    const res = await blCall<{ products: Record<string, BLProductData> }>("getInventoryProductsData", {
+      inventory_id: c.inventory_id,
+      products: [blId],
+    });
+    const data = res.products?.[String(blId)];
+    if (data) return { data, catalog: c.name || `katalog ${c.inventory_id}`, settings: s };
+  }
+  return null;
+}
+
 // Teksty mają klucze typu "name", "name|pl" albo "name|pl|1234" (nadpisanie dla źródła).
 function textField(fields: Record<string, unknown>, key: string, lang: string): string {
   const v = fields[`${key}|${lang}`] ?? fields[key];
@@ -388,22 +406,63 @@ export async function syncStock(payload: Payload, { dryRun = false, quiet = fals
   try {
     const s = await settings(payload);
     const warehouse = s.warehouseId as string | undefined;
+    const qtyOf = (stock: Record<string, number> | undefined) =>
+      warehouse ? Number(stock?.[warehouse] ?? 0) : Object.values(stock ?? {}).reduce((a, b) => a + Number(b), 0);
     let changed = 0, checked = 0;
     const samples: unknown[] = [];
+    const seen = new Set<number>();
+
+    const apply = async (blId: number, qty: number) => {
+      checked++;
+      seen.add(blId);
+      const existing = (await payload.find({ collection: "products", where: { baselinkerId: { equals: blId } }, limit: 1, depth: 0, overrideAccess: true })).docs[0];
+      if (!existing || Number(existing.stock) === qty) return;
+      changed++;
+      if (samples.length < 10) samples.push({ name: existing.name, from: existing.stock, to: qty });
+      if (!dryRun) await payload.update({ collection: "products", id: existing.id, overrideAccess: true, data: { stock: qty } });
+    };
 
     for (let page = 1; ; page++) {
       const res = await blCall<{ products: Record<string, BLStockItem> }>("getInventoryProductsStock", { inventory_id: Number(s.inventoryId), page });
       const items = Object.values(res.products ?? {});
-      for (const it of items) {
-        checked++;
-        const qty = warehouse ? Number(it.stock?.[warehouse] ?? 0) : Object.values(it.stock ?? {}).reduce((a, b) => a + Number(b), 0);
-        const existing = (await payload.find({ collection: "products", where: { baselinkerId: { equals: it.product_id } }, limit: 1, depth: 0, overrideAccess: true })).docs[0];
-        if (!existing || Number(existing.stock) === qty) continue;
-        changed++;
-        if (samples.length < 10) samples.push({ name: existing.name, from: existing.stock, to: qty });
-        if (!dryRun) await payload.update({ collection: "products", id: existing.id, overrideAccess: true, data: { stock: qty } });
-      }
+      for (const it of items) await apply(Number(it.product_id), qtyOf(it.stock));
       if (items.length < 1000) break;
+    }
+
+    // Produkty powiązane z innym katalogiem tego samego konta (np. Kenochem) nie wchodzą w listę powyżej.
+    const linked: number[] = [];
+    for (let page = 1; ; page++) {
+      const found = await payload.find({
+        collection: "products",
+        where: { baselinkerId: { exists: true } },
+        limit: 200,
+        page,
+        depth: 0,
+        overrideAccess: true,
+        select: { baselinkerId: true },
+      });
+      for (const doc of found.docs) {
+        const id = Number(doc.baselinkerId);
+        if (id && !seen.has(id)) linked.push(id);
+      }
+      if (!found.hasNextPage) break;
+    }
+    if (linked.length) {
+      const inv = await blCall<{ inventories: { inventory_id: number }[] }>("getInventories");
+      const others = (inv.inventories ?? []).map((c) => c.inventory_id).filter((id) => id !== Number(s.inventoryId));
+      const still = new Set(linked);
+      for (const inventoryId of others) {
+        const ids = [...still];
+        for (let i = 0; i < ids.length; i += BATCH) {
+          const batch = ids.slice(i, i + BATCH);
+          const res = await blCall<{ products: Record<string, BLProductData> }>("getInventoryProductsData", { inventory_id: inventoryId, products: batch });
+          for (const [id, data] of Object.entries(res.products ?? {})) {
+            still.delete(Number(id));
+            await apply(Number(id), qtyOf(data.stock));
+          }
+        }
+        if (!still.size) break;
+      }
     }
 
     if (!dryRun) await payload.updateGlobal({ slug: "baselinker-settings", overrideAccess: true, data: { lastStockSyncAt: new Date().toISOString() } });

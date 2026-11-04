@@ -20,6 +20,7 @@ export async function generateMetadata(props: PageProps<"/[...path]">): Promise<
   return {
     title: page.seo?.title?.replace(/ \| (Kenochem|Sklep Sonax)$/, "") || page.title,
     description: page.seo?.description ?? page.intro ?? undefined,
+    alternates: { canonical: `/${page.slug}` },
     robots: page.seo?.noindex ? { index: false } : undefined,
   };
 }

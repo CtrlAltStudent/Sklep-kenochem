@@ -22,7 +22,7 @@ export const baselinkerEndpoints: Endpoint[] = [
     path: "/baselinker/status",
     method: "get",
     handler: async (req) => {
-      if (!hasRole(req, "orders")) return deny();
+      if (!(await hasRole(req, "orders"))) return deny();
       const s = await req.payload.findGlobal({ slug: "baselinker-settings", req });
       return Response.json({
         mode: integrationMode(),
@@ -37,13 +37,13 @@ export const baselinkerEndpoints: Endpoint[] = [
   {
     path: "/baselinker/test",
     method: "post",
-    handler: async (req) => (hasRole(req, "admin") ? Response.json(await testConnection(req.payload)) : deny()),
+    handler: async (req) => ((await hasRole(req, "admin")) ? Response.json(await testConnection(req.payload)) : deny()),
   },
   {
     path: "/baselinker/sync-products",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "admin")) return deny();
+      if (!(await hasRole(req, "admin"))) return deny();
       const { dryRun, limit, ids, picks } = await body(req);
       const chosen = Array.isArray(picks)
         ? picks.map((p: { id?: number; inventoryId?: number }) => ({ id: Number(p?.id), inventoryId: Number(p?.inventoryId) || undefined })).filter((p) => p.id > 0).slice(0, 100)
@@ -56,7 +56,7 @@ export const baselinkerEndpoints: Endpoint[] = [
     path: "/baselinker/product-search",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "admin")) return deny();
+      if (!(await hasRole(req, "admin"))) return deny();
       const { q, field, inventoryId, kind } = await body(req);
       const by = (["all", "name", "sku", "ean"] as const).find((f) => f === field) ?? "all";
       const what = (["all", "product", "bundle"] as const).find((f) => f === kind) ?? "all";
@@ -67,7 +67,7 @@ export const baselinkerEndpoints: Endpoint[] = [
     path: "/baselinker/sync-stock",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "admin")) return deny();
+      if (!(await hasRole(req, "admin"))) return deny();
       const { dryRun } = await body(req);
       return Response.json(await syncStock(req.payload, { dryRun: Boolean(dryRun) }));
     },
@@ -75,13 +75,13 @@ export const baselinkerEndpoints: Endpoint[] = [
   {
     path: "/baselinker/link-sku",
     method: "post",
-    handler: async (req) => (hasRole(req, "admin") ? Response.json(await linkBySku(req.payload)) : deny()),
+    handler: async (req) => ((await hasRole(req, "admin")) ? Response.json(await linkBySku(req.payload)) : deny()),
   },
   {
     path: "/baselinker/order-preview/:id",
     method: "get",
     handler: async (req) => {
-      if (!hasRole(req, "orders")) return deny();
+      if (!(await hasRole(req, "orders"))) return deny();
       const order = await req.payload.findByID({ collection: "orders", id: String(req.routeParams?.id), depth: 0, req });
       return Response.json({ ok: true, mode: integrationMode(), alreadySentId: order.baselinker?.orderId ?? null, ...(await buildAddOrder(req.payload, order, req)) });
     },
@@ -90,7 +90,7 @@ export const baselinkerEndpoints: Endpoint[] = [
     path: "/baselinker/order-packages/:id",
     method: "get",
     handler: async (req) => {
-      if (!hasRole(req, "orders")) return deny();
+      if (!(await hasRole(req, "orders"))) return deny();
       const order = await req.payload.findByID({ collection: "orders", id: String(req.routeParams?.id), depth: 0, req });
       if (!order.baselinker?.orderId) return Response.json({ ok: true, packages: [] });
       try {
@@ -104,9 +104,9 @@ export const baselinkerEndpoints: Endpoint[] = [
     path: "/baselinker/send-order/:id",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "orders")) return deny();
+      if (!(await hasRole(req, "orders"))) return deny();
       const { force } = await body(req);
-      return Response.json(await sendOrderToBaseLinker(req.payload, String(req.routeParams?.id), { force: Boolean(force) && hasRole(req, "admin") }));
+      return Response.json(await sendOrderToBaseLinker(req.payload, String(req.routeParams?.id), { force: Boolean(force) && (await hasRole(req, "admin")) }));
     },
   },
 ];

@@ -4,6 +4,7 @@
 import { randomBytes } from "node:crypto";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { dataDir } from "./dataDir";
 
 const COOKIE = "sx_ses";
 const STAFF_COOKIE = "sx_nas";
@@ -27,9 +28,7 @@ export type Audience = "bez" | "razem" | "my";
 let db: DatabaseSync | null = null;
 
 function file() {
-  const raw = process.env.DATABASE_URL || "file:./sonax.db";
-  if (raw.startsWith("file:")) return path.join(path.dirname(path.resolve(raw.slice(5))), "stats.db");
-  return path.resolve("data/stats.db");
+  return path.join(dataDir(), "stats.db");
 }
 
 function database() {
@@ -49,6 +48,11 @@ function database() {
     );
     CREATE INDEX IF NOT EXISTS hits_ts ON hits(ts);
     CREATE INDEX IF NOT EXISTS hits_session ON hits(session);
+    CREATE TABLE IF NOT EXISTS redirect_uses (
+      path TEXT PRIMARY KEY,
+      n INTEGER NOT NULL,
+      last INTEGER NOT NULL
+    );
   `);
   const cols = db.prepare("PRAGMA table_info(hits)").all() as { name: string }[];
   if (!cols.some((c) => c.name === "staff")) db.exec("ALTER TABLE hits ADD COLUMN staff INTEGER NOT NULL DEFAULT 0");
@@ -104,6 +108,39 @@ const cleanPath = (raw: string) => {
 
 const productOf = (p: string) => p.match(/^\/produkt\/([^/]+)$/)?.[1] ?? null;
 const probePath = /^\/(?:wp-admin|wp-login\.php|wp-content|wp-includes|xmlrpc\.php|phpmyadmin)(?:\/|$)|^\/\.(?:env|git)/i;
+
+export type PathCount = { path: string; n: number; last: number };
+
+// Adresy, na które ktoś wszedł, a sklep odpowiedział „nie znaleziono”. Bez wejść z panelu.
+export function missingPages(limit = 200): PathCount[] {
+  try {
+    return database().prepare(
+      "SELECT path, COUNT(*) AS n, MAX(ts) AS last FROM hits WHERE kind = 'notfound' AND staff = 0 GROUP BY path ORDER BY n DESC, last DESC LIMIT ?",
+    ).all(Math.min(500, Math.max(1, limit))) as PathCount[];
+  } catch (e) {
+    console.error("stats", e);
+    return [];
+  }
+}
+
+export function noteRedirect(path: string) {
+  try {
+    database().prepare(
+      "INSERT INTO redirect_uses (path, n, last) VALUES (?, 1, ?) ON CONFLICT(path) DO UPDATE SET n = n + 1, last = excluded.last",
+    ).run(path.slice(0, 180), Date.now());
+  } catch (e) {
+    console.error("stats", e);
+  }
+}
+
+export function redirectUses(limit = 100): PathCount[] {
+  try {
+    return database().prepare("SELECT path, n, last FROM redirect_uses ORDER BY n DESC, last DESC LIMIT ?").all(Math.min(300, Math.max(1, limit))) as PathCount[];
+  } catch (e) {
+    console.error("stats", e);
+    return [];
+  }
+}
 
 export function recordHit(hit: Hit) {
   const p = cleanPath(hit.path);

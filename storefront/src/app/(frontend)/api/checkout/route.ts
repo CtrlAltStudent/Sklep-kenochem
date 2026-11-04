@@ -44,6 +44,6 @@ export async function POST(request: Request) {
     return Response.json(result, { status: result.ok ? 200 : 400 });
   } catch (e) {
     console.error("checkout", e);
-    return Response.json({ ok: false, message: "Nie udało się złożyć zamówienia. Spróbuj ponownie albo zadzwoń: 500 021 705." }, { status: 500 });
+    return Response.json({ ok: false, message: "Nie udało się złożyć zamówienia. Spróbuj ponownie albo zadzwoń: 664 953 377." }, { status: 500 });
   }
 }

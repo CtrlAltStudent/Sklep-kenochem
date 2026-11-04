@@ -9,7 +9,9 @@ import { CategoryTiles } from "@/components/home/CategoryTiles";
 import { ShopScene } from "@/components/home/ShopScene";
 import { UsageFinder, type UsageChip } from "@/components/home/UsageFinder";
 import { HomeReviews } from "@/components/home/HomeReviews";
+import { BrandStrip } from "@/components/home/BrandStrip";
 import { getHomepage, getLatestReviews, getPosts, getStoreSettings, postDate } from "@/lib/cms";
+import { getGoogleReviews } from "@/integrations/vault";
 import { HeroSlider, type Slide } from "@/components/home/HeroSlider";
 import type { Media } from "@/payload-types";
 import { getLayout } from "@/integrations/vault";
@@ -112,7 +114,7 @@ export async function HomeScreen({ draft = false, sectionIds = null }: { draft?:
     .filter((s) => activeNow(s.activeFrom, s.activeTo))
     .map((s) => ({ image: mediaSrc(s.image) ?? "", kicker: s.kicker ?? undefined, title: s.title ?? undefined, text: s.text ?? undefined, ctaLabel: s.ctaLabel ?? undefined, link: s.link }))
     .filter((s) => s.image);
-  const defaultPerks = perks(freeShippingFrom(store), store.phone || "+48 500 021 705", store.hours || "Pn–Pt 8–16");
+  const defaultPerks = perks(freeShippingFrom(store), store.phone || "+48 664 953 377", store.hours || "Pn–Pt 8–16");
   const perkList = home?.perks?.length
     ? home.perks.map((p, i) => ({ icon: defaultPerks[i % 4].icon, image: mediaSrc(p.icon, "thumb"), title: p.title, text: p.text ?? "" }))
     : defaultPerks.map((p) => ({ ...p, image: undefined as string | undefined }));
@@ -232,27 +234,12 @@ export async function HomeScreen({ draft = false, sectionIds = null }: { draft?:
     brands: (brandLogos.length > 0 || brands.length > 0) && (
       <section className="my-8 border-y border-brand-100 bg-white py-8">
         <p className="mb-4 text-center text-xs font-bold tracking-widest text-slate-400 uppercase">{text(home?.brandsTitle, "Marki w sklepie")}</p>
-        <div className="brand-viewport overflow-hidden">
-          <div className="marquee flex w-max items-center" style={{ animationDuration: "55s" }}>
-            {[0, 1].map((copy) => (
-              <div key={copy} className="flex shrink-0 items-center gap-3 px-1.5" aria-hidden={copy === 1} inert={copy === 1}>
-                {brandLogos.length > 0
-                  ? brandLogos.map((b) => (
-                    <Link key={`${copy}-${b.name}`} href={b.href} className="grid h-16 w-36 shrink-0 place-items-center rounded-xl bg-white px-3 ring-1 ring-brand-100 hover:ring-accent" title={b.name}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={b.src} alt={copy === 0 ? b.name : ""} className="max-h-10 max-w-full object-contain" />
-                    </Link>
-                  ))
-                  : brands.map((b) => (
-                    <Link key={`${copy}-${b.slug}`} href={`/marki/${b.slug}`} className="shrink-0 rounded-lg bg-slate-50 px-4 py-2 text-sm font-bold text-slate-600 ring-1 ring-brand-100 hover:text-accent hover:ring-accent">{b.name}</Link>
-                  ))}
-              </div>
-            ))}
-          </div>
-        </div>
+        <BrandStrip items={brandLogos.length > 0
+          ? brandLogos
+          : brands.map((b) => ({ name: b.name, href: `/marki/${b.slug}` }))} />
       </section>
     ),
-    reviews: contained(<HomeReviews data={reviews} />),
+    reviews: contained(<HomeReviews data={reviews} google={getGoogleReviews()} />),
     about: contained(
       <section className="grid overflow-hidden rounded-xl bg-white ring-1 ring-brand-100 lg:grid-cols-2">
         <div className="p-8 sm:p-10">

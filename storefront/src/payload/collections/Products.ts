@@ -3,6 +3,7 @@ import { anyone, isCatalog, isEditor } from "../access";
 import { productList, section, seoFields, slugField } from "../fields";
 import { VARIANT_DISPLAY, VARIANT_NAV } from "@/lib/data";
 import { brandHook, keepEditedDescription, priceHistoryHook, stockAlertHook, invalidateCatalogHook, stripDescriptionImagesHook, variantParentHook, uniqueSkuHook, unlinkVariantsHook } from "../productHooks";
+import { rememberOldAddress } from "../slugRedirect";
 
 // Produkt sklepu. Pola z zakładki „Ceny i magazyn” oraz nazwa/opis/zdjęcia są nadpisywane
 // przez synchronizację z BaseLinkerem – chyba że zaznaczysz „Nie nadpisuj” w zakładce BaseLinker.
@@ -23,7 +24,7 @@ export const Products: CollectionConfig = {
   access: { read: anyone, create: isEditor, update: isCatalog, delete: isEditor },
   hooks: {
     beforeChange: [stripDescriptionImagesHook, uniqueSkuHook, priceHistoryHook, keepEditedDescription, variantParentHook, brandHook],
-    afterChange: [stockAlertHook, invalidateCatalogHook],
+    afterChange: [stockAlertHook, invalidateCatalogHook, rememberOldAddress("/produkt/")],
     afterDelete: [unlinkVariantsHook, invalidateCatalogHook],
   },
   fields: [

@@ -27,16 +27,40 @@ export const rememberRoles = (id: unknown, roles: unknown) => {
   if (id != null && list.length) roleCache.set(String(id), list);
 };
 
-const staff = (req: PayloadRequest) => (req.user?.collection === "users" ? (req.user as StaffUser) : null);
+const staff = (req: PayloadRequest) => {
+  const u = req.user as StaffUser | null | undefined;
+  if (!u?.id) return null;
+  // Klient sklepu ma kolekcję „customers”. Puste collection zostawiamy — to pracownik panelu.
+  if (u.collection && u.collection !== "users") return null;
+  return u;
+};
 
-export const hasRole = (req: PayloadRequest, ...roles: Role[]) => {
+const allows = (list: Role[], roles: Role[]) => list.includes("admin") || roles.some((r) => list.includes(r));
+
+// Rola na żądaniu bywa pusta, choć w bazie jest „admin”. Odczyt jest w tej samej funkcji,
+// która sprawdza uprawnienie — pamięć procesu nie jest współdzielona między częściami panelu.
+export const hasRole = async (req: PayloadRequest, ...roles: Role[]) => {
   const u = staff(req);
-  if (!u) return false;
-  const live = roleList(u.roles);
-  const known = u.id != null ? roleCache.get(String(u.id)) : undefined;
-  const list = live.length ? live : known ?? [];
-  if (!live.length && known?.length) u.roles = known;
-  return list.includes("admin") || roles.some((r) => list.includes(r));
+  if (!u?.id) return false;
+  let list = roleList(u.roles);
+  if (!list.length) list = roleCache.get(String(u.id)) ?? [];
+  if (!list.length) {
+    try {
+      const doc = await req.payload.findByID({
+        collection: "users",
+        id: u.id,
+        depth: 0,
+        overrideAccess: true,
+        select: { roles: true },
+      });
+      list = roleList(doc?.roles);
+      if (list.length) roleCache.set(String(u.id), list);
+    } catch {
+      list = [];
+    }
+  }
+  if (list.length) u.roles = list;
+  return allows(list, roles);
 };
 
 export const isAdminUser = (user?: { id?: unknown; roles?: unknown } | null) => {
@@ -60,15 +84,15 @@ export const adminField: FieldAccess = ({ req }) => hasRole(req, "admin");
 export const publishedOrStaff: Access = ({ req }) => (staff(req) ? true : { _status: { equals: "published" } });
 
 // Klient widzi tylko swoje konto. W panelu klientów widzi obsługa zamówień.
-export const selfOrStaff: Access = ({ req }) => {
-  if (hasRole(req, "orders")) return true;
+export const selfOrStaff: Access = async ({ req }) => {
+  if (await hasRole(req, "orders")) return true;
   if (req.user?.collection === "customers") return { id: { equals: req.user.id } };
   return false;
 };
 
 // Zamówienia: klient widzi tylko swoje, obsługa zamówień – wszystkie
-export const ownOrdersOrStaff: Access = ({ req }) => {
-  if (hasRole(req, "orders")) return true;
+export const ownOrdersOrStaff: Access = async ({ req }) => {
+  if (await hasRole(req, "orders")) return true;
   if (req.user?.collection === "customers") return { customer: { equals: req.user.id } };
   return false;
 };

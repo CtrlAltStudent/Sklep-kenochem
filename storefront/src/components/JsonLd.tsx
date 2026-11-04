@@ -1,4 +1,4 @@
-import type { Product } from "@/lib/data";
+import { plainText, type Product } from "@/lib/data";
 
 const base = (process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000").replace(/\/$/, "");
 const abs = (u: string) => (/^https?:\/\//.test(u) ? u : `${base}${u.startsWith("/") ? "" : "/"}${u}`);
@@ -8,19 +8,34 @@ export function JsonLd({ data }: { data: Record<string, unknown> | Record<string
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />;
 }
 
-export const organizationLd = {
+export type StoreProfile = { sameAs?: string[]; lat?: number; lng?: number; hasMap?: string };
+
+export const organizationLd = (telephone = "+48 664 953 377", profile?: StoreProfile) => ({
   "@context": "https://schema.org",
   "@type": "Store",
   name: "Sklep Sonax Białystok",
   legalName: "KENOCHEM Kuczyński Sp. J.",
   url: base,
   logo: `${base}/sonax/logo.png`,
-  telephone: "+48 500 021 705",
+  image: `${base}/sonax/logo.png`,
+  telephone,
   email: "aukcje@sonax.bialystok.pl",
   vatID: "PL5423224790",
   address: { "@type": "PostalAddress", streetAddress: "Gen. Wł. Andersa 40", postalCode: "15-113", addressLocality: "Białystok", addressCountry: "PL" },
   openingHoursSpecification: [{ "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], opens: "08:00", closes: "16:00" }],
-};
+  areaServed: { "@type": "Country", name: "Polska" },
+  sameAs: profile?.sameAs?.length ? profile.sameAs : undefined,
+  hasMap: profile?.hasMap,
+  geo: profile?.lat != null && profile?.lng != null ? { "@type": "GeoCoordinates", latitude: profile.lat, longitude: profile.lng } : undefined,
+});
+
+export const websiteLd = () => ({
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Sklep Sonax Białystok",
+  url: base,
+  potentialAction: { "@type": "SearchAction", target: `${base}/szukaj?q={search_term_string}`, "query-input": "required name=search_term_string" },
+});
 
 // Dostawa i zwroty w danych produktu – Google pokazuje je przy wyniku („Bezpłatna dostawa”, „Zwrot 14 dni”)
 export type ShippingLd = { price: number; freeFrom: number };
@@ -74,7 +89,7 @@ export function productLd(p: Product, crumbs: { name: string; url: string }[], r
       gtin8: /^\d{8}$/.test(ean) ? ean : undefined,
       brand: p.brand ? { "@type": "Brand", name: p.brand } : undefined,
       image: p.images.slice(0, 5).map(abs),
-      description: p.seo?.description || p.short || undefined,
+      description: plainText(p.seo?.description || p.short) || `${p.brand ? `${p.brand} ` : ""}${p.name}. Sklep SONAX Białystok.`,
       category: crumbs.slice(1, -1).map((c) => c.name).join(" > ") || undefined,
       offers: p.variants.length > 1 ? p.variants.map((v) => offerOf(p, v, ship, pageSlug)) : offerOf(p, shown, ship, pageSlug),
       aggregateRating: rating && rating.count ? { "@type": "AggregateRating", ratingValue: rating.average.toFixed(1), reviewCount: rating.count } : undefined,

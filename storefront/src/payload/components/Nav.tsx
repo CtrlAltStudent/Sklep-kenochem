@@ -3,7 +3,7 @@
 
 import { NavHamburger, NavWrapper } from "@payloadcms/next/client";
 import type { Payload, SanitizedPermissions, Where } from "payload";
-import { isAdminUser } from "@/payload/access";
+import { isAdminUser, roleList } from "@/payload/access";
 import { navSections, type NavItem } from "@/payload/nav";
 import { NavBrand } from "./Branding";
 import { NavLinks, type NavLinkData, type NavSectionData } from "./NavLinks";
@@ -28,7 +28,15 @@ async function badge(payload: Payload, item: NavItem) {
 }
 
 export async function Nav({ payload, permissions, user }: Props) {
-  const isAdmin = isAdminUser(user);
+  let isAdmin = isAdminUser(user);
+  if (!isAdmin && user?.id != null) {
+    try {
+      const doc = await payload.findByID({ collection: "users", id: user.id, depth: 0, overrideAccess: true });
+      isAdmin = roleList(doc?.roles).includes("admin");
+    } catch {
+      isAdmin = false;
+    }
+  }
 
   const sections: NavSectionData[] = [];
   for (const section of navSections) {

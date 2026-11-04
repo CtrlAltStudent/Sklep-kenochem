@@ -5,7 +5,7 @@ import { searchProducts } from "@/lib/catalog";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Listing } from "@/components/Listing";
 
-export const metadata: Metadata = { title: "Wyniki wyszukiwania" };
+export const metadata: Metadata = { title: "Wyniki wyszukiwania", robots: { index: false, follow: true } };
 
 async function Results({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;

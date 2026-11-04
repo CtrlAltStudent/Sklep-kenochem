@@ -96,6 +96,21 @@ export function SiteSettingsPanel() {
           <Toggle on={s.feedOutOfStock} onChange={(v) => up("feedOutOfStock", v)} label="Pokazuj też produkty niedostępne" hint="Jako „brak w magazynie” – Google nie wyświetla ich w reklamach, ale zachowuje historię produktu." />
         </section>
 
+        <section className="kc-card">
+          <header className="kc-card__head"><h2><Globe size={18} /> Profile i mapa</h2></header>
+          <p className="kc-muted">Puste pola zostają puste. Google dostanie linki dopiero, gdy wkleisz prawdziwe adresy (zaczynają się od https://).</p>
+          <label className="kc-set__field"><span>Facebook</span><input value={s.facebook} onChange={(e) => up("facebook", e.target.value)} placeholder="https://" /></label>
+          <label className="kc-set__field"><span>Instagram</span><input value={s.instagram} onChange={(e) => up("instagram", e.target.value)} placeholder="https://" /></label>
+          <label className="kc-set__field"><span>YouTube</span><input value={s.youtube} onChange={(e) => up("youtube", e.target.value)} placeholder="https://" /></label>
+          <label className="kc-set__field"><span>Wizytówka Google</span><input value={s.googleProfile} onChange={(e) => up("googleProfile", e.target.value)} placeholder="https://" /></label>
+          <label className="kc-set__field"><span>Szerokość geograficzna (zostaw puste, dopóki nie zmierzycie sklepu)</span>
+            <input value={s.lat ?? ""} onChange={(e) => up("lat", e.target.value === "" ? null : Number(e.target.value))} />
+          </label>
+          <label className="kc-set__field"><span>Długość geograficzna</span>
+            <input value={s.lng ?? ""} onChange={(e) => up("lng", e.target.value === "" ? null : Number(e.target.value))} />
+          </label>
+        </section>
+
         <section className={`kc-card ${s.maintenance ? "kc-set__danger" : ""}`}>
           <header className="kc-card__head"><h2><Construction size={18} /> Przerwa techniczna</h2>
             {st.settings.maintenance && <span className="kc-pill kc-pill--amber">włączona</span>}</header>
@@ -135,7 +150,7 @@ export function SiteSettingsPanel() {
             <li><span><b>Stan sklepu</b><small>baza, płatności, poczta – dla monitoringu (UptimeRobot)</small></span><a href="/api/zdrowie" target="_blank" rel="noreferrer" className="kc-act__link">/api/zdrowie <ExternalLink size={12} /></a></li>
             <li><span><b>Wersja Node.js</b><small>plik ustawień: {st.server.vault}</small></span><code>{st.server.node}</code></li>
           </ul>
-          <p className="kc-muted"><Globe size={12} /> Kopie zapasowe bazy: codziennie 3:30 na serwerze + pobranie na komputer w biurze (opis w Instrukcji).</p>
+          <p className="kc-muted"><Globe size={12} /> Kopia bazy sklepu na żywo: codziennie o 3:30 na serwerze, potem komputer w biurze ją pobiera.</p>
         </section>
       </div>
     </div>

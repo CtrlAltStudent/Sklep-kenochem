@@ -8,8 +8,20 @@ import { getSite } from "@/integrations/vault";
 
 // /feed/google.xml – plik produktów dla Google Merchant Center (Zakupy Google, kampanie Performance Max, remarketing).
 // Merchant Center: Produkty → Źródła danych → „Plik zaplanowany” z tym adresem. Odświeżany co godzinę.
-// id = SKU (to samo item_id wysyłają zdarzenia GA4/Ads – src/lib/track.ts), stany i promocje na żywo z katalogu.
-export const revalidate = 3600;
+// id = SKU (to samo item_id wysyłają zdarzenia GA4/Ads – src/lib/track.ts), stany i promocje z bazy sklepu przy każdym pobraniu.
+// Plik nie może być „zapamiętany” z chwili wgrywania – Google i automaty brały wtedy stare zdjęcia i stany.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const googleCategory: Record<string, string> = {
+  "mycie-auta": "Vehicles & Parts > Vehicle Maintenance, Care & Decor > Vehicle Cleaning",
+  "polerowanie-i-ochrona": "Vehicles & Parts > Vehicle Maintenance, Care & Decor > Vehicle Cleaning",
+  "wnetrze-auta": "Vehicles & Parts > Vehicle Maintenance, Care & Decor > Vehicle Cleaning",
+  "akcesoria-detailingowe": "Vehicles & Parts > Vehicle Maintenance, Care & Decor > Vehicle Cleaning",
+  "chemia-do-myjni": "Vehicles & Parts > Vehicle Maintenance, Care & Decor > Vehicle Cleaning",
+  "serwis-i-warsztat": "Vehicles & Parts > Vehicle Maintenance, Care & Decor > Vehicle Repair & Specialty Tools",
+  "dom-i-ogrod": "Home & Garden > Household Supplies > Household Cleaning Supplies",
+};
 
 const xml = (s: unknown) => String(s ?? "").replace(/[<>&'"\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" })[c] ?? "");
 const money = (n: number) => `${n.toFixed(2)} PLN`;
@@ -78,12 +90,12 @@ export async function GET() {
         sku ? `<g:mpn>${xml(sku)}</g:mpn>` : "",
         !g && !(p.brand && sku) ? "<g:identifier_exists>no</g:identifier_exists>" : "",
         path(p) ? `<g:product_type>${xml(path(p))}</g:product_type>` : "",
-        row?.merchant?.googleCategory ? `<g:google_product_category>${xml(row.merchant.googleCategory)}</g:google_product_category>` : "",
+        `<g:google_product_category>${xml(row?.merchant?.googleCategory || googleCategory[p.category] || googleCategory["mycie-auta"])}</g:google_product_category>`,
         ...([0, 1, 2] as const).map((n) => { const l = row?.merchant?.[`customLabel${n}`]; return l ? `<g:custom_label_${n}>${xml(l.slice(0, 100))}</g:custom_label_${n}>` : ""; }),
         ...(row?.merchant?.highlights ?? "").split(/\r?\n/).map((h) => h.trim()).filter(Boolean).slice(0, 10).map((h) => `<g:product_highlight>${xml(h.slice(0, 150))}</g:product_highlight>`),
         v.label && v.label !== "1 szt." ? `<g:size>${xml(v.label)}</g:size>` : "",
         p.variants.length > 1 ? `<g:item_group_id>${xml(p.slug.slice(0, 50))}</g:item_group_id>` : "",
-        shipPrice != null ? `<g:shipping><g:country>PL</g:country><g:service>${xml(cheapest!.label)}</g:service><g:price>${money(shipPrice)}</g:price></g:shipping>` : "",
+        shipPrice != null ? `<g:shipping><g:country>PL</g:country><g:service>${xml(cheapest!.label)}</g:service><g:price>${money(shipPrice)}</g:price><g:min_handling_time>0</g:min_handling_time><g:max_handling_time>1</g:max_handling_time></g:shipping>` : `<g:min_handling_time>0</g:min_handling_time><g:max_handling_time>1</g:max_handling_time>`,
         "</item>",
       ].filter(Boolean).join(""));
     }
@@ -98,5 +110,10 @@ export async function GET() {
 ${items.join("\n")}
 </channel>
 </rss>`;
-  return new Response(body, { headers: { "Content-Type": "application/xml; charset=utf-8" } });
+  return new Response(body, {
+    headers: {
+      "Content-Type": "application/xml; charset=utf-8",
+      "Cache-Control": "public, max-age=300, must-revalidate",
+    },
+  });
 }

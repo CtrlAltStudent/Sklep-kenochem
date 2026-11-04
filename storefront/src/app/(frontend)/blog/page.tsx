@@ -10,6 +10,7 @@ import type { Media } from "@/payload-types";
 export const metadata: Metadata = {
   title: "Blog i przewodniki detailingowe",
   description: "Poradniki mycia, polerowania i ochrony auta oraz przewodniki zakupowe – co kupić do detailingu i jak tego używać.",
+  alternates: { canonical: "/blog" },
 };
 
 export default async function BlogPage() {

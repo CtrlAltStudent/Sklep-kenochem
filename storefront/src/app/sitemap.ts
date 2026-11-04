@@ -3,10 +3,11 @@ import { getBrands, getCategoryCounts, getProducts, getShopCategories } from "@/
 import { getCms, getPosts } from "@/lib/cms";
 import { absUrl, siteBase, siteIndexable } from "@/lib/site";
 
-// Mapa strony dla Google i Bing – odświeżana co godzinę.
+// Mapa strony dla Google i Bing – za każdym razem z bazy sklepu, nie z kopii zrobionej przy wgrywaniu.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 // Zawiera: strony stałe, kategorie z podkategoriami i typami (tylko niepuste), produkty ze zdjęciami,
 // marki, wpisy bloga i opublikowane strony z panelu. Daty = prawdziwa ostatnia zmiana, bez duplikatów.
-export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!siteIndexable()) return []; // serwer testowy nie ma mapy dla wyszukiwarek
@@ -22,8 +23,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const newest = products.reduce((d, p) => (p.updatedAt && p.updatedAt > d ? p.updatedAt : d), "");
   const catalogDate = newest ? new Date(newest) : undefined;
 
+  // Next wstawia adres do XML bez zamiany znaków. „&” w ?sub=&typ= psuje całą mapę (EntityRef).
+  const xml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const out = new Map<string, MetadataRoute.Sitemap[number]>();
-  const add = (e: MetadataRoute.Sitemap[number]) => { if (!out.has(e.url)) out.set(e.url, e); };
+  const add = (e: MetadataRoute.Sitemap[number]) => {
+    const url = xml(e.url);
+    if (!out.has(url)) out.set(url, { ...e, url, images: e.images?.map(xml) });
+  };
 
   add({ url: base, lastModified: catalogDate, changeFrequency: "daily", priority: 1 });
   for (const p of ["/promocje", "/nowosci", "/bestsellery", "/marki", "/blog", "/rozcienczanie", "/kontakt", "/dostawa-i-platnosci", "/zwroty-i-reklamacje", "/o-nas", "/faq"])

@@ -183,3 +183,67 @@ body {
   border-radius: 0;
 }
 .product-desc table { display: block; max-width: 100%; overflow-x: auto; }
+
+/* Mapa ORLEN Paczka: widget sam ogranicza się do 500 px i zostawia pustą przestrzeń.
+   Tu lista i mapa wypełniają okno tak jak mapa InPost. Style widgetu dochodzą później, stąd !important. */
+.kc-orlen { height: 100%; min-height: 0; }
+.kc-orlen .orlen-widget {
+  display: grid !important;
+  height: 100%;
+  min-height: 0;
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+}
+.kc-orlen .orlen-widget-search { grid-column: 1 / -1; grid-row: 1; padding: 12px 16px 0; }
+.kc-orlen .orlen-widget-filter {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-content: flex-start !important;
+  padding: 10px 16px 12px !important;
+}
+.kc-orlen .orlen-widget-marker-list {
+  grid-column: 1;
+  grid-row: 3;
+  width: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0;
+  margin: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-top: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+}
+.kc-orlen .orlen-widget-map {
+  grid-column: 2;
+  grid-row: 3;
+  width: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  min-width: 0;
+  min-height: 0;
+  border-top: 1px solid #e5e7eb;
+}
+.kc-orlen .orlen-widget-map .leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  background: #e5e7eb;
+  font: inherit;
+}
+.kc-orlen .leaflet-container img {
+  max-width: none !important;
+  max-height: none !important;
+}
+.kc-orlen .marker-list-item { width: 100% !important; padding: 12px 14px; border-bottom: 1px solid #f3f4f6; }
+.kc-orlen .marker-list-item__content h5 { margin-bottom: 8px !important; font-size: 16px !important; }
+@media (max-width: 768px) {
+  .kc-orlen .orlen-widget {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto minmax(220px, 1fr) minmax(160px, 0.7fr);
+  }
+  .kc-orlen .orlen-widget-map { grid-column: 1; grid-row: 3; }
+  .kc-orlen .orlen-widget-marker-list { grid-column: 1; grid-row: 4; border-right: 0; }
+}

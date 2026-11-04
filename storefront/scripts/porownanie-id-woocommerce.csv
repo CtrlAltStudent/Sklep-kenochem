@@ -1,0 +1,590 @@
+woo_id;sku;stary_adres;nowy_adres;id_w_pliku_google;uwaga
+136;ATAS0092;https://sonax.sklep.pl/produkt/wunderbaum-odswiezacz-powietrza-choinka;https://sonax.sklep.pl/produkt/wunderbaum-odswiezacz-powietrza-choinka;ATAS0092;ten sam adres
+144;ATAS0157;https://sonax.sklep.pl/produkt/netins-do-usuwania-owadow-500-ml;https://sonax.sklep.pl/produkt/netins-do-usuwania-owadow-500-ml;ATAS0157;ten sam adres
+146;ATAS0198;https://sonax.sklep.pl/produkt/plak-sciereczki-do-kokpitu-nablyszczajace-wanilia-24-szt;https://sonax.sklep.pl/produkt/plak-sciereczki-do-kokpitu-nablyszczajace-wanilia-24-szt;ATAS0198;ten sam adres
+148;ATAS0050;https://sonax.sklep.pl/produkt/plak-sciereczki-do-kokpitu-nablyszczajace-pomarancza-24-szt;https://sonax.sklep.pl/produkt/plak-sciereczki-do-kokpitu-nablyszczajace-pomarancza-24-szt;ATAS0050;ten sam adres
+152;ATAS0095;https://sonax.sklep.pl/produkt/plak-sciereczki-do-tapicerki-skorzanej-kwiat-polinezji-24-szt;https://sonax.sklep.pl/produkt/plak-sciereczki-do-tapicerki-skorzanej-kwiat-polinezji-24-szt;ATAS0095;ten sam adres
+154;ATAS0094;https://sonax.sklep.pl/produkt/plak-sciereczki-do-szyb-i-luster-cytryna-z-limonka-24-szt;https://sonax.sklep.pl/produkt/plak-sciereczki-do-szyb-i-luster-cytryna-z-limonka-24-szt;ATAS0094;ten sam adres
+174;ATAS0161;https://sonax.sklep.pl/produkt/plak-siling-silikon-do-uszczelek-250-ml;https://sonax.sklep.pl/produkt/plak-siling-silikon-do-uszczelek-250-ml;ATAS0161;ten sam adres
+180;;https://sonax.sklep.pl/produkt/forclean-czysty-silnik-750-ml;https://sonax.sklep.pl/produkt/plak-forclean-czysty-silnik-750-ml-preparat-do-mycia-silnika;SOF000058;stary dubel, jest nowy adres
+184;ATAS0032;https://sonax.sklep.pl/produkt/resinol-preparat-do-usuwania-zywicy-250-ml;https://sonax.sklep.pl/produkt/resinol-preparat-do-usuwania-zywicy-250-ml;ATAS0032;ten sam adres
+188;ATAS0164;https://sonax.sklep.pl/produkt/detap-pianka-do-czyszczenia-tapicerki-400-ml;https://sonax.sklep.pl/produkt/detap-pianka-do-czyszczenia-tapicerki-400-ml;ATAS0164;ten sam adres
+190;ATAS0179;https://sonax.sklep.pl/produkt/forlega-czyste-felgi-nielakierowane-750-ml;https://sonax.sklep.pl/produkt/forlega-czyste-felgi-nielakierowane-750-ml;ATAS0179;ten sam adres
+196;ATAS0189;https://sonax.sklep.pl/produkt/rinpel-pianka-do-czyszczenia-skory-400-ml;https://sonax.sklep.pl/produkt/rinpel-pianka-do-czyszczenia-skory-400-ml;ATAS0189;ten sam adres
+200;ATAS0123;https://sonax.sklep.pl/produkt/vinet-czyste-plastiki-750-ml;https://sonax.sklep.pl/produkt/vinet-czyste-plastiki-750-ml;ATAS0123;ten sam adres
+208;ATAS0188;https://sonax.sklep.pl/produkt/air-clim-200ml-antibacterico-dezynfekuje-klimatyzacje;https://sonax.sklep.pl/produkt/air-clim-200ml-antibacterico-dezynfekuje-klimatyzacje;ATAS0188;ten sam adres
+212;ATAS0170;https://sonax.sklep.pl/produkt/dimer-aktywna-piana-do-mycia-samochodow-ciezarowych-1-kg;https://sonax.sklep.pl/produkt/dimer-aktywna-piana-do-mycia-samochodow-ciezarowych-1-kg;ATAS0170;ten sam adres
+214;ATAS0177;https://sonax.sklep.pl/produkt/plak-2r-blyszczace-plastiki-750-ml;https://sonax.sklep.pl/produkt/plak-2r-blyszczace-plastiki-750-ml;ATAS0177;ten sam adres
+216;ATAS0173;https://sonax.sklep.pl/produkt/vinet-preparat-odtluszczajacy-19-kg-koncentrat;https://sonax.sklep.pl/produkt/vinet-preparat-odtluszczajacy-19-kg-koncentrat;ATAS0173;ten sam adres
+219;ATAS0005;https://sonax.sklep.pl/produkt/dimer-aktywna-piana-do-mycia-samochodow-ciezarowych-2-kg;https://sonax.sklep.pl/produkt/dimer-aktywna-piana-do-mycia-samochodow-ciezarowych-2-kg;ATAS0005;ten sam adres
+221;ATAS0129;https://sonax.sklep.pl/produkt/autobella-szampon-do-mycia-recznego-10-kg;https://sonax.sklep.pl/produkt/autobella-szampon-do-mycia-recznego-10-kg;ATAS0129;ten sam adres
+223;ATAS0006;https://sonax.sklep.pl/produkt/dimer-aktywna-piana-do-mycia-samochodow-ciezarowych-5-kg;https://sonax.sklep.pl/produkt/dimer-aktywna-piana-do-mycia-samochodow-ciezarowych-5-kg;ATAS0006;ten sam adres
+225;ATAS0011;https://sonax.sklep.pl/produkt/vinet-preparat-do-czyszczenia-plastikow-10-kg-koncentrat;https://sonax.sklep.pl/produkt/vinet-preparat-do-czyszczenia-plastikow-10-kg-koncentrat;ATAS0011;ten sam adres
+229;ATAS0030;https://sonax.sklep.pl/produkt/detap-preparat-do-czyszczenia-tapicerki-10-kg;https://sonax.sklep.pl/produkt/detap-preparat-do-czyszczenia-tapicerki-10-kg;ATAS0030;ten sam adres
+233;ATAS0003;https://sonax.sklep.pl/produkt/dimer-aktywna-piana-do-mycia-samochodow-ciezarowych-10-kg;https://sonax.sklep.pl/produkt/dimer-aktywna-piana-do-mycia-samochodow-ciezarowych-10-kg;ATAS0003;ten sam adres
+11410;Son000144;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-500-ml-czarny;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-500-ml-czarny;Son000144;ten sam adres
+311;INNE0491;https://sonax.sklep.pl/produkt/holts-zmywacz-do-hamulcow-600-ml;https://sonax.sklep.pl/produkt/holts-zmywacz-do-hamulcow-600-ml;INNE0491;ten sam adres
+315;INNE0490;https://sonax.sklep.pl/produkt/holts-preparat-odrdzewiajaco-penetrujacy-w-sprayu-600-ml;https://sonax.sklep.pl/produkt/holts-preparat-odrdzewiajaco-penetrujacy-w-sprayu-600-ml;INNE0490;ten sam adres
+341;K2000014;https://sonax.sklep.pl/produkt/k2-bono-black-czernidlo-do-opon-200-ml;https://sonax.sklep.pl/produkt/k2-bono-black-czernidlo-do-opon-200-ml;K2000014;ten sam adres
+343;K2000010;https://sonax.sklep.pl/produkt/k2-turbo-lekkoscierna-pasta-woskowa-do-lakieru-120-g;https://sonax.sklep.pl/produkt/k2-turbo-lekkoscierna-pasta-woskowa-do-lakieru-120-g;K2000010;ten sam adres
+347;K2000020;https://sonax.sklep.pl/produkt/k2-felix-plyn-do-mycia-felg-770-ml;https://sonax.sklep.pl/produkt/k2-felix-plyn-do-mycia-felg-770-ml;K2000020;ten sam adres
+351;K2000013;https://sonax.sklep.pl/produkt/k2-polo-cockpit-preparat-nablyszczajacy-do-kokpitu-750-ml;https://sonax.sklep.pl/produkt/k2-polo-cockpit-preparat-nablyszczajacy-do-kokpitu-750-ml;K2000013;ten sam adres
+356;K2000005;https://sonax.sklep.pl/produkt/k2-tar-remover-usuwa-smole-i-slady-po-naklejkach-300-ml;https://sonax.sklep.pl/produkt/k2-tar-remover-usuwa-smole-i-slady-po-naklejkach-300-ml;K2000005;ten sam adres
+358;K2000008;https://sonax.sklep.pl/produkt/k2-ultra-wax-wosk-do-nablyszczania-i-ochrony-lakieru-250-g;https://sonax.sklep.pl/produkt/k2-ultra-wax-wosk-do-nablyszczania-i-ochrony-lakieru-250-g;K2000008;ten sam adres
+360;ATAS0153;https://sonax.sklep.pl/produkt/k2-bold-preparat-do-nablyszczania-opon-600-ml;https://sonax.sklep.pl/produkt/k2-bold-preparat-do-nablyszczania-opon-600-ml;ATAS0153;ten sam adres
+366;K2000036;https://sonax.sklep.pl/produkt/k2-moli-gruba-mikrofibra-osuszajaca-60-x-60;https://sonax.sklep.pl/produkt/k2-moli-gruba-mikrofibra-osuszajaca-60-x-60;K2000036;ten sam adres
+368;;https://sonax.sklep.pl/produkt/k2-szczotka-do-mycia-felg-niebieska;https://sonax.sklep.pl/produkt/k2-szczotka-do-mycia-felg-niebieska-2;K2000035;stary dubel, jest nowy adres
+371;K2000039;https://sonax.sklep.pl/produkt/k2-king-mikrofibra-do-osuszania-40x60;https://sonax.sklep.pl/produkt/k2-king-mikrofibra-do-osuszania-40x60;K2000039;ten sam adres
+373;K2000034;https://sonax.sklep.pl/produkt/k2-szczotka-do-mycia-recznego-zielona;https://sonax.sklep.pl/produkt/k2-szczotka-do-mycia-recznego-zielona;K2000034;ten sam adres
+375;K2000025;https://sonax.sklep.pl/produkt/k2-sigma-zel-do-nablyszczania-i-pielegnacji-opon-500-ml;https://sonax.sklep.pl/produkt/k2-sigma-zel-do-nablyszczania-i-pielegnacji-opon-500-ml;K2000025;ten sam adres
+381;K2000065;https://sonax.sklep.pl/produkt/k2-spectrum-syntetyczny-wosk-w-plynie-quick-detailer-700-ml;https://sonax.sklep.pl/produkt/k2-spectrum-syntetyczny-wosk-w-plynie-quick-detailer-700-ml;K2000065;ten sam adres
+384;K2000032;https://sonax.sklep.pl/produkt/k2-turbo-truck-mycie-pojazdow-ciezarowych-5-kg;https://sonax.sklep.pl/produkt/k2-turbo-truck-mycie-pojazdow-ciezarowych-5-kg;K2000032;ten sam adres
+422;KWAZ0019;https://sonax.sklep.pl/produkt/kwazar-koncowka-przegubowa-venus;https://sonax.sklep.pl/produkt/kwazar-koncowka-przegubowa-venus;KWAZ0019;ten sam adres
+426;KWAZ0036;https://sonax.sklep.pl/produkt/kwazar-lanca-do-orion-pro-50-cm;https://sonax.sklep.pl/produkt/kwazar-lanca-do-orion-pro-50-cm;KWAZ0036;ten sam adres
+430;KWAZ0016;https://sonax.sklep.pl/produkt/kwazar-mercury-opryskiwacz-05l-360;https://sonax.sklep.pl/produkt/kwazar-mercury-opryskiwacz-05l-360;KWAZ0016;ten sam adres
+432;KWAZ0022;https://sonax.sklep.pl/produkt/kwazar-mercury-opryskiwacz-1-l-360;https://sonax.sklep.pl/produkt/kwazar-mercury-opryskiwacz-1-l-360;KWAZ0022;ten sam adres
+440;KWAZ0133;https://sonax.sklep.pl/produkt/kwazar-orion-opryskiwacz-12l;https://sonax.sklep.pl/produkt/kwazar-orion-opryskiwacz-12l;KWAZ0133;ten sam adres
+442;KWAZ0026;https://sonax.sklep.pl/produkt/kwazar-orion-opryskiwacz-3l;https://sonax.sklep.pl/produkt/kwazar-orion-opryskiwacz-3l;KWAZ0026;ten sam adres
+444;KWAZ0012;https://sonax.sklep.pl/produkt/kwazar-orion-opryskiwacz-6l;https://sonax.sklep.pl/produkt/kwazar-orion-opryskiwacz-6l;KWAZ0012;ten sam adres
+446;KWAZ0027;https://sonax.sklep.pl/produkt/kwazar-orion-opryskiwacz-9l;https://sonax.sklep.pl/produkt/kwazar-orion-opryskiwacz-9l;KWAZ0027;ten sam adres
+448;KWAZ0025;https://sonax.sklep.pl/produkt/kwazar-pianownica-venus-super-foamer-2l;https://sonax.sklep.pl/produkt/kwazar-pianownica-venus-super-foamer-2l;KWAZ0025;ten sam adres
+450;KWAZ0004;https://sonax.sklep.pl/produkt/kwazar-pompka-do-orion-pro;https://sonax.sklep.pl/produkt/kwazar-pompka-do-orion-pro;KWAZ0004;ten sam adres
+452;KWAZ0028;https://sonax.sklep.pl/produkt/kwazar-pompka-do-venus-super-pro-360;https://sonax.sklep.pl/produkt/kwazar-pompka-do-venus-super-pro-360;KWAZ0028;ten sam adres
+458;KWAZ0011;https://sonax.sklep.pl/produkt/kwazar-rekojesc-lancy-z-manometrem;https://sonax.sklep.pl/produkt/kwazar-rekojesc-lancy-z-manometrem;KWAZ0011;ten sam adres
+462;;https://sonax.sklep.pl/produkt/kwazar-venus-opryskiwacz-15-l-360;https://sonax.sklep.pl/produkt/kwazar-venus-super-acid-opryskiwacz-15-l-wtv-1196;KWAZ0023;stary dubel, jest nowy adres
+464;KWAZ0024;https://sonax.sklep.pl/produkt/kwazar-venus-opryskiwacz-1l-360;https://sonax.sklep.pl/produkt/kwazar-venus-opryskiwacz-1l-360;KWAZ0024;ten sam adres
+466;KWAZ0010;https://sonax.sklep.pl/produkt/kwazar-venus-opryskiwacz-2-l-360;https://sonax.sklep.pl/produkt/kwazar-venus-opryskiwacz-2-l-360;KWAZ0010;ten sam adres
+468;KWAZ0038;https://sonax.sklep.pl/produkt/kwazar-venus-super-acid-opryskiwacz-15-l;https://sonax.sklep.pl/produkt/kwazar-venus-super-acid-opryskiwacz-15-l;KWAZ0038;ten sam adres
+470;KWAZ0003;https://sonax.sklep.pl/produkt/kwazar-venus-super-hd-solvent-opryskiwacz-15-l;https://sonax.sklep.pl/produkt/kwazar-venus-super-hd-solvent-opryskiwacz-15-l;KWAZ0003;ten sam adres
+472;KWAZ0033;https://sonax.sklep.pl/produkt/kwazar-wezyk-do-opryskiwacza;https://sonax.sklep.pl/produkt/kwazar-wezyk-do-opryskiwacza;KWAZ0033;ten sam adres
+474;KWAZ0008;https://sonax.sklep.pl/produkt/kwazar-zawor-bezpieczenstwa-do-orion-pro;https://sonax.sklep.pl/produkt/kwazar-zawor-bezpieczenstwa-do-orion-pro;KWAZ0008;ten sam adres
+476;KWAZ0044;https://sonax.sklep.pl/produkt/kwazar-lopata-do-sniegu;https://sonax.sklep.pl/produkt/kwazar-lopata-do-sniegu;KWAZ0044;ten sam adres
+503;NER000007;https://sonax.sklep.pl/produkt/nerta-carwax-2000-5-l-wosk-polimerowy;https://sonax.sklep.pl/produkt/nerta-carwax-2000-5-l-wosk-polimerowy;Ner000007;ten sam adres
+513;NER000010;https://sonax.sklep.pl/produkt/nerta-interior-cleaner-5-l-preparat-czyszczacy;https://sonax.sklep.pl/produkt/nerta-interior-cleaner-5-l-preparat-czyszczacy;Ner000010;ten sam adres
+517;NER000001;https://sonax.sklep.pl/produkt/nerta-novo-wash-20-l-aktywna-piana;https://sonax.sklep.pl/produkt/nerta-novo-wash-20-l-aktywna-piana;Ner000001;ten sam adres
+519;NAR000008;https://sonax.sklep.pl/produkt/nerta-novo-wash-5-l-aktywna-piana;https://sonax.sklep.pl/produkt/nerta-novo-wash-5-l-aktywna-piana;Nar000008;ten sam adres
+521;NER000014;https://sonax.sklep.pl/produkt/nerta-sky-we-64-20l-aktywna-piana;https://sonax.sklep.pl/produkt/nerta-sky-we-64-20l-aktywna-piana;Ner000014;ten sam adres
+525;INNE0102;https://sonax.sklep.pl/produkt/nerta-truck-cleaner-2000-25-l-aktywna-piana-mycie-ciezarowek;https://sonax.sklep.pl/produkt/nerta-truck-cleaner-2000-25-l-aktywna-piana-mycie-ciezarowek;INNE0102;ten sam adres
+534;;https://sonax.sklep.pl/produkt/pingi-pochlaniacz-wilgoci;;;nie ma w nowym sklepie
+542;;https://sonax.sklep.pl/produkt/royal-clean-magic-preparat-do-mycia-posadzek-nektaryna-1-l;;;nie ma w nowym sklepie
+550;ROY000017;https://sonax.sklep.pl/produkt/royal-blue-magic-aut-dodatek-do-toalet-przenosnych-2-l;https://sonax.sklep.pl/produkt/royal-blue-magic-aut-dodatek-do-toalet-przenosnych-2-l;Roy000017;ten sam adres
+552;ROY000018;https://sonax.sklep.pl/produkt/royal-blue-magic-aut-dodatek-do-toalet-przenosnych-5-l;https://sonax.sklep.pl/produkt/royal-blue-magic-aut-dodatek-do-toalet-przenosnych-5-l;Roy000018;ten sam adres
+562;ROY000046;https://sonax.sklep.pl/produkt/royal-clean-magic-preparat-do-mycia-posadzek-siciliano-1-l;https://sonax.sklep.pl/produkt/royal-clean-magic-preparat-do-mycia-posadzek-siciliano-1-l;Roy000046;ten sam adres
+574;Roy000020;https://sonax.sklep.pl/produkt/royal-mydlo-w-plynie-5-l;https://sonax.sklep.pl/produkt/royal-mydlo-w-plynie-5-l;roy000020;ten sam adres
+579;Roy000011;https://sonax.sklep.pl/produkt/royal-rosan-desinfect-plus-5-l-mycie-automatow-do-bitej-smietany;https://sonax.sklep.pl/produkt/royal-rosan-desinfect-plus-5-l-mycie-automatow-do-bitej-smietany;Roy000011;ten sam adres
+583;;https://sonax.sklep.pl/produkt/royal-wc-cm-1-l-mocny-preparat-do-czyszczenia-sanitariatow;https://sonax.sklep.pl/produkt/royal-132-wc-cm-usuwanie-kamienia-rdzy;Roy000008;stary dubel, jest nowy adres
+585;ROY000009;https://sonax.sklep.pl/produkt/royal-wc-cm-5-l-mocny-preparat-do-czyszczenia-sanitariatow;https://sonax.sklep.pl/produkt/royal-wc-cm-5-l-mocny-preparat-do-czyszczenia-sanitariatow;Roy000009;ten sam adres
+636;TEN000032;https://sonax.sklep.pl/produkt/tenzi-alux-1l-kwasowy-koncentrat-do-czyszczenia-felg;https://sonax.sklep.pl/produkt/tenzi-alux-1l-kwasowy-koncentrat-do-czyszczenia-felg;TEN000032;ten sam adres
+640;TEN000035;https://sonax.sklep.pl/produkt/tenzi-apc-in-1l-doczyszczanie-powierzchni-wewnetrznych-uniwersalny-koncentrat;https://sonax.sklep.pl/produkt/tenzi-apc-in-1l-doczyszczanie-powierzchni-wewnetrznych-uniwersalny-koncentrat;TEN000035;ten sam adres
+646;TEN000037;https://sonax.sklep.pl/produkt/tenzi-boberex-1l-skoncentrowany-plyn-do-recznego-mycia-naczyn;https://sonax.sklep.pl/produkt/tenzi-boberex-1l-skoncentrowany-plyn-do-recznego-mycia-naczyn;TEN000037;ten sam adres
+650;;https://sonax.sklep.pl/produkt/tenzi-brudex-1l-uniwersalny-srodek-do-mycia-i-usuwania-tlustego-brudu;https://sonax.sklep.pl/produkt/tenzi-brudex-plyn-odtluszczajacy-do-usuwania-plam-1l;TEN000024;stary dubel, jest nowy adres
+664;TEN000038;https://sonax.sklep.pl/produkt/tenzi-car-shine-1l-pielegnacjanablyszczanie-karoserii-finish-gotowy-do-uzycia;https://sonax.sklep.pl/produkt/tenzi-car-shine-1l-pielegnacjanablyszczanie-karoserii-finish-gotowy-do-uzycia;TEN000038;ten sam adres
+668;TEN000039;https://sonax.sklep.pl/produkt/tenzi-de-foam-1l-profesjonalny-srodek-do-neutralizacji-piany;https://sonax.sklep.pl/produkt/tenzi-de-foam-1l-profesjonalny-srodek-do-neutralizacji-piany;TEN000039;ten sam adres
+672;TEN000041;https://sonax.sklep.pl/produkt/tenzi-dekam-1l-plyn-do-mycia-podlog-na-bazie-kwasu-cytrynowego-i-octowego;https://sonax.sklep.pl/produkt/tenzi-dekam-1l-plyn-do-mycia-podlog-na-bazie-kwasu-cytrynowego-i-octowego;TEN000041;ten sam adres
+676;TEN000023;https://sonax.sklep.pl/produkt/tenzi-derast-1l-bardzo-silny-odkamieniacz;https://sonax.sklep.pl/produkt/tenzi-derast-1l-bardzo-silny-odkamieniacz;TEN000023;ten sam adres
+680;TEN000042;https://sonax.sklep.pl/produkt/tenzi-detailer-carnauba-spray-600ml-zabezpieczenie-lakieru;https://sonax.sklep.pl/produkt/tenzi-detailer-carnauba-spray-600ml-zabezpieczenie-lakieru;TEN000042;ten sam adres
+698;TEN000044;https://sonax.sklep.pl/produkt/tenzi-detailer-krwawa-felga-600ml-czyszczenie-i-pielegnacja-felg;https://sonax.sklep.pl/produkt/tenzi-detailer-krwawa-felga-600ml-czyszczenie-i-pielegnacja-felg;TEN000044;ten sam adres
+724;;https://sonax.sklep.pl/produkt/tenzi-doczyszczanie-kostki-brukowej-2-1l;https://sonax.sklep.pl/produkt/tenzi-doczyszczanie-kostki-brukowej-2-1;TEN000048;stary dubel, jest nowy adres
+728;TEN000050;https://sonax.sklep.pl/produkt/tenzi-en-jee-1l-biezace-mycie-kazdego-rodzaju-felg-kolpakow-ogumienia;https://sonax.sklep.pl/produkt/tenzi-en-jee-1l-biezace-mycie-kazdego-rodzaju-felg-kolpakow-ogumienia;TEN000050;ten sam adres
+742;TEN000053;https://sonax.sklep.pl/produkt/tenzi-gran-pres-agd-500gr-czyszczenie-uporczywych-osadow-w-ekspresach-do-kawy;https://sonax.sklep.pl/produkt/tenzi-gran-pres-agd-500gr-czyszczenie-uporczywych-osadow-w-ekspresach-do-kawy;TEN000053;ten sam adres
+748;TEN000055;https://sonax.sklep.pl/produkt/tenzi-greskam-1l-doczyszczanie-plytek-gresowych;https://sonax.sklep.pl/produkt/tenzi-greskam-1l-doczyszczanie-plytek-gresowych;TEN000055;ten sam adres
+755;TEN000007;https://sonax.sklep.pl/produkt/tenzi-ipa-cleaner-1l-odtluszczanie-lakieru-szyb-felg;https://sonax.sklep.pl/produkt/tenzi-ipa-cleaner-1l-odtluszczanie-lakieru-szyb-felg;TEN000007;ten sam adres
+761;;https://sonax.sklep.pl/produkt/tenzi-leder-care-gt-600ml-preparat-do-skory-naturalnej-i-sztucznej;https://sonax.sklep.pl/produkt/tenzi-leder-care-600ml-preparat-do-pielegnacji-skory-naturalnej-i-sztucznej;TEN000057;stary dubel, jest nowy adres
+765;TEN000113;https://sonax.sklep.pl/produkt/tenzi-leder-cream-gt-600ml-zabezpieczenie-i-impregnacja-skory;https://sonax.sklep.pl/produkt/tenzi-leder-cream-gt-600ml-zabezpieczenie-i-impregnacja-skory;TEN000113;ten sam adres
+769;TEN000019;https://sonax.sklep.pl/produkt/tenzi-mycie-ekranow-lcd-600ml;https://sonax.sklep.pl/produkt/tenzi-mycie-ekranow-lcd-600ml;TEN000019;ten sam adres
+771;;https://sonax.sklep.pl/produkt/tenzi-neutral-magic-foam-clear-1l-kolorowa-neutralna-piana-do-mycia-samochodow;https://sonax.sklep.pl/produkt/tenzi-neutral-magic-foam-clear-1l-neutralna-piana-do-mycia-samochodow;TEN000064;stary dubel, jest nowy adres
+773;;https://sonax.sklep.pl/produkt/tenzi-neutral-magic-foam-pink-1l-kolorowa-neutralna-piana-do-mycia-samochodow;https://sonax.sklep.pl/produkt/tenzi-neutral-magic-foam-pink-1l-kolorowa-neutralna-piana-do-mycia-samochodow-2;TEN000062;stary dubel, jest nowy adres
+777;;https://sonax.sklep.pl/produkt/tenzi-panele-laminowane-1l;https://sonax.sklep.pl/produkt/tenzi-panele-laminowane-1l-do-paneli-laminowanych-bezzapachowy-bezpieczny;TEN000067;stary dubel, jest nowy adres
+789;TEN000069;https://sonax.sklep.pl/produkt/tenzi-prix-1l-preparat-do-felg;https://sonax.sklep.pl/produkt/tenzi-prix-1l-preparat-do-felg;TEN000069;ten sam adres
+795;TEN000009;https://sonax.sklep.pl/produkt/tenzi-plyty-indukcyjne-600ml-usuwanie-zanieczyszczen-z-plyt-indukcyjnych;https://sonax.sklep.pl/produkt/tenzi-plyty-indukcyjne-600ml-usuwanie-zanieczyszczen-z-plyt-indukcyjnych;TEN000009;ten sam adres
+807;TEN000074;https://sonax.sklep.pl/produkt/tenzi-sanit-dez-1l-mycie-i-dezynfekcja-sanitariatow;https://sonax.sklep.pl/produkt/tenzi-sanit-dez-1l-mycie-i-dezynfekcja-sanitariatow;TEN000074;ten sam adres
+817;TEN000114;https://sonax.sklep.pl/produkt/tenzi-super-green-specjal-10l-mycie-samochodow-dostawczych-ciezarowych-plandek;https://sonax.sklep.pl/produkt/tenzi-super-green-specjal-10l-mycie-samochodow-dostawczych-ciezarowych-plandek;TEN000114;ten sam adres
+819;TEN000077;https://sonax.sklep.pl/produkt/tenzi-super-green-specjal-1l-mycie-samochodow-dostawczych-ciezarowych-plandek;https://sonax.sklep.pl/produkt/tenzi-super-green-specjal-1l-mycie-samochodow-dostawczych-ciezarowych-plandek;TEN000077;ten sam adres
+821;TEN000078;https://sonax.sklep.pl/produkt/tenzi-super-green-specjal-20l-mycie-samochodow-dostawczych-ciezarowych-plandek;https://sonax.sklep.pl/produkt/tenzi-super-green-specjal-20l-mycie-samochodow-dostawczych-ciezarowych-plandek;TEN000078;ten sam adres
+841;;https://sonax.sklep.pl/produkt/tenzi-textil-1l-szampon-do-prania-dywanow-i-tapicerki;https://sonax.sklep.pl/produkt/tenzi-textil-1l-srodek-do-czyszczenia-dywanow-i-wykladzin;TEN000082;stary dubel, jest nowy adres
+843;TEN000083;https://sonax.sklep.pl/produkt/tenzi-textil-5l-szampon-do-prania-dywanow-wykladzin-i-tapicerek;https://sonax.sklep.pl/produkt/tenzi-textil-5l-szampon-do-prania-dywanow-wykladzin-i-tapicerek;TEN000083;ten sam adres
+845;;https://sonax.sklep.pl/produkt/tenzi-textil-ex-1l-pranie-wykladzin-i-tapicerek-metoda-ekstrakcyjna;https://sonax.sklep.pl/produkt/tenzi-textil-ex-1l-pranie-wykladzin-i-tapicerek-metoda-ekstrakcyjna;TEN000005;ten sam adres
+847;;https://sonax.sklep.pl/produkt/tenzi-textil-ex-5l-pranie-wykladzin-i-tapicerek-metoda-ekstrakcyjna;https://sonax.sklep.pl/produkt/tenzi-textil-ex-5l-plyn-do-prania-dywanow-tapicerki-wykladzin-do-odkurzacza;TEN000086;stary dubel, jest nowy adres
+849;;https://sonax.sklep.pl/produkt/tenzi-textil-wash-5l-koncentrat-do-prania-tapicerki-samochodowej-dywanikow;https://sonax.sklep.pl/produkt/tenzi-textil-wash-5l-plyn-do-prania-tapicerek-i-dywanow;TEN000085;stary dubel, jest nowy adres
+864;TEN000088;https://sonax.sklep.pl/produkt/tenzi-top-efekt-moss-1l-grzyby-glony-mchy-i-porosty-usuwanie;https://sonax.sklep.pl/produkt/tenzi-top-efekt-moss-1l-grzyby-glony-mchy-i-porosty-usuwanie;TEN000088;ten sam adres
+868;;https://sonax.sklep.pl/produkt/tenzi-top-efekt-perfume-amore-1l-mycie-posadzek;https://sonax.sklep.pl/produkt/tenzi-top-efekt-perfume-amore-1l-plyn-do-mycia-posadzek-zapach-amore;TEN000090;stary dubel, jest nowy adres
+880;TEN000017;https://sonax.sklep.pl/produkt/tenzi-top-glass-1l-spray-plyn-do-mycia-szyb-szkla-luster;https://sonax.sklep.pl/produkt/tenzi-top-glass-1l-spray-plyn-do-mycia-szyb-szkla-luster;TEN000017;ten sam adres
+882;TEN000111;https://sonax.sklep.pl/produkt/tenzi-top-grill-1l-srodek-do-czyszczenia-piekarnikow-rusztow-piecykow;https://sonax.sklep.pl/produkt/tenzi-top-grill-1l-srodek-do-czyszczenia-piekarnikow-rusztow-piecykow;TEN000111;ten sam adres
+888;TEN000016;https://sonax.sklep.pl/produkt/tenzi-tric-5l-plyn-do-mycia-naczyn-cytrynowy;https://sonax.sklep.pl/produkt/tenzi-tric-5l-plyn-do-mycia-naczyn-cytrynowy;TEN000016;ten sam adres
+890;ELFX0012;https://sonax.sklep.pl/produkt/tenzi-truck-clean-10l-silna-aktywna-piana-do-mycia-ciezarowek-silnikow-plandek;https://sonax.sklep.pl/produkt/tenzi-truck-clean-10l-silna-aktywna-piana-do-mycia-ciezarowek-silnikow-plandek;TEN000001;ten sam adres, inne SKU
+896;;https://sonax.sklep.pl/produkt/tenzi-udrazniacz-rur-1l;https://sonax.sklep.pl/produkt/tenzi-udrazniacz-rur-1l-srodek-do-udrazniania-rur;TEN000098;stary dubel, jest nowy adres
+929;Son000133;https://sonax.sklep.pl/produkt/sonax-gabka-do-mycia-samochodu;https://sonax.sklep.pl/produkt/sonax-gabka-do-mycia-samochodu;Son000133;ten sam adres
+933;son000083;https://sonax.sklep.pl/produkt/sonax-mleczko-do-czyszczenia-skory;https://sonax.sklep.pl/produkt/sonax-mleczko-do-czyszczenia-skory;son000083;ten sam adres
+939;Son000044;https://sonax.sklep.pl/produkt/sonax-olej-mos2-nano-pro;https://sonax.sklep.pl/produkt/sonax-olej-mos2-nano-pro;Son000044;ten sam adres
+941;Son000032;https://sonax.sklep.pl/produkt/sonax-pasta-do-chromu-i-aluminium;https://sonax.sklep.pl/produkt/sonax-pasta-do-chromu-i-aluminium;Son000032;ten sam adres
+943;Son000039;https://sonax.sklep.pl/produkt/sonax-pasta-lekkoscierna;https://sonax.sklep.pl/produkt/sonax-pasta-lekkoscierna;Son000039;ten sam adres
+945;Son000084;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-bialy;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-bialy;Son000084;ten sam adres
+953;Son000043;https://sonax.sklep.pl/produkt/sonax-plyn-mycia-szyb-500-ml-338-241;https://sonax.sklep.pl/produkt/sonax-plyn-mycia-szyb-500-ml-338-241;Son000043;ten sam adres
+957;son000085;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-bialy-250-ml;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-bialy-250-ml;son000085;ten sam adres
+959;son000071;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-czarny-250-ml;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-czarny-250-ml;son000071;ten sam adres
+961;Son000018;https://sonax.sklep.pl/produkt/sonax-xtreme-polishwax-2-hybrid-npt-250-ml-207-100;https://sonax.sklep.pl/produkt/sonax-xtreme-polishwax-2-hybrid-npt-250-ml-207-100;Son000018;ten sam adres
+983;Son000046;https://sonax.sklep.pl/produkt/sonax-cocpit-matowy-sport-fresh;https://sonax.sklep.pl/produkt/sonax-cocpit-matowy-sport-fresh;SON000046;ten sam adres
+985;Son000118;https://sonax.sklep.pl/produkt/sonax-do-czyszczenia-dachow-w-kabrioletach;https://sonax.sklep.pl/produkt/sonax-do-czyszczenia-dachow-w-kabrioletach;Son000118;ten sam adres
+987;Son000101;https://sonax.sklep.pl/produkt/sonax-do-czyszczenia-wnetrza-samochodu;https://sonax.sklep.pl/produkt/sonax-do-czyszczenia-wnetrza-samochodu;Son000101;ten sam adres
+997;Son000028;https://sonax.sklep.pl/produkt/sonax-preparat-do-regeneracji-lakieru;https://sonax.sklep.pl/produkt/sonax-preparat-do-regeneracji-lakieru;Son000028;ten sam adres
+999;Son000029;https://sonax.sklep.pl/produkt/preparat-do-renowacji-przezroczystych-plastikow;https://sonax.sklep.pl/produkt/preparat-do-renowacji-przezroczystych-plastikow;Son000029;ten sam adres
+1008;Son000112;https://sonax.sklep.pl/produkt/sonax-gabka-czyszczaca-do-tworzyw-sztucznych;https://sonax.sklep.pl/produkt/sonax-gabka-czyszczaca-do-tworzyw-sztucznych;Son000112;ten sam adres
+1012;Son000111;https://sonax.sklep.pl/produkt/sonax-gabka-nakladania-wosku-417-300;https://sonax.sklep.pl/produkt/sonax-gabka-nakladania-wosku-417-300;Son000111;ten sam adres
+1014;Son000109;https://sonax.sklep.pl/produkt/sonax-gabka-plastikow-417-200;https://sonax.sklep.pl/produkt/sonax-gabka-plastikow-417-200;Son000109;ten sam adres
+1016;Son000113;https://sonax.sklep.pl/produkt/sonax-gabka-szyb-2w1-417-100;https://sonax.sklep.pl/produkt/sonax-gabka-szyb-2w1-417-100;Son000113;ten sam adres
+1020;Son000052;https://sonax.sklep.pl/produkt/sonax-gabka-wymienna-p-ball-417-241;https://sonax.sklep.pl/produkt/sonax-gabka-wymienna-p-ball-417-241;Son000052;ten sam adres
+1022;Son000100;https://sonax.sklep.pl/produkt/sonax-gabka-mikrofibry-428-100;https://sonax.sklep.pl/produkt/sonax-gabka-mikrofibry-428-100;Son000100;ten sam adres
+1024;Son000033;https://sonax.sklep.pl/produkt/sonax-impregnat-dachow-tapicerki-kabrioletach-300-ml-310-200;https://sonax.sklep.pl/produkt/sonax-impregnat-dachow-tapicerki-kabrioletach-300-ml-310-200;Son000033;ten sam adres
+1026;;https://sonax.sklep.pl/produkt/sonax-ircha-naturalna-416-300;https://sonax.sklep.pl/produkt/sonax-ircha-syntetyczna-417700;Son000115;stary dubel, jest nowy adres
+1033;Son000040;https://sonax.sklep.pl/produkt/sonax-klima-power-cleaner-green-lemon-323-941;https://sonax.sklep.pl/produkt/sonax-klima-power-cleaner-green-lemon-323-941;Son000040;ten sam adres
+1035;;https://sonax.sklep.pl/produkt/sonax-klima-power-cleaner-green-lemon;https://sonax.sklep.pl/produkt/sonax-klima-power-cleaner-green-lemon-323-941;Son000040;stary dubel, jest nowy adres
+1039;Son000130;https://sonax.sklep.pl/produkt/sonax-lejek-kanistrow-20-l-496-300;https://sonax.sklep.pl/produkt/sonax-lejek-kanistrow-20-l-496-300;Son000130;ten sam adres
+1041;Son000070;https://sonax.sklep.pl/produkt/sonax-letni-plyn-do-spryskiwaczy-szyb;https://sonax.sklep.pl/produkt/sonax-letni-plyn-do-spryskiwaczy-szyb;Son000070;ten sam adres
+1051;Son000098;https://sonax.sklep.pl/produkt/neutralizator-zapachow-sonax-smoke-ex;https://sonax.sklep.pl/produkt/neutralizator-zapachow-sonax-smoke-ex;Son000098;ten sam adres
+1055;Son000004;https://sonax.sklep.pl/produkt/sonax-odmrazacz-szyb-500ml-331-241;https://sonax.sklep.pl/produkt/sonax-odmrazacz-szyb-500ml-331-241;Son000004;ten sam adres
+1059;Son000049;https://sonax.sklep.pl/produkt/do-czarnych-plastikow-zewnetrznych;https://sonax.sklep.pl/produkt/do-czarnych-plastikow-zewnetrznych;Son000049;ten sam adres
+1073;Son000053;https://sonax.sklep.pl/produkt/sonax-pianka-do-opon;https://sonax.sklep.pl/produkt/sonax-pianka-do-opon;Son000053;ten sam adres
+1075;Son000031;https://sonax.sklep.pl/produkt/sonax-pianka-do-tapicerki-samochodowej;https://sonax.sklep.pl/produkt/sonax-pianka-do-tapicerki-samochodowej;Son000031;ten sam adres
+1079;son000086;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-niebieski-2;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-niebieski-2;son000086;ten sam adres
+1081;Son000075;https://sonax.sklep.pl/produkt/sonax-premium-class-wosk-carnauba;https://sonax.sklep.pl/produkt/sonax-premium-class-wosk-carnauba;Son000075;ten sam adres
+1089;Son000013;https://sonax.sklep.pl/produkt/sonax-preparat-flokulacji-seria-limit-25l-551-700;https://sonax.sklep.pl/produkt/sonax-preparat-flokulacji-seria-limit-25l-551-700;Son000013;ten sam adres
+1091;Son000047;https://sonax.sklep.pl/produkt/sonax-preparat-do-pielegnacji-gumy;https://sonax.sklep.pl/produkt/sonax-preparat-do-pielegnacji-gumy;Son000047;ten sam adres
+1093;Son000041;https://sonax.sklep.pl/produkt/sonax-preparat-do-usuwania-smoly;https://sonax.sklep.pl/produkt/sonax-preparat-do-usuwania-smoly;Son000041;ten sam adres
+1101;son000058;https://sonax.sklep.pl/produkt/sonax-preparat-do-odtluszczania-lakieru;https://sonax.sklep.pl/produkt/sonax-preparat-do-odtluszczania-lakieru;son000058;ten sam adres
+1111;son000055;https://sonax.sklep.pl/produkt/sonax-profiline-polymer-netshield;https://sonax.sklep.pl/produkt/sonax-profiline-polymer-netshield;son000055;ten sam adres
+1113;son000076;https://sonax.sklep.pl/produkt/sonax-profiline-preparat-polerowania-szyb-250-ml-273-141;https://sonax.sklep.pl/produkt/sonax-profiline-preparat-polerowania-szyb-250-ml-273-141;son000076;ten sam adres
+1117;Son000099;https://sonax.sklep.pl/produkt/sonax-rekawica-mikrofibry-428-200;https://sonax.sklep.pl/produkt/sonax-rekawica-mikrofibry-428-200;Son000099;ten sam adres
+1121;son000104;https://sonax.sklep.pl/produkt/sonax-sciereczka-antyroszeniowa-421-200;https://sonax.sklep.pl/produkt/sonax-sciereczka-antyroszeniowa-421-200;son000104;ten sam adres
+1123;son000015;https://sonax.sklep.pl/produkt/sonax-sciereczki-do-polerowania-z-fizeliny;https://sonax.sklep.pl/produkt/sonax-sciereczki-do-polerowania-z-fizeliny;son000015;ten sam adres
+1136;SON000126;https://sonax.sklep.pl/produkt/sonax-sciereczka-mikrofibry-416-200;https://sonax.sklep.pl/produkt/sonax-sciereczka-mikrofibry-416-200;son000128;ten sam adres, inne SKU
+1138;Son000103;https://sonax.sklep.pl/produkt/sonax-sciereczka-z-mikrofibry-do-polerowania;https://sonax.sklep.pl/produkt/sonax-sciereczka-z-mikrofibry-do-polerowania;Son000103;ten sam adres
+1140;SON000051;https://sonax.sklep.pl/produkt/sonax-sciereczki-kokpitu-25-szt-412-100;https://sonax.sklep.pl/produkt/sonax-sciereczki-kokpitu-25-szt-412-100;Son000051;ten sam adres
+1146;son000050;https://sonax.sklep.pl/produkt/sciereczki-do-szyb-sonax;https://sonax.sklep.pl/produkt/sciereczki-do-szyb-sonax;son000050;ten sam adres
+1148;son000045;https://sonax.sklep.pl/produkt/sonax-silikon-do-uszczelek;https://sonax.sklep.pl/produkt/sonax-silikon-do-uszczelek;son000045;ten sam adres
+1166;Son000035;https://sonax.sklep.pl/produkt/sonax-szampon-samochodowy-z-woskiem;https://sonax.sklep.pl/produkt/sonax-szampon-samochodowy-z-woskiem;Son000035;ten sam adres
+1172;son000027;https://sonax.sklep.pl/produkt/sonax-twardy-wosk-w-plynie;https://sonax.sklep.pl/produkt/sonax-twardy-wosk-w-plynie;son000027;ten sam adres
+1174;son000036;https://sonax.sklep.pl/produkt/sonax-wosk-lakierow-metalizowanych-250;https://sonax.sklep.pl/produkt/sonax-wosk-lakierow-metalizowanych-250;son000036;ten sam adres
+1176;son000024;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-czerwony;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-czerwony;son000024;ten sam adres
+1180;son000087;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-niebieski;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-niebieski;son000087;ten sam adres
+1184;son000022;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-srebrny-250-ml;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-srebrny-250-ml;son000022;ten sam adres
+1186;son000088;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-srebrny-500-ml;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-srebrny-500-ml;son000088;ten sam adres
+1190;Son000097;https://sonax.sklep.pl/produkt/sonax-xtreme-brillant-shine-detailer;https://sonax.sklep.pl/produkt/sonax-xtreme-brillant-shine-detailer;Son000097;ten sam adres
+1196;SON000117;https://sonax.sklep.pl/produkt/sonax-xtreme-czyszczenia-felg-super;https://sonax.sklep.pl/produkt/sonax-xtreme-czyszczenia-felg-super;SON000117;ten sam adres
+1202;SON000082;https://sonax.sklep.pl/produkt/sonax-xtreme-pianka-skory-nano-pro-250-ml-289-100;https://sonax.sklep.pl/produkt/sonax-xtreme-pianka-skory-nano-pro-250-ml-289-100;Son000082;ten sam adres
+1204;son000017;https://sonax.sklep.pl/produkt/sonax-xtreme-pianka-do-tapicerki;https://sonax.sklep.pl/produkt/sonax-xtreme-pianka-do-tapicerki;son000017;ten sam adres
+1206;son000059;https://sonax.sklep.pl/produkt/sonax-xtreme-plyn-mycia-szyb-pure-water;https://sonax.sklep.pl/produkt/sonax-xtreme-plyn-mycia-szyb-pure-water;son000059;ten sam adres
+1208;Son000021;https://sonax.sklep.pl/produkt/sonax-xtreme-szampon-2w1-koncentrat-1l-215-300;https://sonax.sklep.pl/produkt/sonax-xtreme-szampon-2w1-koncentrat-1l-215-300;Son000021;ten sam adres
+1212;Son000020;https://sonax.sklep.pl/produkt/sonax-xtreme-zel-do-plastikow-zewnetrznych;https://sonax.sklep.pl/produkt/sonax-xtreme-zel-do-plastikow-zewnetrznych;Son000020;ten sam adres
+1216;son000122;https://sonax.sklep.pl/produkt/sonax-zel-do-mycia-felg;https://sonax.sklep.pl/produkt/sonax-zel-do-mycia-felg;son000122;ten sam adres
+1218;son000030;https://sonax.sklep.pl/produkt/sonax-zestaw-do-usuwania-rys;https://sonax.sklep.pl/produkt/sonax-zestaw-do-usuwania-rys;son000030;ten sam adres
+1250;ATAS0002;https://sonax.sklep.pl/produkt/atas-decabit-preparat-do-usuwania-smoly;https://sonax.sklep.pl/produkt/atas-decabit-preparat-do-usuwania-smoly;ATAS0002;ten sam adres
+1895;EAS000035;https://sonax.sklep.pl/produkt/easy-wash-insekt-remover-1l-preparat-usuwanie-insektow;https://sonax.sklep.pl/produkt/easy-wash-insekt-remover-1l-preparat-usuwanie-insektow;EAS000035;ten sam adres
+1897;EAS000019;https://sonax.sklep.pl/produkt/easy-wash-inside-cleaner-1l-preparat-czyszczenia-wnetrz;https://sonax.sklep.pl/produkt/easy-wash-inside-cleaner-1l-preparat-czyszczenia-wnetrz;EAS000019;ten sam adres
+1899;EAS000032;https://sonax.sklep.pl/produkt/easy-wsh-wheel-cleaner-1l-zasadowy-preparat-mycia-felg;https://sonax.sklep.pl/produkt/easy-wsh-wheel-cleaner-1l-zasadowy-preparat-mycia-felg;EAS000032;ten sam adres
+1901;EAS000015;https://sonax.sklep.pl/produkt/easy-wash-diamond-wash-1l-preparat-bezdotykowego-mycia-samochodow;https://sonax.sklep.pl/produkt/easy-wash-diamond-wash-1l-preparat-bezdotykowego-mycia-samochodow;EAS000015;ten sam adres
+1903;EAS000030;https://sonax.sklep.pl/produkt/easy-wash-super-active-wash-1l-preparat-bezdotykowego-mycia-samochodow;https://sonax.sklep.pl/produkt/easy-wash-super-active-wash-1l-preparat-bezdotykowego-mycia-samochodow;EAS000030;ten sam adres
+1905;EAS000024;https://sonax.sklep.pl/produkt/easy-wash-air-fresh-05l-odswiezacz-powietrza;https://sonax.sklep.pl/produkt/easy-wash-air-fresh-05l-odswiezacz-powietrza;EAS000024;ten sam adres
+1907;EAS000029;https://sonax.sklep.pl/produkt/easy-wash-leather-balm-05l-preparat-konserwacji-skory;https://sonax.sklep.pl/produkt/easy-wash-leather-balm-05l-preparat-konserwacji-skory;EAS000029;ten sam adres
+1909;EAS000005;https://sonax.sklep.pl/produkt/easy-wash-vinyl-outside-protect-1l-preparat-nablyszczania-gumy-plastiku;https://sonax.sklep.pl/produkt/easy-wash-vinyl-outside-protect-1l-preparat-nablyszczania-gumy-plastiku;EAS000005;ten sam adres
+1911;EAS000025;https://sonax.sklep.pl/produkt/easy-wash-air-fresh-1l-odswiezacz-powietrza;https://sonax.sklep.pl/produkt/easy-wash-air-fresh-1l-odswiezacz-powietrza;EAS000025;ten sam adres
+1922;EAS000022;https://sonax.sklep.pl/produkt/easy-wash-insekt-remover-5l-preparat-usuwanie-insektow;https://sonax.sklep.pl/produkt/easy-wash-insekt-remover-5l-preparat-usuwanie-insektow;EAS000022;ten sam adres
+1924;EAS000013;https://sonax.sklep.pl/produkt/easy-wash-diamond-wash-5l-preparat-bezdotykowego-mycia-samochodow;https://sonax.sklep.pl/produkt/easy-wash-diamond-wash-5l-preparat-bezdotykowego-mycia-samochodow;EAS000013;ten sam adres
+1932;EAS000011;https://sonax.sklep.pl/produkt/easy-wash-eco-wash-20l-piana-aktywna-mycia-pojazdow;https://sonax.sklep.pl/produkt/easy-wash-eco-wash-20l-piana-aktywna-mycia-pojazdow;EAS000011;ten sam adres
+1934;EAS000007;https://sonax.sklep.pl/produkt/easy-wash-tar-remover-5l-preparat-usuwania-smoly-kleju;https://sonax.sklep.pl/produkt/easy-wash-tar-remover-5l-preparat-usuwania-smoly-kleju;EAS000007;ten sam adres
+1936;EAS000006;https://sonax.sklep.pl/produkt/easy-wash-truck-wash-20l-preparat-bezdotykowego-mycia-samochodow-ciezarowych-lkw;https://sonax.sklep.pl/produkt/easy-wash-truck-wash-20l-preparat-bezdotykowego-mycia-samochodow-ciezarowych-lkw;EAS000006;ten sam adres
+1940;EAS000012;https://sonax.sklep.pl/produkt/easy-wash-eco-alu-20l-nowoczesny-nietoksyczny-preparat-czyszczenia-aluminium;https://sonax.sklep.pl/produkt/easy-wash-eco-alu-20l-nowoczesny-nietoksyczny-preparat-czyszczenia-aluminium;EAS000012;ten sam adres
+1942;EAS000018;https://sonax.sklep.pl/produkt/easy-wash-insekt-remover-20l-preparat-usuwania-insektow;https://sonax.sklep.pl/produkt/easy-wash-insekt-remover-20l-preparat-usuwania-insektow;EAS000018;ten sam adres
+1944;EAS000016;https://sonax.sklep.pl/produkt/easy-wash-diamond-wash-20l-preparat-bezdotykowego-mycia-samochodow;https://sonax.sklep.pl/produkt/easy-wash-diamond-wash-20l-preparat-bezdotykowego-mycia-samochodow;EAS000016;ten sam adres
+2144;Son000019;https://sonax.sklep.pl/produkt/sonax-profiline-np-03-06-1l-politura-208-300;https://sonax.sklep.pl/produkt/sonax-profiline-np-03-06-1l-politura-208-300;Son000019;ten sam adres
+2152;son000057;https://sonax.sklep.pl/produkt/sonax-xtreme-nablyszczanie-opon;https://sonax.sklep.pl/produkt/sonax-xtreme-nablyszczanie-opon;son000057;ten sam adres
+2160;Son000062;https://sonax.sklep.pl/produkt/sonax-pasta-polerska-profiline-ex;https://sonax.sklep.pl/produkt/sonax-pasta-polerska-profiline-ex;Son000062;ten sam adres
+2164;Son000065;https://sonax.sklep.pl/produkt/sonax-pasta-polerska-profiline-cutmax-06-04;https://sonax.sklep.pl/produkt/sonax-pasta-polerska-profiline-cutmax-06-04;Son000065;ten sam adres
+2299;SON000037;https://sonax.sklep.pl/produkt/sonax-profiline-fs-05-04-pasta-polerska-1-l-319-300;https://sonax.sklep.pl/produkt/sonax-profiline-fs-05-04-pasta-polerska-1-l-319-300;Son000037;ten sam adres
+2308;SON000114;https://sonax.sklep.pl/produkt/sonax-mikrofibra-tkanin-skory-416-800;https://sonax.sklep.pl/produkt/sonax-mikrofibra-tkanin-skory-416-800;Son000114;ten sam adres
+2324;son000054;https://sonax.sklep.pl/produkt/sonax-sx90-olej-wielofunkcyjny;https://sonax.sklep.pl/produkt/sonax-sx90-olej-wielofunkcyjny;son000054;ten sam adres
+2340;Son000073;https://sonax.sklep.pl/produkt/sonax-usuwania-nalotow-rdzy-500-ml;https://sonax.sklep.pl/produkt/sonax-usuwania-nalotow-rdzy-500-ml;Son000073;ten sam adres
+2359;;https://sonax.sklep.pl/produkt/autobella-szampon-mycia-recznego-25-kg;;;nie ma w nowym sklepie
+2375;ATAS0178;https://sonax.sklep.pl/produkt/lacer-czysci-felgi-lakierowane-750-ml;https://sonax.sklep.pl/produkt/lacer-czysci-felgi-lakierowane-750-ml;ATAS0178;ten sam adres
+2380;ATAS0126;https://sonax.sklep.pl/produkt/plak-nablyszczajacy-750-ml;https://sonax.sklep.pl/produkt/plak-nablyszczajacy-750-ml;ATAS0126;ten sam adres
+2518;;https://sonax.sklep.pl/produkt/tenzi-rubber-1-l-usuwanie-sladow-oponach-gumie-klejach;https://sonax.sklep.pl/produkt/tenzi-rubber-off-1l-usuwanie-sladow-po-oponach-gumie-klejach;TEN000073;stary dubel, jest nowy adres
+2525;TEN000084;https://sonax.sklep.pl/produkt/tenzi-textil-wash-1l-koncentrat-prania-tapicerki-samochodowej-dywanikow;https://sonax.sklep.pl/produkt/tenzi-textil-wash-1l-koncentrat-prania-tapicerki-samochodowej-dywanikow;TEN000084;ten sam adres
+2595;K2000040;https://sonax.sklep.pl/produkt/k2-bona-mikrofibra-polerowania-karoserii;https://sonax.sklep.pl/produkt/k2-bona-mikrofibra-polerowania-karoserii;K2000040;ten sam adres
+2597;K2000029;https://sonax.sklep.pl/produkt/k2-brake-cleaner-600-ml-preparat-czyszczenia-hamulcow;https://sonax.sklep.pl/produkt/k2-brake-cleaner-600-ml-preparat-czyszczenia-hamulcow;K2000029;ten sam adres
+2608;Son000072;https://sonax.sklep.pl/produkt/sonax-piana-aktywna-actifoam-energy;https://sonax.sklep.pl/produkt/sonax-piana-aktywna-actifoam-energy;Son000072;ten sam adres
+2612;Son000014;https://sonax.sklep.pl/produkt/sonax-professional-preparat-do-usuwania-etykiet-i-kleju;https://sonax.sklep.pl/produkt/sonax-professional-preparat-do-usuwania-etykiet-i-kleju;Son000014;ten sam adres
+2615;EAS000031;https://sonax.sklep.pl/produkt/easy-wash-tar-remover-1l-preparat-usuwania-smoly-kleju;https://sonax.sklep.pl/produkt/easy-wash-tar-remover-1l-preparat-usuwania-smoly-kleju;EAS000031;ten sam adres
+2623;STO000001;https://sonax.sklep.pl/produkt/stockmeier-pasta-mycia-rak-10-kg;https://sonax.sklep.pl/produkt/stockmeier-pasta-mycia-rak-10-kg;STO000001;ten sam adres
+2925;TEN000046;https://sonax.sklep.pl/produkt/tenzi-detailer-quatrz-shampoo-600ml-hit-nowosc-rewolucyjny-szampon-kwarcem;https://sonax.sklep.pl/produkt/tenzi-detailer-quatrz-shampoo-600ml-hit-nowosc-rewolucyjny-szampon-kwarcem;TEN000046;ten sam adres
+2957;son000102;https://sonax.sklep.pl/produkt/sonax-xtreme-spray-seal-750-ml;https://sonax.sklep.pl/produkt/sonax-xtreme-spray-seal-750-ml;son000102;ten sam adres
+2961;ATAS0176;https://sonax.sklep.pl/produkt/plak-4r-kokpit-nablyszczajacy-750-ml;https://sonax.sklep.pl/produkt/plak-4r-kokpit-nablyszczajacy-750-ml;ATAS0176;ten sam adres
+2963;ATAS0199;https://sonax.sklep.pl/produkt/plak-mleczko-kokpitu-matowe-750-ml;https://sonax.sklep.pl/produkt/plak-mleczko-kokpitu-matowe-750-ml;ATAS0199;ten sam adres
+2970;ATAS0187;https://sonax.sklep.pl/produkt/plak-czarna-opona-tre-p-400ml;https://sonax.sklep.pl/produkt/plak-czarna-opona-tre-p-400ml;ATAS0187;ten sam adres
+3045;INNE0524;https://sonax.sklep.pl/produkt/turtle-wax-wosk-koloryzujacy-silver-srebrny-500ml;https://sonax.sklep.pl/produkt/turtle-wax-wosk-koloryzujacy-silver-srebrny-500ml;INNE0524;ten sam adres
+3051;INNE0500;https://sonax.sklep.pl/produkt/prestone-plyn-chlodnic-37c-1l-gotowy;https://sonax.sklep.pl/produkt/prestone-plyn-chlodnic-37c-1l-gotowy;INNE0500;ten sam adres
+11335;ROY000016;https://sonax.sklep.pl/produkt/royal-blue-magic-5l-dodatek-do-toalet-wolnostojacych;https://sonax.sklep.pl/produkt/royal-blue-magic-5l-dodatek-do-toalet-wolnostojacych;Roy000016;ten sam adres
+3208;K2000019;https://sonax.sklep.pl/produkt/k2-roton-700ml-wysoce-efektywny-plyn-mycia-felg;https://sonax.sklep.pl/produkt/k2-roton-700ml-wysoce-efektywny-plyn-mycia-felg;K2000019;ten sam adres
+3294;;https://sonax.sklep.pl/produkt/tenzi-neutral-magic-foam-clear-5l-neutralna-piana-mycia-samochodow;https://sonax.sklep.pl/produkt/tenzi-neutral-magic-foam-clear-5l-neutralna-piana-do-mycia-samochodow;TEN000063;stary dubel, jest nowy adres
+3327;KWAZ0075;https://sonax.sklep.pl/produkt/kewazar-opryskiwacz-nix-hd-acid-line-05l;https://sonax.sklep.pl/produkt/kewazar-opryskiwacz-nix-hd-acid-line-05l;KWAZ0075;ten sam adres
+3329;KWAZ0002;https://sonax.sklep.pl/produkt/kwazar-opryskiwacz-nix-hd-solvent-line-05l;https://sonax.sklep.pl/produkt/kwazar-opryskiwacz-nix-hd-solvent-line-05l;KWAZ0002;ten sam adres
+3331;KWAZ0085;https://sonax.sklep.pl/produkt/kwazar-opryskiwacz-mercury-super-hd-alka-line-05l;https://sonax.sklep.pl/produkt/kwazar-opryskiwacz-mercury-super-hd-alka-line-05l;KWAZ0085;ten sam adres
+3333;KWAZ0056;https://sonax.sklep.pl/produkt/kwazar-opryskiwacz-mercury-super-hd-alka-line-1l;https://sonax.sklep.pl/produkt/kwazar-opryskiwacz-mercury-super-hd-alka-line-1l;KWAZ0056;ten sam adres
+3335;KWAZ0057;https://sonax.sklep.pl/produkt/kwazar-opryskiwacz-orion-super-hd-alka-line-6l;https://sonax.sklep.pl/produkt/kwazar-opryskiwacz-orion-super-hd-alka-line-6l;KWAZ0057;ten sam adres
+3337;KWAZ0058;https://sonax.sklep.pl/produkt/kwazar-opryskiwacz-venus-super-hd-alka-line-15l;https://sonax.sklep.pl/produkt/kwazar-opryskiwacz-venus-super-hd-alka-line-15l;KWAZ0058;ten sam adres
+3339;KWAZ0035;https://sonax.sklep.pl/produkt/kwazar-opryskiwacz-xi6-6l;https://sonax.sklep.pl/produkt/kwazar-opryskiwacz-xi6-6l;KWAZ0035;ten sam adres
+3341;KWAZ0001;https://sonax.sklep.pl/produkt/kwazar-pianownica-orion-super-foamer-6l;https://sonax.sklep.pl/produkt/kwazar-pianownica-orion-super-foamer-6l;KWAZ0001;ten sam adres
+3345;KWAZ0074;https://sonax.sklep.pl/produkt/kwazar-pianownica-venus-super-foamer-hd-acid-line-2l;https://sonax.sklep.pl/produkt/kwazar-pianownica-venus-super-foamer-hd-acid-line-2l;KWAZ0074;ten sam adres
+3348;KWAZ0086;https://sonax.sklep.pl/produkt/kwazar-pianownica-venus-super-foamer-hd-alka-line-2l;https://sonax.sklep.pl/produkt/kwazar-pianownica-venus-super-foamer-hd-alka-line-2l;KWAZ0086;ten sam adres
+3350;KWAZ0147;https://sonax.sklep.pl/produkt/kwazar-rekojesc-manometrem-hd-alka-line;https://sonax.sklep.pl/produkt/kwazar-rekojesc-manometrem-hd-alka-line;KWAZ0147;ten sam adres
+3352;KWAZ0034;https://sonax.sklep.pl/produkt/kwazar-wezyk-45m-cleaning-pro-orion;https://sonax.sklep.pl/produkt/kwazar-wezyk-45m-cleaning-pro-orion;KWAZ0034;ten sam adres
+3359;INNE0557;https://sonax.sklep.pl/produkt/clinex-anti-spot-odplamiacz-250ml-77-613;https://sonax.sklep.pl/produkt/clinex-anti-spot-odplamiacz-250ml-77-613;INNE0557;ten sam adres
+3378;INNE0537;https://sonax.sklep.pl/produkt/clinex-handwash-05l-plyn-mycia-naczyn-77-719;https://sonax.sklep.pl/produkt/clinex-handwash-05l-plyn-mycia-naczyn-77-719;INNE0537;ten sam adres
+3396;INNE0531;https://sonax.sklep.pl/produkt/clinex-w3-active-shield-1l-mycie-sanitariatow-aktywna-ochrona-polimerowa-77-708;https://sonax.sklep.pl/produkt/clinex-w3-active-shield-1l-mycie-sanitariatow-aktywna-ochrona-polimerowa-77-708;INNE0531;ten sam adres
+3400;INNE0538;https://sonax.sklep.pl/produkt/clinex-woodpanel-1l-plyn-mycia-paneli-77-689;https://sonax.sklep.pl/produkt/clinex-woodpanel-1l-plyn-mycia-paneli-77-689;INNE0538;ten sam adres
+3501;Son000074;https://sonax.sklep.pl/produkt/sonax-xtreme-interior-detailer-750-ml;https://sonax.sklep.pl/produkt/sonax-xtreme-interior-detailer-750-ml;Son000074;ten sam adres
+3552;ATAS0200;https://sonax.sklep.pl/produkt/plak-rinpel-mleczko-skory-750ml;https://sonax.sklep.pl/produkt/plak-rinpel-mleczko-skory-750ml;ATAS0200;ten sam adres
+3674;;https://sonax.sklep.pl/produkt/tenzi-mud-1l-czyszczenie-pielegnacji-motocykli-quadow-samochodow-terenowych;https://sonax.sklep.pl/produkt/tenzi-mud-off-1l-czyszczenie-i-pielegnacja-motocykli-quadow-i-samochodow-terenowych;TEN000059;stary dubel, jest nowy adres
+3678;;https://sonax.sklep.pl/produkt/tenzi-mosquitos-1l-usuwanie-resztek-owadow-karoserii;https://sonax.sklep.pl/produkt/tenzi-mosquitos-1l-usuwanie-resztek-owadow-z-karoserii;TEN000058;stary dubel, jest nowy adres
+3680;;https://sonax.sklep.pl/produkt/tenzi-glass-quartz-gt-1l-plyn-mycia-szyb-powloka-ceramiczna;https://sonax.sklep.pl/produkt/tenzi-glass-quartz-gt-1l-plyn-hydrofobowy-do-szyb;TEN000052;stary dubel, jest nowy adres
+3712;SON000064;https://sonax.sklep.pl/produkt/sonax-profiline-excut-05-05-pasta-polerska-1-l-245300;;SON000064;nie ma w nowym sklepie
+3714;SON000063;https://sonax.sklep.pl/produkt/sonax-profiline-excut-05-05-pasta-polerska-250-ml-245141;;SON000063;nie ma w nowym sklepie
+3723;K2000009;https://sonax.sklep.pl/produkt/k2-aplikator-gabka-nakladania-woskow-nablyszczaczy;https://sonax.sklep.pl/produkt/k2-aplikator-gabka-nakladania-woskow-nablyszczaczy;K2000009;ten sam adres
+3759;K2000043;https://sonax.sklep.pl/produkt/k2-kuler-35c-zielony-1l-gotowy-plyn-chlodnic;https://sonax.sklep.pl/produkt/k2-kuler-35c-zielony-1l-gotowy-plyn-chlodnic;K2000043;ten sam adres
+3791;EAS000008;https://sonax.sklep.pl/produkt/easy-wash-super-active-wash-5l-super-koncentrat-bezdotykowego-mycia-aut;https://sonax.sklep.pl/produkt/easy-wash-super-active-wash-5l-super-koncentrat-bezdotykowego-mycia-aut;EAS000008;ten sam adres
+4021;son000081;https://sonax.sklep.pl/produkt/sonax-profiline-speed-protect-1l;https://sonax.sklep.pl/produkt/sonax-profiline-speed-protect-1l;son000081;ten sam adres
+4039;son000061;https://sonax.sklep.pl/produkt/sonax-profiline-ultimate-cut-6-3-1l;https://sonax.sklep.pl/produkt/sonax-profiline-ultimate-cut-6-3-1l;son000061;ten sam adres
+4062;son000079;https://sonax.sklep.pl/produkt/sonax-profiline-headlight-coating-zabezpieczenie-kloszy-reflektorow-12-miesiecy-276541;https://sonax.sklep.pl/produkt/sonax-profiline-headlight-coating-zabezpieczenie-kloszy-reflektorow-12-miesiecy-276541;son000141;ten sam adres, inne SKU
+4539;INNE0483;https://sonax.sklep.pl/produkt/kunagone-odstraszacz-na-krety-1-pak;https://sonax.sklep.pl/produkt/kunagone-odstraszacz-na-krety-1-pak;INNE0483;ten sam adres
+4997;;https://sonax.sklep.pl/produkt/meguiars-gold-class-carnauba-plus-premium-paste-wax-311g-wosk-samochodowy-w-pascie;https://sonax.sklep.pl/produkt/meguiars-gold-class-carnauba-plus-premium-paste-wax-311g-wosk-samochodowy-w-pascie-2;DET000115;stary dubel, jest nowy adres
+5047;ADB000017;https://sonax.sklep.pl/produkt/adbl-quick-wax-1l-wosk-do-zabezpieczania-lakieru-1l;https://sonax.sklep.pl/produkt/adbl-quick-wax-1l-wosk-do-zabezpieczania-lakieru-1l;ADB000017;ten sam adres
+5057;ADB000019;https://sonax.sklep.pl/produkt/adbl-adbl-synthetic-spray-wax-500ml-wosk-na-mokro;https://sonax.sklep.pl/produkt/adbl-adbl-synthetic-spray-wax-500ml-wosk-na-mokro;ADB000019;ten sam adres
+5061;ADB00001;https://sonax.sklep.pl/produkt/adbl-synthetic-spray-wax-1l-wosk-na-mokro;https://sonax.sklep.pl/produkt/adbl-synthetic-spray-wax-1l-wosk-na-mokro;ADB00001;ten sam adres
+11100;TEN000096;https://sonax.sklep.pl/produkt/tenzi-truck-clean-extra-1l-mycie-pojazdow-ciezarowych-plandek-aktywna-piana-silny-2;https://sonax.sklep.pl/produkt/tenzi-truck-clean-extra-1l-mycie-pojazdow-ciezarowych-plandek-aktywna-piana-silny-2;TEN000096;ten sam adres
+11095;TEN000097;https://sonax.sklep.pl/produkt/tenzi-truck-clean-extra-5l-mycie-pojazdow-ciezarowych-plandek-aktywna-piana-silny-2;https://sonax.sklep.pl/produkt/tenzi-truck-clean-extra-5l-mycie-pojazdow-ciezarowych-plandek-aktywna-piana-silny-2;TEN000097;ten sam adres
+5101;ADB000021;https://sonax.sklep.pl/produkt/adbl-vampire-liquid-500ml-mycie-felg-i-karoserii;https://sonax.sklep.pl/produkt/adbl-vampire-liquid-500ml-mycie-felg-i-karoserii;ADB000021;ten sam adres
+11090;TEN000098;https://sonax.sklep.pl/produkt/tenzi-udrazniacz-rur-1l-srodek-do-udrazniania-rur;https://sonax.sklep.pl/produkt/tenzi-udrazniacz-rur-1l-srodek-do-udrazniania-rur;TEN000098;ten sam adres
+5109;ADB000022;https://sonax.sklep.pl/produkt/adbl-yeti-polinesian-forest-1l-piana-aktywna;https://sonax.sklep.pl/produkt/adbl-yeti-polinesian-forest-1l-piana-aktywna;ADB000022;ten sam adres
+11115;TEN000112;https://sonax.sklep.pl/produkt/tenzi-top-glass-plyn-do-mycia-szyb-i-luster-5l;https://sonax.sklep.pl/produkt/tenzi-top-glass-plyn-do-mycia-szyb-i-luster-5l;TEN000112;ten sam adres
+5120;ADB000011;https://sonax.sklep.pl/produkt/adbl-bonnet-500ml-czyszczenie-podsufitki-i-tapicerki;https://sonax.sklep.pl/produkt/adbl-bonnet-500ml-czyszczenie-podsufitki-i-tapicerki;ADB000011;ten sam adres
+5347;ADB000024;https://sonax.sklep.pl/produkt/adbl-lea-mikrofibra-do-czyszczenia-skory;https://sonax.sklep.pl/produkt/adbl-lea-mikrofibra-do-czyszczenia-skory;ADB000024;ten sam adres
+5350;ADB000016;https://sonax.sklep.pl/produkt/adbl-ipa-1l-alkohol-izopropylowy-odtluszczacz;https://sonax.sklep.pl/produkt/adbl-ipa-1l-alkohol-izopropylowy-odtluszczacz;ADB000016;ten sam adres
+5358;ADB000015;https://sonax.sklep.pl/produkt/adbl-interior-qd-unlimited-500ml-quick-detailer-do-wnetrza;https://sonax.sklep.pl/produkt/adbl-interior-qd-unlimited-500ml-quick-detailer-do-wnetrza;ADB000015;ten sam adres
+5360;ADB000014;https://sonax.sklep.pl/produkt/adbl-interior-qd-1l-quick-detailer-do-wnetrza;https://sonax.sklep.pl/produkt/adbl-interior-qd-1l-quick-detailer-do-wnetrza;ADB000014;ten sam adres
+11112;TEN000029;https://sonax.sklep.pl/produkt/tenzi-truck-clean-1l-silna-aktywna-piana-do-mycia-ciezarowek-silnikow-plandek;https://sonax.sklep.pl/produkt/tenzi-truck-clean-1l-silna-aktywna-piana-do-mycia-ciezarowek-silnikow-plandek;TEN000029;ten sam adres
+5379;;https://sonax.sklep.pl/produkt/adbl-ceramic-qd-1l-syntetyczny-quick-detailer-do-lakieru;;;nie ma w nowym sklepie
+5402;son000069;https://sonax.sklep.pl/produkt/sonax-xtreme-detailer-do-plastikow-500;https://sonax.sklep.pl/produkt/sonax-xtreme-detailer-do-plastikow-500;son000069;ten sam adres
+5456;son000012;https://sonax.sklep.pl/produkt/sonax-xtreme-ceramic-ultra-slick-detailer;https://sonax.sklep.pl/produkt/sonax-xtreme-ceramic-ultra-slick-detailer;son000012;ten sam adres
+5459;Son000011;https://sonax.sklep.pl/produkt/sonax-ceramic-spray-coating-750ml;https://sonax.sklep.pl/produkt/sonax-ceramic-spray-coating-750ml;Son000011;ten sam adres
+5503;;https://sonax.sklep.pl/produkt/tenzi-apc-out-5l-czyszczenie-elewacji-dachow;https://sonax.sklep.pl/produkt/tenzi-apc-out-plyn-do-mycia-elewacji-5l;TEN000109;stary dubel, jest nowy adres
+5706;ATAS0185;https://sonax.sklep.pl/produkt/plak-practical-line-pianka-opon-gumy-500ml-2;https://sonax.sklep.pl/produkt/plak-practical-line-pianka-opon-gumy-500ml-2;ATAS0185;ten sam adres
+5915;son000077;https://sonax.sklep.pl/produkt/sonax-profiline-pianka-czyszczaca-apc-400ml-274-300;https://sonax.sklep.pl/produkt/sonax-profiline-pianka-czyszczaca-apc-400ml-274-300;son000077;ten sam adres
+6012;son000108;https://sonax.sklep.pl/produkt/sonax-szczotka-do-czyszczenia-felg-417-900;https://sonax.sklep.pl/produkt/sonax-szczotka-do-czyszczenia-felg-417-900;son000108;ten sam adres
+6085;SON000142;https://sonax.sklep.pl/produkt/sonax-mikrofibra-do-osuszania-80x50cm-451-200;https://sonax.sklep.pl/produkt/sonax-mikrofibra-do-osuszania-80x50cm-451-200;Son000142;ten sam adres
+6095;Son000002;https://sonax.sklep.pl/produkt/promocja-sonax-letni-plyn-do-spryskiwaczy-250ml-zawieszka-sonic-gratis;https://sonax.sklep.pl/produkt/promocja-sonax-letni-plyn-do-spryskiwaczy-250ml-zawieszka-sonic-gratis;Son000002;ten sam adres
+6105;;https://sonax.sklep.pl/produkt/k2-evos-boss-perfumy-do-samochodu-50ml;https://sonax.sklep.pl/produkt/k2-evos-boss-perfumy-do-samochodu-50ml-meski-zapach;k2000060;stary dubel, jest nowy adres
+6112;Son000106;https://sonax.sklep.pl/produkt/zapach-samochodowy-sonax-air-freshener-145g-alpejskie-lato;https://sonax.sklep.pl/produkt/zapach-samochodowy-sonax-air-freshener-145g-alpejskie-lato;Son000106;ten sam adres
+6114;Son000105;https://sonax.sklep.pl/produkt/zapach-samochodowy-sonax-alpejskie-lato;https://sonax.sklep.pl/produkt/zapach-samochodowy-sonax-alpejskie-lato;Son000105;ten sam adres
+6147;;https://sonax.sklep.pl/produkt/k2-mikrofibra-flossy-pro;;;nie ma w nowym sklepie
+6179;TEN000052;https://sonax.sklep.pl/produkt/tenzi-glass-quartz-gt-1l-plyn-hydrofobowy-do-szyb;https://sonax.sklep.pl/produkt/tenzi-glass-quartz-gt-1l-plyn-hydrofobowy-do-szyb;TEN000052;ten sam adres
+6200;TEN000076;https://sonax.sklep.pl/produkt/tenzi-solar-panels-1l;https://sonax.sklep.pl/produkt/tenzi-solar-panels-1l;TEN000076;ten sam adres
+6210;SON000143;https://sonax.sklep.pl/produkt/sonax-professional-sx90-odrdzewiacz-w-sprayu-400ml;https://sonax.sklep.pl/produkt/sonax-professional-sx90-odrdzewiacz-w-sprayu-400ml;Son000143;ten sam adres
+6218;Son000034;https://sonax.sklep.pl/produkt/impregnat-tkanin-sonax-profiline-coating-1l;https://sonax.sklep.pl/produkt/impregnat-tkanin-sonax-profiline-coating-1l;Son000034;ten sam adres
+6221;Son000042;https://sonax.sklep.pl/produkt/sonax-do-intensywnego-czyszczenia-szyb;https://sonax.sklep.pl/produkt/sonax-do-intensywnego-czyszczenia-szyb;Son000042;ten sam adres
+6264;ROY000019;https://sonax.sklep.pl/produkt/plyn-do-toalet-turystycznych-2l-flush-magic;https://sonax.sklep.pl/produkt/plyn-do-toalet-turystycznych-2l-flush-magic;Roy000019;ten sam adres
+6283;son000048;https://sonax.sklep.pl/produkt/zestaw-do-odnawiania-reflektorow-sonax-405941;https://sonax.sklep.pl/produkt/zestaw-do-odnawiania-reflektorow-sonax-405941;son000048;ten sam adres
+6289;Son000090;https://sonax.sklep.pl/produkt/sonax-gabka-polerska-zielona-srednio-twarda-80mm;https://sonax.sklep.pl/produkt/sonax-gabka-polerska-zielona-srednio-twarda-80mm;Son000090;ten sam adres
+6291;Son000092;https://sonax.sklep.pl/produkt/sonax-gabka-polerska-zielona-twarda-80mm-kod-493-700;https://sonax.sklep.pl/produkt/sonax-gabka-polerska-zielona-twarda-80mm-kod-493-700;Son000092;ten sam adres
+6335;ADB000009;https://sonax.sklep.pl/produkt/adbl-apc-5l;https://sonax.sklep.pl/produkt/adbl-apc-5l;ADB000009;ten sam adres
+6344;ADB000039;https://sonax.sklep.pl/produkt/adbl-matt-max-1l-matowy-dressing-tworzyw-sztucznych;https://sonax.sklep.pl/produkt/adbl-matt-max-1l-matowy-dressing-tworzyw-sztucznych;ADB000039;ten sam adres
+6353;INNE0517;https://sonax.sklep.pl/produkt/forch-pasta-smarowania-cylinderkow-hamulcowych-s439;https://sonax.sklep.pl/produkt/forch-pasta-smarowania-cylinderkow-hamulcowych-s439;INNE0517;ten sam adres
+6355;INNE0518;https://sonax.sklep.pl/produkt/forch-pasta-montazowa-ukladu-wydechowego;https://sonax.sklep.pl/produkt/forch-pasta-montazowa-ukladu-wydechowego;INNE0518;ten sam adres
+6363;DET000027;https://sonax.sklep.pl/produkt/adbl-neon;;DET000027;nie ma w nowym sklepie
+6371;DET000028;https://sonax.sklep.pl/produkt/adbl-puffy-towel-xl-mikrofibra-osuszania;https://sonax.sklep.pl/produkt/adbl-puffy-towel-xl-mikrofibra-osuszania;DET000028;ten sam adres
+6381;ADB000025;https://sonax.sklep.pl/produkt/adbl-roller-cut-da-150-bialy;https://sonax.sklep.pl/produkt/adbl-roller-cut-da-150-bialy;ADB000025;ten sam adres
+6387;ADB000026;https://sonax.sklep.pl/produkt/adbl-roller-cut-r-150-bialy;https://sonax.sklep.pl/produkt/adbl-roller-cut-r-150-bialy;ADB000026;ten sam adres
+11072;roy000039;https://sonax.sklep.pl/produkt/royal-sanicell-ro-200-1l-usuwa-zapachy;https://sonax.sklep.pl/produkt/royal-sanicell-ro-200-1l-usuwa-zapachy;roy000039;ten sam adres
+6406;ADB000027;https://sonax.sklep.pl/produkt/adbl-roller-hard-cut-da-150-niebieski;https://sonax.sklep.pl/produkt/adbl-roller-hard-cut-da-150-niebieski;ADB000027;ten sam adres
+6408;ADB000028;https://sonax.sklep.pl/produkt/adbl-roller-hard-cut-da-75-niebieski;https://sonax.sklep.pl/produkt/adbl-roller-hard-cut-da-75-niebieski;ADB000028;ten sam adres
+6410;ADB000029;https://sonax.sklep.pl/produkt/adbl-roller-hard-cut-r-125-niebieski;https://sonax.sklep.pl/produkt/adbl-roller-hard-cut-r-125-niebieski;ADB000029;ten sam adres
+6415;ADB000030;https://sonax.sklep.pl/produkt/adbl-roller-one-step-da-150-pomaranczowy;https://sonax.sklep.pl/produkt/adbl-roller-one-step-da-150-pomaranczowy;ADB000030;ten sam adres
+6418;ADB000032;https://sonax.sklep.pl/produkt/adbl-roller-one-step-da-75-pomaranczowy;https://sonax.sklep.pl/produkt/adbl-roller-one-step-da-75-pomaranczowy;ADB000032;ten sam adres
+6420;ADB000031;https://sonax.sklep.pl/produkt/adbl-roller-one-step-r-125-pomaranczowy;https://sonax.sklep.pl/produkt/adbl-roller-one-step-r-125-pomaranczowy;ADB000031;ten sam adres
+6421;ADB000033;https://sonax.sklep.pl/produkt/adbl-roller-one-step-r-150-pomaranczowy;https://sonax.sklep.pl/produkt/adbl-roller-one-step-r-150-pomaranczowy;ADB000033;ten sam adres
+6433;ADB000034;https://sonax.sklep.pl/produkt/adbl-roller-soft-da-150-czerwony;https://sonax.sklep.pl/produkt/adbl-roller-soft-da-150-czerwony;ADB000034;ten sam adres
+6434;ADB000035;https://sonax.sklep.pl/produkt/adbl-roller-soft-da-75-czerwony;https://sonax.sklep.pl/produkt/adbl-roller-soft-da-75-czerwony;ADB000035;ten sam adres
+6435;ADB000006;https://sonax.sklep.pl/produkt/adbl-round-detailing-brush-rozm-12;https://sonax.sklep.pl/produkt/adbl-round-detailing-brush-rozm-12;ADB000006;ten sam adres
+6439;ADB000007;https://sonax.sklep.pl/produkt/adbl-round-detailing-brush-rozm-16;https://sonax.sklep.pl/produkt/adbl-round-detailing-brush-rozm-16;ADB000007;ten sam adres
+6441;ADB000005;https://sonax.sklep.pl/produkt/adbl-round-detailing-brush-rozm-8;https://sonax.sklep.pl/produkt/adbl-round-detailing-brush-rozm-8;ADB000005;ten sam adres
+6443;ADB000036;https://sonax.sklep.pl/produkt/adbl-twister-medium-125mm-szczotka-montowana;https://sonax.sklep.pl/produkt/adbl-twister-medium-125mm-szczotka-montowana;ADB000036;ten sam adres
+6447;ATAS0172;https://sonax.sklep.pl/produkt/plak-netins-usuwa-owady-750ml-atas;https://sonax.sklep.pl/produkt/plak-netins-usuwa-owady-750ml-atas;ATAS0172;ten sam adres
+6450;ADB000037;https://sonax.sklep.pl/produkt/adbl-twister-medium-50mm-szczotka-wkretarki;https://sonax.sklep.pl/produkt/adbl-twister-medium-50mm-szczotka-wkretarki;ADB000037;ten sam adres
+6468;CHE000051;https://sonax.sklep.pl/produkt/adbl-twister-soft-125mm-szczotka-montowana;https://sonax.sklep.pl/produkt/adbl-twister-soft-125mm-szczotka-montowana;CHE000051;ten sam adres
+6470;ADB000038;https://sonax.sklep.pl/produkt/adbl-twister-soft-50mm-szczotka-wkretarki;;ADB000038;nie ma w nowym sklepie
+6476;K2000006;https://sonax.sklep.pl/produkt/venox-180-g-gabka-usuwania-rys;https://sonax.sklep.pl/produkt/venox-180-g-gabka-usuwania-rys;K2000006;ten sam adres
+6478;K2000018;https://sonax.sklep.pl/produkt/k2-roton-pro-750-ml-plyn-czyszczenia-felg;https://sonax.sklep.pl/produkt/k2-roton-pro-750-ml-plyn-czyszczenia-felg;K2000018;ten sam adres
+6481;K2000030;https://sonax.sklep.pl/produkt/k2-szczoteczka-auron-brush;https://sonax.sklep.pl/produkt/k2-szczoteczka-auron-brush;K2000030;ten sam adres
+6485;K2000011;https://sonax.sklep.pl/produkt/k2-bono-plastikow-zewnetrznych;https://sonax.sklep.pl/produkt/k2-bono-plastikow-zewnetrznych;K2000011;ten sam adres
+6488;;https://sonax.sklep.pl/produkt/k2-akra-770-ml;;;nie ma w nowym sklepie
+6502;;https://sonax.sklep.pl/produkt/tenzi-apc-out-1l;https://sonax.sklep.pl/produkt/tenzi-apc-out-plyn-do-mycia-elewacji-1l;TEN000108;stary dubel, jest nowy adres
+6541;NER000002;https://sonax.sklep.pl/produkt/nerta-power-wash-25l-zasadowa-piana-aktywna-dla-myjni;https://sonax.sklep.pl/produkt/nerta-power-wash-25l-zasadowa-piana-aktywna-dla-myjni;Ner000002;ten sam adres
+6609;KWAZ0107;https://sonax.sklep.pl/produkt/lanca-teleskopowa-3-m-wao-0804;https://sonax.sklep.pl/produkt/lanca-teleskopowa-3-m-wao-0804;KWAZ0107;ten sam adres
+6611;KWAZ0108;https://sonax.sklep.pl/produkt/lanca-teleskopowa-5-m-wao-0808;https://sonax.sklep.pl/produkt/lanca-teleskopowa-5-m-wao-0808;KWAZ0108;ten sam adres
+6670;INNE0529;https://sonax.sklep.pl/produkt/clinex-destoner-1l;https://sonax.sklep.pl/produkt/clinex-destoner-1l;INNE0529;ten sam adres
+6673;INNE0530;https://sonax.sklep.pl/produkt/clinex-drill-1l;https://sonax.sklep.pl/produkt/clinex-drill-1l;INNE0530;ten sam adres
+6686;INNE0553;https://sonax.sklep.pl/produkt/plyn-wybielajacy-ace-classic-1-l;https://sonax.sklep.pl/produkt/plyn-wybielajacy-ace-classic-1-l;INNE0553;ten sam adres
+6689;DAF000135;https://sonax.sklep.pl/produkt/cif-mleczko-czyszczenia-750-ml;https://sonax.sklep.pl/produkt/cif-mleczko-czyszczenia-750-ml;DAF000135;ten sam adres
+6691;;https://sonax.sklep.pl/produkt/domestos-750-ml;;;nie ma w nowym sklepie
+6695;DAF000212;https://sonax.sklep.pl/produkt/sidolux-uniwersalny-5l;https://sonax.sklep.pl/produkt/sidolux-uniwersalny-5l;DAF000212;ten sam adres
+6697;DAF000211;https://sonax.sklep.pl/produkt/yplon-zel-wc-1l-palemka;https://sonax.sklep.pl/produkt/yplon-zel-wc-1l-palemka;DAF000211;ten sam adres
+6714;EAS000023;https://sonax.sklep.pl/produkt/easy-wash-inside-cleaner-5-l;https://sonax.sklep.pl/produkt/easy-wash-inside-cleaner-5-l;EAS000023;ten sam adres
+6724;INNE0532;https://sonax.sklep.pl/produkt/feniks-professional-degreaser-ani-fat-plyn-mycia-odtluszczania;https://sonax.sklep.pl/produkt/feniks-professional-degreaser-ani-fat-plyn-mycia-odtluszczania;INNE0532;ten sam adres
+6749;ATAS0142;https://sonax.sklep.pl/produkt/k2-claren-80-1l-koncentrat-plynu-spryskiwaczy-zime;https://sonax.sklep.pl/produkt/k2-claren-80-1l-koncentrat-plynu-spryskiwaczy-zime;ATAS0142;ten sam adres
+6759;K2000023;https://sonax.sklep.pl/produkt/k2-dpf-cleaner-500ml-regenerator-filtra-czastek-stalych;https://sonax.sklep.pl/produkt/k2-dpf-cleaner-500ml-regenerator-filtra-czastek-stalych;K2000023;ten sam adres
+6761;K2000044;https://sonax.sklep.pl/produkt/plyn-przeciw-parowaniu-szyb-fox-k2-antypara-150-ml;https://sonax.sklep.pl/produkt/plyn-przeciw-parowaniu-szyb-fox-k2-antypara-150-ml;K2000044;ten sam adres
+6792;K2000028;https://sonax.sklep.pl/produkt/k2-vulcan-500ml-odrdzewiacz;https://sonax.sklep.pl/produkt/k2-vulcan-500ml-odrdzewiacz;K2000028;ten sam adres
+6800;;https://sonax.sklep.pl/produkt/holts-original-wax-twardy-wosk-puszcze-150g;;;nie ma w nowym sklepie
+6803;INNE0489;https://sonax.sklep.pl/produkt/holts-smar-miedziany-spray-500ml;https://sonax.sklep.pl/produkt/holts-smar-miedziany-spray-500ml;INNE0489;ten sam adres
+6812;ATAS0184;https://sonax.sklep.pl/produkt/plak-ppl-nablyszcza-zderzaki-spojlery-500ml;https://sonax.sklep.pl/produkt/plak-ppl-nablyszcza-zderzaki-spojlery-500ml;ATAS0184;ten sam adres
+6818;ATAS0183;https://sonax.sklep.pl/produkt/ppl-pianka-tapicerki-skorzanej-500ml;https://sonax.sklep.pl/produkt/ppl-pianka-tapicerki-skorzanej-500ml;ATAS0183;ten sam adres
+6820;ATAS0181;https://sonax.sklep.pl/produkt/ppl-pianka-szyb-luster-500ml;https://sonax.sklep.pl/produkt/ppl-pianka-szyb-luster-500ml;ATAS0181;ten sam adres
+6828;;https://sonax.sklep.pl/produkt/tenzi-nagrobki-czyszczenie-06-l;https://sonax.sklep.pl/produkt/tenzi-nagrobki-czyszczenie-600ml-srodek-do-czyszczenia-nagrobkow;TEN000060;stary dubel, jest nowy adres
+6830;TEN000061;https://sonax.sklep.pl/produkt/tenzi-nagrobki-konserwacja-06l;https://sonax.sklep.pl/produkt/tenzi-nagrobki-konserwacja-06l;TEN000061;ten sam adres
+6839;ROY000006;https://sonax.sklep.pl/produkt/royal-per-mobil-1l;https://sonax.sklep.pl/produkt/royal-per-mobil-1l;Roy000006;ten sam adres
+6844;INNE0542;https://sonax.sklep.pl/produkt/betoncleaner-strong-mycia-betonu;https://sonax.sklep.pl/produkt/betoncleaner-strong-mycia-betonu;INNE0542;ten sam adres
+6848;son000080;https://sonax.sklep.pl/produkt/sonax-xtreme-cockpit-matowy-500ml;https://sonax.sklep.pl/produkt/sonax-xtreme-cockpit-matowy-500ml;son000080;ten sam adres
+6972;son000123;https://sonax.sklep.pl/produkt/sonax-xtreme-srodek-konserwacji-opon;https://sonax.sklep.pl/produkt/sonax-xtreme-srodek-konserwacji-opon;son000123;ten sam adres
+6974;TEN000034;https://sonax.sklep.pl/produkt/tenzi-alux-gt-1l-mycie-konserwacja-felg-aluminiowych;https://sonax.sklep.pl/produkt/tenzi-alux-gt-1l-mycie-konserwacja-felg-aluminiowych;TEN000034;ten sam adres
+6976;TEN000036;https://sonax.sklep.pl/produkt/tenzi-aplikator-opon-zolto-czarny;https://sonax.sklep.pl/produkt/tenzi-aplikator-opon-zolto-czarny;TEN000036;ten sam adres
+6978;TEN000027;https://sonax.sklep.pl/produkt/tenzi-brudex-5l-uniwersalny-srodek-mycia-usuwania-tlustego-brudu;https://sonax.sklep.pl/produkt/tenzi-brudex-5l-uniwersalny-srodek-mycia-usuwania-tlustego-brudu;TEN000027;ten sam adres
+6981;TEN000056;https://sonax.sklep.pl/produkt/tenzi-kabiny-prysznicowe-shine-1-l;https://sonax.sklep.pl/produkt/tenzi-kabiny-prysznicowe-shine-1-l;TEN000056;ten sam adres
+6986;TEN000018;https://sonax.sklep.pl/produkt/tenzi-odtluszczacz-uniwersalny-1l;https://sonax.sklep.pl/produkt/tenzi-odtluszczacz-uniwersalny-1l;TEN000018;ten sam adres
+6988;;https://sonax.sklep.pl/produkt/tenzi-rollex-1l;https://sonax.sklep.pl/produkt/tenzi-rollex-nablyszczasz-do-myjni-samochodowych-polimerowy-zabezpieczenie-lakieru-1l;TEN000071;stary dubel, jest nowy adres
+6990;TEN000010;https://sonax.sklep.pl/produkt/tenzi-plesniobojczy-grzybobojczy-0-6l;https://sonax.sklep.pl/produkt/tenzi-plesniobojczy-grzybobojczy-0-6l;TEN000010;ten sam adres
+7482;;https://sonax.sklep.pl/produkt/k2-evos-samurai-perfumy-zawieszka-drewniana;;;nie ma w nowym sklepie
+7527;ADB000041;https://sonax.sklep.pl/produkt/adbl-wheel-sword-szczotka-czyszczenia-felg;https://sonax.sklep.pl/produkt/adbl-wheel-sword-szczotka-czyszczenia-felg;ADB000041;ten sam adres
+7584;INNE0472;https://sonax.sklep.pl/produkt/caramba-pianka-kokpitu-bez-silikonu-500ml;https://sonax.sklep.pl/produkt/caramba-pianka-kokpitu-bez-silikonu-500ml;INNE0472;ten sam adres
+7590;INNE0503;https://sonax.sklep.pl/produkt/caramba-pasta-mycia-rak-hand-clean-medium-500ml;https://sonax.sklep.pl/produkt/caramba-pasta-mycia-rak-hand-clean-medium-500ml;INNE0503;ten sam adres
+7610;K2000004;https://sonax.sklep.pl/produkt/k2-nuta-750ml-plyn-mycia-szyb;https://sonax.sklep.pl/produkt/k2-nuta-750ml-plyn-mycia-szyb;K2000004;ten sam adres
+7619;K2000022;https://sonax.sklep.pl/produkt/k2-kontakt-spray-400ml;https://sonax.sklep.pl/produkt/k2-kontakt-spray-400ml;K2000022;ten sam adres
+7621;K2000038;https://sonax.sklep.pl/produkt/k2-smar-do-lancucha-off-road-500ml;https://sonax.sklep.pl/produkt/k2-smar-do-lancucha-off-road-500ml;K2000038;ten sam adres
+7628;TEN000048;https://sonax.sklep.pl/produkt/tenzi-doczyszczanie-kostki-brukowej-2-1;https://sonax.sklep.pl/produkt/tenzi-doczyszczanie-kostki-brukowej-2-1;TEN000048;ten sam adres
+7631;;https://sonax.sklep.pl/produkt/tenzi-glass-5l;;;nie ma w nowym sklepie
+7637;TEN000093;https://sonax.sklep.pl/produkt/tenzi-topplam-clor-5l;https://sonax.sklep.pl/produkt/tenzi-topplam-clor-5l;TEN000093;ten sam adres
+7639;TEN000011;https://sonax.sklep.pl/produkt/tenzi-wc-sani-1l;https://sonax.sklep.pl/produkt/tenzi-wc-sani-1l;TEN000011;ten sam adres
+7655;ATAS0171;https://sonax.sklep.pl/produkt/autobella-szampon-woskiem-1l;https://sonax.sklep.pl/produkt/autobella-szampon-woskiem-1l;ATAS0171;ten sam adres
+7658;ATAS0162;https://sonax.sklep.pl/produkt/deg-odmrazacz-zamka-25ml-mini;https://sonax.sklep.pl/produkt/deg-odmrazacz-zamka-25ml-mini;ATAS0162;ten sam adres
+7663;INNE0497;https://sonax.sklep.pl/produkt/quixx-zestaw-zarysowan-powierzchniach-akrylowych;https://sonax.sklep.pl/produkt/quixx-zestaw-zarysowan-powierzchniach-akrylowych;INNE0497;ten sam adres
+7685;NER000015;https://sonax.sklep.pl/produkt/nerta-anti-insect-25l;https://sonax.sklep.pl/produkt/nerta-anti-insect-25l;Ner000015;ten sam adres
+7691;TEN000075;https://sonax.sklep.pl/produkt/tenzi-sanit-shine-1l;https://sonax.sklep.pl/produkt/tenzi-sanit-shine-1l;TEN000075;ten sam adres
+7701;K2000027;https://sonax.sklep.pl/produkt/k2-durabit-srodek-konserwacji-podwozia-1-l-pedzel;https://sonax.sklep.pl/produkt/k2-durabit-srodek-konserwacji-podwozia-1-l-pedzel;K2000027;ten sam adres
+7735;Son000125;https://sonax.sklep.pl/produkt/sonax-antyroszeniowy-preparat-do-szyb;https://sonax.sklep.pl/produkt/sonax-antyroszeniowy-preparat-do-szyb;Son000125;ten sam adres
+7742;Son000016;https://sonax.sklep.pl/produkt/sonax-xtreme-polish-wax-3-nanopro;https://sonax.sklep.pl/produkt/sonax-xtreme-polish-wax-3-nanopro;Son000016;ten sam adres
+7747;Son000067;https://sonax.sklep.pl/produkt/sonax-powloka-zabezpieczajaca-felg;https://sonax.sklep.pl/produkt/sonax-powloka-zabezpieczajaca-felg;Son000067;ten sam adres
+7750;son000025;https://sonax.sklep.pl/produkt/sonax-profiline-xp-02-06-express-polish-1l-297300;https://sonax.sklep.pl/produkt/sonax-profiline-xp-02-06-express-polish-1l-297300;son000025;ten sam adres
+7754;son000060;https://sonax.sklep.pl/produkt/sonax-profiline-ultimate-cut-6-3-250ml;https://sonax.sklep.pl/produkt/sonax-profiline-ultimate-cut-6-3-250ml;son000060;ten sam adres
+7756;SON000056;https://sonax.sklep.pl/produkt/sonax-politura-wykonczeniowa-perfect;https://sonax.sklep.pl/produkt/sonax-politura-wykonczeniowa-perfect;Son000056;ten sam adres
+7780;Son000003;https://sonax.sklep.pl/produkt/sonax-letni-plyn-do-spryskiwaczy;https://sonax.sklep.pl/produkt/sonax-letni-plyn-do-spryskiwaczy;Son000003;ten sam adres
+7781;INNE0294;https://sonax.sklep.pl/produkt/k2-lamp-doctor-60-g-profesjonalna-pasta-renowacji-reflektorow;https://sonax.sklep.pl/produkt/k2-lamp-doctor-60-g-profesjonalna-pasta-renowacji-reflektorow;INNE0294;ten sam adres
+7841;Son000010;https://sonax.sklep.pl/produkt/sonax-xtreme-aktywny-szampon-ceramiczny;https://sonax.sklep.pl/produkt/sonax-xtreme-aktywny-szampon-ceramiczny;Son000010;ten sam adres
+7849;TEN000092;https://sonax.sklep.pl/produkt/tenzi-top-grill-black-600ml;https://sonax.sklep.pl/produkt/tenzi-top-grill-black-600ml;TEN000092;ten sam adres
+7937;K2000007;https://sonax.sklep.pl/produkt/k2-quantum-syntetyczny-wosk-dlugotrwalej-ochrony-140g-mikrofibra-g010;https://sonax.sklep.pl/produkt/k2-quantum-syntetyczny-wosk-dlugotrwalej-ochrony-140g-mikrofibra-g010;K2000007;ten sam adres
+7972;son000107;https://sonax.sklep.pl/produkt/sonax-szczotka-do-felg-z-mikrofibry;https://sonax.sklep.pl/produkt/sonax-szczotka-do-felg-z-mikrofibry;son000107;ten sam adres
+8029;Son000127;https://sonax.sklep.pl/produkt/sonax-mikrofibra-do-szyb-i-wnetrza-2;https://sonax.sklep.pl/produkt/sonax-mikrofibra-do-szyb-i-wnetrza-2;SON000127;ten sam adres
+8031;INNE0523;https://sonax.sklep.pl/produkt/armorall-gabka-usuwania-owadow;https://sonax.sklep.pl/produkt/armorall-gabka-usuwania-owadow;INNE0523;ten sam adres
+8034;TEN000008;https://sonax.sklep.pl/produkt/tenzi-ipa-cleaner-5l-plyn-do-odtluszczania-karoserii;https://sonax.sklep.pl/produkt/tenzi-ipa-cleaner-5l-plyn-do-odtluszczania-karoserii;TEN000008;ten sam adres
+8073;Son000008;https://sonax.sklep.pl/produkt/sonax-xtreme-ppf-vinyl-750ml-czyszczenia-folii;https://sonax.sklep.pl/produkt/sonax-xtreme-ppf-vinyl-750ml-czyszczenia-folii;Son000008;ten sam adres
+8127;Son000007;https://sonax.sklep.pl/produkt/232-300-sonax-zimowy-plyn-spryskiwaczy-1-l-koncentrat;https://sonax.sklep.pl/produkt/232-300-sonax-zimowy-plyn-spryskiwaczy-1-l-koncentrat;Son000007;ten sam adres
+8149;;https://sonax.sklep.pl/produkt/sonax-ppf-vinyl-polish-250-ml-400-100;;;nie ma w nowym sklepie
+8151;Son000120;https://sonax.sklep.pl/produkt/sonax-cleanstar-750ml-do-wnetrza;https://sonax.sklep.pl/produkt/sonax-cleanstar-750ml-do-wnetrza;Son000120;ten sam adres
+8159;ATAS0143;https://sonax.sklep.pl/produkt/zimowy-plyn-spryskiwaczy-60c-koncentrat-plak-ice-fresh-cytrusowy;https://sonax.sklep.pl/produkt/zimowy-plyn-spryskiwaczy-60c-koncentrat-plak-ice-fresh-cytrusowy;ATAS0143;ten sam adres
+8147;SON000119;https://sonax.sklep.pl/produkt/sonax-xtreme-ppf-vinyl-250ml-pasta-lekkoscierna-folii-ppf-400-100;https://sonax.sklep.pl/produkt/sonax-xtreme-ppf-vinyl-250ml-pasta-lekkoscierna-folii-ppf-400-100;Son000119;ten sam adres
+8537;ATAS0163;https://sonax.sklep.pl/produkt/plak-atas-ceramicar-quick-detailer;https://sonax.sklep.pl/produkt/plak-atas-ceramicar-quick-detailer;ATAS0163;ten sam adres
+8588;Son000066;https://sonax.sklep.pl/produkt/sonax-politura-polerska-profiline-0206;https://sonax.sklep.pl/produkt/sonax-politura-polerska-profiline-0206;Son000066;ten sam adres
+8652;TEN000099;https://sonax.sklep.pl/produkt/tenzi-usuwanie-rdzy-1-l-uniwersalny-plyn-usuwania-rdzy;https://sonax.sklep.pl/produkt/tenzi-usuwanie-rdzy-1-l-uniwersalny-plyn-usuwania-rdzy;TEN000099;ten sam adres
+11167;TEN000071;https://sonax.sklep.pl/produkt/tenzi-rollex-nablyszczasz-do-myjni-samochodowych-polimerowy-zabezpieczenie-lakieru-1l;https://sonax.sklep.pl/produkt/tenzi-rollex-nablyszczasz-do-myjni-samochodowych-polimerowy-zabezpieczenie-lakieru-1l;TEN000071;ten sam adres
+11169;TEN000105;https://sonax.sklep.pl/produkt/tenzi-prodetailing-quartz-shampoo-07l-szampon-do-mycia-samochodu-zpowloka-kwarcowa;https://sonax.sklep.pl/produkt/tenzi-prodetailing-quartz-shampoo-07l-szampon-do-mycia-samochodu-zpowloka-kwarcowa;TEN000105;ten sam adres
+11171;TEN000067;https://sonax.sklep.pl/produkt/tenzi-panele-laminowane-1l-do-paneli-laminowanych-bezzapachowy-bezpieczny;https://sonax.sklep.pl/produkt/tenzi-panele-laminowane-1l-do-paneli-laminowanych-bezzapachowy-bezpieczny;TEN000067;ten sam adres
+11174;TEN000104;https://sonax.sklep.pl/produkt/tenzi-office-clean-plyn-do-czyszczenia-mebli-1l;https://sonax.sklep.pl/produkt/tenzi-office-clean-plyn-do-czyszczenia-mebli-1l;TEN000104;ten sam adres
+11176;TEN000062;https://sonax.sklep.pl/produkt/tenzi-neutral-magic-foam-pink-1l-kolorowa-neutralna-piana-do-mycia-samochodow-2;https://sonax.sklep.pl/produkt/tenzi-neutral-magic-foam-pink-1l-kolorowa-neutralna-piana-do-mycia-samochodow-2;TEN000062;ten sam adres
+11182;TEN000063;https://sonax.sklep.pl/produkt/tenzi-neutral-magic-foam-clear-5l-neutralna-piana-do-mycia-samochodow;https://sonax.sklep.pl/produkt/tenzi-neutral-magic-foam-clear-5l-neutralna-piana-do-mycia-samochodow;TEN000063;ten sam adres
+11190;TEN000064;https://sonax.sklep.pl/produkt/tenzi-neutral-magic-foam-clear-1l-neutralna-piana-do-mycia-samochodow;https://sonax.sklep.pl/produkt/tenzi-neutral-magic-foam-clear-1l-neutralna-piana-do-mycia-samochodow;TEN000064;ten sam adres
+11192;TEN000060;https://sonax.sklep.pl/produkt/tenzi-nagrobki-czyszczenie-600ml-srodek-do-czyszczenia-nagrobkow;https://sonax.sklep.pl/produkt/tenzi-nagrobki-czyszczenie-600ml-srodek-do-czyszczenia-nagrobkow;TEN000060;ten sam adres
+11161;TEN000072;https://sonax.sklep.pl/produkt/tenzi-ronal-plyn-do-mycia-posadzek-przemyslowych-1l;https://sonax.sklep.pl/produkt/tenzi-ronal-plyn-do-mycia-posadzek-przemyslowych-1l;TEN000072;ten sam adres
+11156;TEN000073;https://sonax.sklep.pl/produkt/tenzi-rubber-off-1l-usuwanie-sladow-po-oponach-gumie-klejach;https://sonax.sklep.pl/produkt/tenzi-rubber-off-1l-usuwanie-sladow-po-oponach-gumie-klejach;TEN000073;ten sam adres
+11126;TEN000090;https://sonax.sklep.pl/produkt/tenzi-top-efekt-perfume-amore-1l-plyn-do-mycia-posadzek-zapach-amore;https://sonax.sklep.pl/produkt/tenzi-top-efekt-perfume-amore-1l-plyn-do-mycia-posadzek-zapach-amore;TEN000090;ten sam adres
+11128;TEN000030;https://sonax.sklep.pl/produkt/tenzi-topefekt-normal-plyn-do-mycia-podlog-posadzek-5l;https://sonax.sklep.pl/produkt/tenzi-topefekt-normal-plyn-do-mycia-podlog-posadzek-5l;TEN000030;ten sam adres
+11134;TEN000089;https://sonax.sklep.pl/produkt/tenzi-top-efekt-moss-5l-usuwanie-grzybow-i-konserwacja-elewacji;https://sonax.sklep.pl/produkt/tenzi-top-efekt-moss-5l-usuwanie-grzybow-i-konserwacja-elewacji;TEN000089;ten sam adres
+11136;TEN000085;https://sonax.sklep.pl/produkt/tenzi-textil-wash-5l-plyn-do-prania-tapicerek-i-dywanow;https://sonax.sklep.pl/produkt/tenzi-textil-wash-5l-plyn-do-prania-tapicerek-i-dywanow;TEN000085;ten sam adres
+11140;TEN000086;https://sonax.sklep.pl/produkt/tenzi-textil-ex-5l-plyn-do-prania-dywanow-tapicerki-wykladzin-do-odkurzacza;https://sonax.sklep.pl/produkt/tenzi-textil-ex-5l-plyn-do-prania-dywanow-tapicerki-wykladzin-do-odkurzacza;TEN000086;ten sam adres
+11145;TEN000082;https://sonax.sklep.pl/produkt/tenzi-textil-1l-srodek-do-czyszczenia-dywanow-i-wykladzin;https://sonax.sklep.pl/produkt/tenzi-textil-1l-srodek-do-czyszczenia-dywanow-i-wykladzin;TEN000082;ten sam adres
+11151;TEN000079;https://sonax.sklep.pl/produkt/tenzi-super-green-specjal-srodek-do-mycia-pojazdow-ciezarowych-autobusow-maszyn-rolniczych-5l;https://sonax.sklep.pl/produkt/tenzi-super-green-specjal-srodek-do-mycia-pojazdow-ciezarowych-autobusow-maszyn-rolniczych;TEN000079;adres się zmienił
+11121;TEN000091;https://sonax.sklep.pl/produkt/tenzi-top-efekt-sanit-1l-codzienne-mycie-pomieszczen-i-urzadzen-sanitarnych-2;https://sonax.sklep.pl/produkt/tenzi-top-efekt-sanit-1l-codzienne-mycie-pomieszczen-i-urzadzen-sanitarnych-2;TEN000091;ten sam adres
+9852;TEN000068;https://sonax.sklep.pl/produkt/tenzi-penetrator-preparat-do-udrazniania-rur-500g-w-granulkach;https://sonax.sklep.pl/produkt/tenzi-penetrator-preparat-do-udrazniania-rur-500g-w-granulkach;TEN000068;ten sam adres
+9879;Roy000021;https://sonax.sklep.pl/produkt/royal-rokasat-ro-37-1l-czyszczenie-pomieszczen-i-urzadzen-sanitarnych;https://sonax.sklep.pl/produkt/royal-rokasat-ro-37-1l-czyszczenie-pomieszczen-i-urzadzen-sanitarnych;Roy000021;ten sam adres
+9883;INNE0541;https://sonax.sklep.pl/produkt/shine-chemicals-snow-ultra-1l-piana-aktywna-koncentrat;https://sonax.sklep.pl/produkt/shine-chemicals-snow-ultra-1l-piana-aktywna-koncentrat;INNE0541;ten sam adres
+9934;ADB000020;https://sonax.sklep.pl/produkt/adbl-tire-and-rubber-cleaner-1l-oczyszczanie-opon-i-elementow-gumowych;https://sonax.sklep.pl/produkt/adbl-tire-and-rubber-cleaner-1l-oczyszczanie-opon-i-elementow-gumowych;ADB000020;ten sam adres
+10507;k2000062;https://sonax.sklep.pl/produkt/k2-evos-viking-perfumy-50ml-perfumy-samochodowe;https://sonax.sklep.pl/produkt/k2-evos-viking-perfumy-50ml-perfumy-samochodowe;k2000062;ten sam adres
+10511;k2000058;https://sonax.sklep.pl/produkt/k2-evos-samurai-perfumy-50ml-perfumy-samochodowe;https://sonax.sklep.pl/produkt/k2-evos-samurai-perfumy-50ml-perfumy-samochodowe;k2000058;ten sam adres
+10517;k2000056;https://sonax.sklep.pl/produkt/k2-evos-sparta-perfumy-50ml-perfumy-samochodowe;https://sonax.sklep.pl/produkt/k2-evos-sparta-perfumy-50ml-perfumy-samochodowe;k2000056;ten sam adres
+10522;K2000046;https://sonax.sklep.pl/produkt/evos-zawieszka-drewniana-do-auta-unicorn;https://sonax.sklep.pl/produkt/evos-zawieszka-drewniana-do-auta-unicorn;K2000046;ten sam adres
+10527;k2000051;https://sonax.sklep.pl/produkt/evos-drewniana-zapachowa-zawieszka-do-auta-hunter;https://sonax.sklep.pl/produkt/evos-drewniana-zapachowa-zawieszka-do-auta-hunter;k2000051;ten sam adres
+10531;K2000049;https://sonax.sklep.pl/produkt/evos-drewniana-zapachowa-zawieszka-do-auta-boss;https://sonax.sklep.pl/produkt/evos-drewniana-zapachowa-zawieszka-do-auta-boss;K2000049;ten sam adres
+10534;K2000047;https://sonax.sklep.pl/produkt/evos-drewniana-zapachowa-zawieszka-do-auta-angel;https://sonax.sklep.pl/produkt/evos-drewniana-zapachowa-zawieszka-do-auta-angel;K2000047;ten sam adres
+10547;K2000055;https://sonax.sklep.pl/produkt/k2-evos-drewniana-zapachowa-zawieszka-do-auta-valkiria;https://sonax.sklep.pl/produkt/k2-evos-drewniana-zapachowa-zawieszka-do-auta-valkiria;K2000055;ten sam adres
+10553;K2000053;https://sonax.sklep.pl/produkt/k2-evos-drewniana-zapachowa-zawieszka-do-auta-gaia;https://sonax.sklep.pl/produkt/k2-evos-drewniana-zapachowa-zawieszka-do-auta-gaia;K2000053;ten sam adres
+10560;K2000052;https://sonax.sklep.pl/produkt/evos-drewniana-zapachowa-zawieszka-do-auta-viking;https://sonax.sklep.pl/produkt/evos-drewniana-zapachowa-zawieszka-do-auta-viking;K2000052;ten sam adres
+10600;K2000002;https://sonax.sklep.pl/produkt/k2-lamp-protect-10-ml-powloka-ochronna-na-reflektory;https://sonax.sklep.pl/produkt/k2-lamp-protect-10-ml-powloka-ochronna-na-reflektory;K2000002;ten sam adres
+10606;K2000017;https://sonax.sklep.pl/produkt/k2-tapiflex-400ml-tapicerski-klej-w-sprayu;https://sonax.sklep.pl/produkt/k2-tapiflex-400ml-tapicerski-klej-w-sprayu;K2000017;ten sam adres
+10614;K2000016;https://sonax.sklep.pl/produkt/k2-tapis-pianka-do-czyszczenia-tapicerki-600ml-przywraca-kolor;https://sonax.sklep.pl/produkt/k2-tapis-pianka-do-czyszczenia-tapicerki-600ml-przywraca-kolor;K2000016;ten sam adres
+10620;K2000012;https://sonax.sklep.pl/produkt/k2-satina-pro-sunset-fresh-1-l-srodek-do-pielegnacji-plastikow-wewnatrz;https://sonax.sklep.pl/produkt/k2-satina-pro-sunset-fresh-1-l-srodek-do-pielegnacji-plastikow-wewnatrz;K2000012;ten sam adres
+10624;ROY000026;https://sonax.sklep.pl/produkt/royal-sauna-do-czyszczenia-drewna;https://sonax.sklep.pl/produkt/royal-sauna-do-czyszczenia-drewna;ROY000026;ten sam adres
+10627;INNE0543;https://sonax.sklep.pl/produkt/shine-chemicals-motorcleaner-koncentrat-do-mycia-silnika-skrzyni-biegow;https://sonax.sklep.pl/produkt/shine-chemicals-motorcleaner-koncentrat-do-mycia-silnika-skrzyni-biegow;INNE0543;ten sam adres
+10647;SON000134;https://sonax.sklep.pl/produkt/sonax-do-usuwania-owadow-500ml-533200;https://sonax.sklep.pl/produkt/sonax-do-usuwania-owadow-500ml-533200;SON000134;ten sam adres
+10660;Roy000024;https://sonax.sklep.pl/produkt/royal-wco-cl-5l-plyn-do-czyszczenia-sanitariatow-i-powierzchni;https://sonax.sklep.pl/produkt/royal-wco-cl-5l-plyn-do-czyszczenia-sanitariatow-i-powierzchni;Roy000024;ten sam adres
+10665;Roy000032;https://sonax.sklep.pl/produkt/royal-awning-pianka-do-markiz;https://sonax.sklep.pl/produkt/royal-awning-pianka-do-markiz;Roy000032;ten sam adres
+10668;Roy000031;https://sonax.sklep.pl/produkt/royal-stain-remover-pianka;https://sonax.sklep.pl/produkt/royal-stain-remover-pianka;Roy000031;ten sam adres
+10670;roy000028;https://sonax.sklep.pl/produkt/royal-ro-180l-rovlon-5l-do-higienicznej-i-chirurgicznej-dezynfekcji-rak-i-powierzchni;https://sonax.sklep.pl/produkt/royal-ro-180l-rovlon-5l-do-higienicznej-i-chirurgicznej-dezynfekcji-rak-i-powierzchni;roy000028;ten sam adres
+10674;Roy000025;https://sonax.sklep.pl/produkt/royal-rokasat-37-mycie-sanitariatow;https://sonax.sklep.pl/produkt/royal-rokasat-37-mycie-sanitariatow;Roy000025;ten sam adres
+10677;Roy000023;https://sonax.sklep.pl/produkt/royal-200-sanicell-5l-plyn-do-usuwania-zapachu-z-kratek-ociekowych;https://sonax.sklep.pl/produkt/royal-200-sanicell-5l-plyn-do-usuwania-zapachu-z-kratek-ociekowych;Roy000023;ten sam adres
+10680;Roy000022;https://sonax.sklep.pl/produkt/royal-ro-180l-rovlon-80;https://sonax.sklep.pl/produkt/royal-ro-180l-rovlon-80;Roy000022;ten sam adres
+10682;Roy000010;https://sonax.sklep.pl/produkt/royal-mydlo-pianowe-jablkowe;https://sonax.sklep.pl/produkt/royal-mydlo-pianowe-jablkowe;Roy000010;ten sam adres
+10685;Roy000008;https://sonax.sklep.pl/produkt/royal-132-wc-cm-usuwanie-kamienia-rdzy;https://sonax.sklep.pl/produkt/royal-132-wc-cm-usuwanie-kamienia-rdzy;Roy000008;ten sam adres
+10694;roy000003;https://sonax.sklep.pl/produkt/royal-ro-5-glasreiniger-5l;https://sonax.sklep.pl/produkt/royal-ro-5-glasreiniger-5l;roy000003;ten sam adres
+10697;Roy000002;https://sonax.sklep.pl/produkt/royal-cleaner-magic-nektarynka-plyn-5l;https://sonax.sklep.pl/produkt/royal-cleaner-magic-nektarynka-plyn-5l;Roy000002;ten sam adres
+10700;ROY000001;https://sonax.sklep.pl/produkt/royal-17-cleaner-5l-preparat-czyszczacy-na-bazie-mydla;https://sonax.sklep.pl/produkt/royal-17-cleaner-5l-preparat-czyszczacy-na-bazie-mydla;roy000001;ten sam adres
+10704;ROY000012;https://sonax.sklep.pl/produkt/odswiezacz-powietrza-royal-siciliano;https://sonax.sklep.pl/produkt/odswiezacz-powietrza-royal-siciliano;ROY000012;ten sam adres
+11106;TEN000094;https://sonax.sklep.pl/produkt/tenzi-truck-clean-20l-silna-aktywna-piana-do-mycia-ciezarowek-silnikow-plandek;https://sonax.sklep.pl/produkt/tenzi-truck-clean-20l-silna-aktywna-piana-do-mycia-ciezarowek-silnikow-plandek;TEN000094;ten sam adres
+11455;SON000068;https://sonax.sklep.pl/produkt/sonax-odplamiacz-do-tapicerki-i-alcantary-300ml-252200;https://sonax.sklep.pl/produkt/sonax-odplamiacz-do-tapicerki-i-alcantary-300ml-252200;SON000068;ten sam adres
+10937;INNE0508;https://sonax.sklep.pl/produkt/kij-do-miotly-120-cm-plastikowy-karbowany;https://sonax.sklep.pl/produkt/kij-do-miotly-120-cm-plastikowy-karbowany;INNE0508;ten sam adres
+11197;TEN000059;https://sonax.sklep.pl/produkt/tenzi-mud-off-1l-czyszczenie-i-pielegnacja-motocykli-quadow-i-samochodow-terenowych;https://sonax.sklep.pl/produkt/tenzi-mud-off-1l-czyszczenie-i-pielegnacja-motocykli-quadow-i-samochodow-terenowych;TEN000059;ten sam adres
+11203;TEN000058;https://sonax.sklep.pl/produkt/tenzi-mosquitos-1l-usuwanie-resztek-owadow-z-karoserii;https://sonax.sklep.pl/produkt/tenzi-mosquitos-1l-usuwanie-resztek-owadow-z-karoserii;TEN000058;ten sam adres
+11209;TEN000119;https://sonax.sklep.pl/produkt/tenzi-lustra-1l-plyn-do-mycia-szyb-czysci-i-nablyszcza;https://sonax.sklep.pl/produkt/tenzi-lustra-1l-plyn-do-mycia-szyb-czysci-i-nablyszcza;TEN000119;ten sam adres
+11211;TEN000057;https://sonax.sklep.pl/produkt/tenzi-leder-care-600ml-preparat-do-pielegnacji-skory-naturalnej-i-sztucznej;https://sonax.sklep.pl/produkt/tenzi-leder-care-600ml-preparat-do-pielegnacji-skory-naturalnej-i-sztucznej;TEN000057;ten sam adres
+11216;TEN000107;https://sonax.sklep.pl/produkt/tenzi-kabiny-prysznicowe-srodek-do-czyszczenia-kabin-prysznicowych-5l;https://sonax.sklep.pl/produkt/tenzi-kabiny-prysznicowe-srodek-do-czyszczenia-kabin-prysznicowych-5l;TEN000107;ten sam adres
+11218;TEN000006;https://sonax.sklep.pl/produkt/tenzi-kabiny-prysznicowe-srodek-do-czyszczenia-kabin-prysznicowych-1l;https://sonax.sklep.pl/produkt/tenzi-kabiny-prysznicowe-srodek-do-czyszczenia-kabin-prysznicowych-1l;TEN000006;ten sam adres
+11224;TEN000054;https://sonax.sklep.pl/produkt/tenzi-gran-smog-1l-czyszczenie-wedzarni-piekarnikow-kuchenek-2;https://sonax.sklep.pl/produkt/tenzi-gran-smog-1l-czyszczenie-wedzarni-piekarnikow-kuchenek-2;TEN000054;ten sam adres
+11226;TEN000051;https://sonax.sklep.pl/produkt/tenzi-glass-1l-mycie-szyb-luster-reflektorow-koncentrat;https://sonax.sklep.pl/produkt/tenzi-glass-1l-mycie-szyb-luster-reflektorow-koncentrat;TEN000051;ten sam adres
+11231;TEN000120;https://sonax.sklep.pl/produkt/tenci-cabrio-prot-600ml-plyn-do-konserwacji-dachow-cabrio;https://sonax.sklep.pl/produkt/tenci-cabrio-prot-600ml-plyn-do-konserwacji-dachow-cabrio;TEN000120;ten sam adres
+11233;TEN000024;https://sonax.sklep.pl/produkt/tenzi-brudex-plyn-odtluszczajacy-do-usuwania-plam-1l;https://sonax.sklep.pl/produkt/tenzi-brudex-plyn-odtluszczajacy-do-usuwania-plam-1l;TEN000024;ten sam adres
+11236;TEN000118;https://sonax.sklep.pl/produkt/tenzi-boberex-lemon-koncentrat-do-mycia-naczyn-1l;https://sonax.sklep.pl/produkt/tenzi-boberex-lemon-koncentrat-do-mycia-naczyn-1l;TEN000118;ten sam adres
+11238;TEN000110;https://sonax.sklep.pl/produkt/tenzi-boberex-5l-skoncentrowany-plyn-do-recznego-mycia-naczyn-2;https://sonax.sklep.pl/produkt/tenzi-boberex-5l-skoncentrowany-plyn-do-recznego-mycia-naczyn-2;TEN000110;ten sam adres
+11240;TEN000109;https://sonax.sklep.pl/produkt/tenzi-apc-out-plyn-do-mycia-elewacji-5l;https://sonax.sklep.pl/produkt/tenzi-apc-out-plyn-do-mycia-elewacji-5l;TEN000109;ten sam adres
+11243;TEN000108;https://sonax.sklep.pl/produkt/tenzi-apc-out-plyn-do-mycia-elewacji-1l;https://sonax.sklep.pl/produkt/tenzi-apc-out-plyn-do-mycia-elewacji-1l;TEN000108;ten sam adres
+11527;DET000110;https://sonax.sklep.pl/produkt/menzerna-metal-polish-125g-pasta-do-metalu;https://sonax.sklep.pl/produkt/menzerna-metal-polish-125g-pasta-do-metalu;DET000110;ten sam adres
+11531;DET000118;https://sonax.sklep.pl/produkt/menzerna-2000-medium-cut-pasta-polerska;https://sonax.sklep.pl/produkt/menzerna-2000-medium-cut-pasta-polerska;DET000118;ten sam adres
+11535;DET000117;https://sonax.sklep.pl/produkt/menzerna-sealant-w-sprayu-250ml;https://sonax.sklep.pl/produkt/menzerna-sealant-w-sprayu-250ml;DET000117;ten sam adres
+11544;SJD0010;https://sonax.sklep.pl/produkt/sjd-zmywacz-cytrusowy-400ml;https://sonax.sklep.pl/produkt/sjd-zmywacz-cytrusowy-400ml;SJD0010;ten sam adres
+11549;K2000042;https://sonax.sklep.pl/produkt/k2-klej-szybkoschnacy-uniwersalny-bondix-3g;https://sonax.sklep.pl/produkt/k2-klej-szybkoschnacy-uniwersalny-bondix-3g;K2000042;ten sam adres
+11572;FOE000001;https://sonax.sklep.pl/produkt/foen-perfumy-samochodowe-boss-200ml;https://sonax.sklep.pl/produkt/foen-perfumy-samochodowe-boss-200ml;FOE000001;ten sam adres
+11580;INNE0540;https://sonax.sklep.pl/produkt/moje-auto-koncentrat-letniego-plynu-do-spryskiwaczy-250ml;https://sonax.sklep.pl/produkt/moje-auto-koncentrat-letniego-plynu-do-spryskiwaczy-250ml;INNE0540;ten sam adres
+11635;son000096;https://sonax.sklep.pl/produkt/sonax-profiline-perfect-finish-1-l-4-6-224300-politura-wysoki-polysk;https://sonax.sklep.pl/produkt/sonax-profiline-perfect-finish-1-l-4-6-224300-politura-wysoki-polysk;son000096;ten sam adres
+11660;INNE0496;https://sonax.sklep.pl/produkt/quixx-light-zestaw-do-odnawiania-reflektorow;https://sonax.sklep.pl/produkt/quixx-light-zestaw-do-odnawiania-reflektorow;INNE0496;ten sam adres
+11738;K2000015;https://sonax.sklep.pl/produkt/k2-tapis-pianka-750-ml-pianka-do-czyszczenia-tapicerki-materialowej;https://sonax.sklep.pl/produkt/k2-tapis-pianka-750-ml-pianka-do-czyszczenia-tapicerki-materialowej;K2000015;ten sam adres
+11748;CART0135;https://sonax.sklep.pl/produkt/cartec-glass-cleaner-xl-1l;https://sonax.sklep.pl/produkt/cartec-glass-cleaner-xl-1l;CART0135;ten sam adres
+11752;INNE0554;https://sonax.sklep.pl/produkt/domestos-750-ml-plyn-do-czyszczenia-i-dezynfekcji-urzadzen-sanitarnych;;INNE0554;nie ma w nowym sklepie
+11770;K2000024;https://sonax.sklep.pl/produkt/k2-akra-engine-parts-cleaner-750ml-usuwa-ciezkie-zabrudzenia;https://sonax.sklep.pl/produkt/k2-akra-engine-parts-cleaner-750ml-usuwa-ciezkie-zabrudzenia;K2000024;ten sam adres
+11849;INNE0526;https://sonax.sklep.pl/produkt/k2-evos-boss-perfumy-do-samochodu-50ml-meski-zapach;https://sonax.sklep.pl/produkt/k2-evos-boss-perfumy-do-samochodu-50ml-meski-zapach;k2000060;ten sam adres, inne SKU
+11895;DET000115;https://sonax.sklep.pl/produkt/meguiars-gold-class-carnauba-plus-premium-paste-wax-311g-wosk-samochodowy-w-pascie-2;https://sonax.sklep.pl/produkt/meguiars-gold-class-carnauba-plus-premium-paste-wax-311g-wosk-samochodowy-w-pascie-2;DET000115;ten sam adres
+11899;son000141;https://sonax.sklep.pl/produkt/sonax-profiline-headlight-coating-50ml-276541-zabezpieczenie-reflektorow;https://sonax.sklep.pl/produkt/sonax-profiline-headlight-coating-zabezpieczenie-kloszy-reflektorow-12-miesiecy-276541;son000141;adres się zmienił
+11911;Son000038;https://sonax.sklep.pl/produkt/sonax-profiline-fs-05-04-pasta-polerska-250-ml-319141-2;https://sonax.sklep.pl/produkt/sonax-profiline-fs-05-04-pasta-polerska-250-ml-319141-2;Son000038;ten sam adres
+11990;TEN000095;https://sonax.sklep.pl/produkt/tenzi-truck-clean-5l-silna-aktywna-piana-do-mycia-ciezarowek-silnikow-plandek;https://sonax.sklep.pl/produkt/tenzi-truck-clean-5l-silna-aktywna-piana-do-mycia-ciezarowek-silnikow-plandek;TEN000095;ten sam adres
+12034;EAS000002;https://sonax.sklep.pl/produkt/easy-wash-alu-cleaner-100-20l-preparat-do-mycia-aluminium;https://sonax.sklep.pl/produkt/easy-wash-alu-cleaner-100-20l-preparat-do-mycia-aluminium;EAS000002;ten sam adres
+12110;Son000137;https://sonax.sklep.pl/produkt/sonax-szczotka-do-czyszczenia-tapicerki-i-skory-416741;https://sonax.sklep.pl/produkt/sonax-szczotka-do-czyszczenia-tapicerki-i-skory-416741;Son000137;ten sam adres
+12159;Son000115;https://sonax.sklep.pl/produkt/sonax-ircha-syntetyczna-417700;https://sonax.sklep.pl/produkt/sonax-ircha-syntetyczna-417700;Son000115;ten sam adres
+12247;TEN000001;https://sonax.sklep.pl/produkt/tenzi-truck-clean-10l-silna-aktywna-piana-do-mycia-ciezarowek-silnikow-plandek-2;https://sonax.sklep.pl/produkt/tenzi-truck-clean-10l-silna-aktywna-piana-do-mycia-ciezarowek-silnikow-plandek;TEN000001;adres się zmienił
+12327;TEN00010;https://sonax.sklep.pl/produkt/tenzi-boberex-5l-skoncentrat-do-recznego-mycia-naczyn;https://sonax.sklep.pl/produkt/tenzi-boberex-5l-skoncentrowany-plyn-do-recznego-mycia-naczyn-2;TEN000110;stary dubel, jest nowy adres
+12355;INNE0498;https://sonax.sklep.pl/produkt/cardos-pochlaniacz-wilgoci;https://sonax.sklep.pl/produkt/cardos-pochlaniacz-wilgoci;INNE0498;ten sam adres
+12371;KWAZ0023;https://sonax.sklep.pl/produkt/kwazar-venus-super-acid-opryskiwacz-15-l-wtv-1196;https://sonax.sklep.pl/produkt/kwazar-venus-super-acid-opryskiwacz-15-l-wtv-1196;KWAZ0023;ten sam adres
+12403;K2000035;https://sonax.sklep.pl/produkt/k2-szczotka-do-mycia-felg-niebieska-2;https://sonax.sklep.pl/produkt/k2-szczotka-do-mycia-felg-niebieska-2;K2000035;ten sam adres
+12451;SOF000058;https://sonax.sklep.pl/produkt/plak-forclean-czysty-silnik-750-ml-preparat-do-mycia-silnika;https://sonax.sklep.pl/produkt/plak-forclean-czysty-silnik-750-ml-preparat-do-mycia-silnika;SOF000058;ten sam adres
+12454;ATAS0044;https://sonax.sklep.pl/produkt/plak-sciereczki-do-szyb-i-luster-cytryna-z-limonka-24-szt-2;https://sonax.sklep.pl/produkt/plak-sciereczki-do-szyb-i-luster-cytryna-z-limonka-24-szt-2;ATAS0044;ten sam adres
+12469;8002424000989;https://sonax.sklep.pl/produkt/plak-pianka-do-tapicerki-i-dywanow-500ml-aktywna-pianka-do-czyszczenia;https://sonax.sklep.pl/produkt/plak-pianka-do-tapicerki-i-dywanow-500ml-aktywna-pianka-do-czyszczenia;ATAS0186;ten sam adres, inne SKU
+12503;TEN000049;https://sonax.sklep.pl/produkt/tenzi-ds-1-gt-plyn-do-dezynfekcji-powierzchni-w-gastronomi-gotowy-do-uzycia-1l;https://sonax.sklep.pl/produkt/tenzi-ds-1-gt-plyn-do-dezynfekcji-powierzchni-w-gastronomi-gotowy-do-uzycia-1l;TEN000049;ten sam adres
+12597;INNE0602;https://sonax.sklep.pl/produkt/krypton-cynk-naprawczy-500ml-naprawa-powierzchni-stali-galwanizowanej;https://sonax.sklep.pl/produkt/krypton-cynk-naprawczy-500ml-naprawa-powierzchni-stali-galwanizowanej;INNE0602;ten sam adres
+12599;INNE0504;https://sonax.sklep.pl/produkt/krypton-pasta-do-mycia-rak-silnie-zabrudzonych-hand-cleaner-750-ml;https://sonax.sklep.pl/produkt/krypton-pasta-do-mycia-rak-silnie-zabrudzonych-hand-cleaner-750-ml;INNE0504;ten sam adres
+12604;INNE0604;https://sonax.sklep.pl/produkt/krypton-czysciwo-wlokninowe-111mb-detailer-300-bezpylowe;https://sonax.sklep.pl/produkt/krypton-czysciwo-wlokninowe-111mb-detailer-300-bezpylowe;INNE0604;ten sam adres
+12619;INNE0484;https://sonax.sklep.pl/produkt/agachem-odor-stop-preparat-do-neutralizacji-nieprzyjemnych-zapachow;https://sonax.sklep.pl/produkt/agachem-odor-stop-preparat-do-neutralizacji-nieprzyjemnych-zapachow;INNE0484;ten sam adres
+12621;EAS000027;https://sonax.sklep.pl/produkt/easy-wash-eco-super-active-koncentrat-bezdotykowe-mycie-auta;https://sonax.sklep.pl/produkt/easy-wash-eco-super-active-koncentrat-bezdotykowe-mycie-auta;EAS000027;ten sam adres
+12625;EAS000033;https://sonax.sklep.pl/produkt/easy-wash-window-cleaner-1l-preparat-do-mycia-szyb;https://sonax.sklep.pl/produkt/easy-wash-window-cleaner-1l-preparat-do-mycia-szyb;EAS000033;ten sam adres
+12635;TEN000004;https://sonax.sklep.pl/produkt/koncentrat-do-mycia-posadzek-z-alkoholem;https://sonax.sklep.pl/produkt/koncentrat-do-mycia-posadzek-z-alkoholem;TEN000004;ten sam adres
+12644;INNE0506;https://sonax.sklep.pl/produkt/shine-chemicals-black-car-cosmetics-vinyl-p-preparat-do-konserwacji-opon-i-tworzyw-sztucznych;https://sonax.sklep.pl/produkt/shine-chemicals-black-car-cosmetics-vinyl-p-preparat-do-konserwacji-opon-i-tworzyw-sztuczn;INNE0506;adres się zmienił
+12685;TEN000015;https://sonax.sklep.pl/produkt/tenzi-sapone-paradise-coco-biale-mydlo-w-plynie-o-zapachu-kokosowym-05l;https://sonax.sklep.pl/produkt/tenzi-sapone-paradise-coco-biale-mydlo-w-plynie-o-zapachu-kokosowym-05l;TEN000015;ten sam adres
+12743;TEST-P24-001;https://sonax.sklep.pl/produkt/test-platnosci-001-zl-nie-kupowac;;TEST-P24-001;nie ma w nowym sklepie
+12746;Roy000013;https://sonax.sklep.pl/produkt/royal-blue-magic-dodatek-do-toalet-wolnostojacych-20l;https://sonax.sklep.pl/produkt/royal-blue-magic-dodatek-do-toalet-wolnostojacych-20l;Roy000013;ten sam adres
+12749;Roy000014;https://sonax.sklep.pl/produkt/royal-blue-magic-dodatek-do-toalet-wolnostojacych-1l;https://sonax.sklep.pl/produkt/royal-blue-magic-dodatek-do-toalet-wolnostojacych-1l;Roy000014;ten sam adres
+12780;ROY000049;https://sonax.sklep.pl/produkt/royal-ro-2-1l-plyn-do-mycia-naczyn-dla-gastronomii-koncentrat-mieta;https://sonax.sklep.pl/produkt/royal-ro-2-1l-plyn-do-mycia-naczyn-dla-gastronomii-koncentrat-mieta;ROY000049;ten sam adres
+12784;ROY000051;https://sonax.sklep.pl/produkt/royal-ro-100-alcofloor-1l-antyposlizgowy-plyn-do-podlog;https://sonax.sklep.pl/produkt/royal-ro-100-alcofloor-1l-antyposlizgowy-plyn-do-podlog;ROY000051;ten sam adres
+12791;KRA000060;https://sonax.sklep.pl/produkt/soft99-luxury-leather-500-ml-czysci-i-odzywia-skore;https://sonax.sklep.pl/produkt/soft99-luxury-leather-500-ml-czysci-i-odzywia-skore;KRA000060;ten sam adres
+12793;KRA000027;https://sonax.sklep.pl/produkt/soft99-new-pitch-cleaner-420ml-wstepne-oczyszczanie-auta-smola-owady;https://sonax.sklep.pl/produkt/soft99-new-pitch-cleaner-420ml-wstepne-oczyszczanie-auta-smola-owady;KRA000027;ten sam adres
+12797;KRA000020;https://sonax.sklep.pl/produkt/soft99-nano-hard-clear-8ml-do-regeneracji-przezroczystego-plastiku;https://sonax.sklep.pl/produkt/soft99-nano-hard-clear-8ml-do-regeneracji-przezroczystego-plastiku;KRA000020;ten sam adres
+12801;KRA000067;https://sonax.sklep.pl/produkt/soft99-chrome-cleaner-niescierny-produkt-do-czyszczenie-chromow-125ml;https://sonax.sklep.pl/produkt/soft99-chrome-cleaner-niescierny-produkt-do-czyszczenie-chromow-125ml;KRA000067;ten sam adres
+12805;KRA000017;https://sonax.sklep.pl/produkt/soft99-glaco-de-cleaner-400ml-do-czyszczenia-szyb;https://sonax.sklep.pl/produkt/soft99-glaco-de-cleaner-400ml-do-czyszczenia-szyb;KRA000017;ten sam adres
+12810;KRA000055;https://sonax.sklep.pl/produkt/soft99-glaco-dx-110ml-niewidzialna-wycieraczka;https://sonax.sklep.pl/produkt/soft99-glaco-dx-110ml-niewidzialna-wycieraczka;KRA000055;ten sam adres
+12814;KRA000019;https://sonax.sklep.pl/produkt/soft99-glaco-roll-on-large-120ml-powloka-do-szyb;https://sonax.sklep.pl/produkt/soft99-glaco-roll-on-large-120ml-powloka-do-szyb;KRA000019;ten sam adres
+12820;KRA000018;https://sonax.sklep.pl/produkt/soft99-glaco-glass-compound-roll-on-do-czyszczenia-szyb;https://sonax.sklep.pl/produkt/soft99-glaco-glass-compound-roll-on-do-czyszczenia-szyb;KRA000018;ten sam adres
+12823;KRA000062;https://sonax.sklep.pl/produkt/soft99-glass-compound-z-100ml-preparat-do-czyszczenia-szyb;https://sonax.sklep.pl/produkt/soft99-glass-compound-z-100ml-preparat-do-czyszczenia-szyb;KRA000062;ten sam adres
+12826;KRA000059;https://sonax.sklep.pl/produkt/soft99-pedzel-czerwony-16-24mm-pedzel-do-mycia-felg;https://sonax.sklep.pl/produkt/soft99-pedzel-czerwony-16-24mm-pedzel-do-mycia-felg;KRA000059;ten sam adres
+12829;KRA000056;https://sonax.sklep.pl/produkt/soft99-pedzel-czerwony-8-18mm-pedzel-do-mycia-felg;https://sonax.sklep.pl/produkt/soft99-pedzel-czerwony-8-18mm-pedzel-do-mycia-felg;KRA000056;ten sam adres
+140;INNE0471;https://sonax.sklep.pl/produkt/pianka-tuff-stuff-do-czyszczenia-tapicerki;https://sonax.sklep.pl/produkt/pianka-tuff-stuff-do-czyszczenia-tapicerki;INNE0471;ten sam adres
+150;;https://sonax.sklep.pl/produkt/plak-sciereczki-do-kokpitu-matowe-grejpfrut-24-szt;https://sonax.sklep.pl/produkt/plak-sciereczki-do-szyb-i-luster-cytryna-z-limonka-24-szt-2;ATAS0044;stary dubel, jest nowy adres
+227;ATAS0190;https://sonax.sklep.pl/produkt/autobella-lavaincera-szampon-z-woskiem-do-mycia-recznego-10kg;https://sonax.sklep.pl/produkt/autobella-lavaincera-szampon-z-woskiem-do-mycia-recznego-10kg;ATAS0190;ten sam adres
+231;ATAS0159;https://sonax.sklep.pl/produkt/lacer-preparat-do-mycia-felg-10-kg;https://sonax.sklep.pl/produkt/lacer-preparat-do-mycia-felg-10-kg;ATAS0159;ten sam adres
+386;K2000041;https://sonax.sklep.pl/produkt/k2-abra-pasta-do-mycia-rak-5-l;https://sonax.sklep.pl/produkt/k2-abra-pasta-do-mycia-rak-5-l;K2000041;ten sam adres
+388;ATAS0156;https://sonax.sklep.pl/produkt/k2-bold-preparat-do-nablyszczania-opon-5l;https://sonax.sklep.pl/produkt/k2-bold-preparat-do-nablyszczania-opon-5l;ATAS0156;ten sam adres
+491;NER000017;https://sonax.sklep.pl/produkt/nerta-active-diamond-foam-25-l-piana-aktywna;https://sonax.sklep.pl/produkt/nerta-active-diamond-foam-25-l-piana-aktywna;Ner000017;ten sam adres
+495;NER000016;https://sonax.sklep.pl/produkt/nerta-anti-insect-5-l-preparat-do-usuwania-owadow;https://sonax.sklep.pl/produkt/nerta-anti-insect-5-l-preparat-do-usuwania-owadow;Ner000016;ten sam adres
+523;Ner000005;https://sonax.sklep.pl/produkt/nerta-sky-we-64-5l-aktywna-piana;https://sonax.sklep.pl/produkt/nerta-sky-we-64-5l-aktywna-piana;Ner000005;ten sam adres
+540;ATAS0118;https://sonax.sklep.pl/produkt/rain-x-zapobiega-zaparowaniu-szyb-i-lusterek-200-ml;https://sonax.sklep.pl/produkt/rain-x-zapobiega-zaparowaniu-szyb-i-lusterek-200-ml;ATAS0118;ten sam adres
+564;ROY000040;https://sonax.sklep.pl/produkt/royal-clean-magic-preparat-do-mycia-posadzek-siciliano-5-l;https://sonax.sklep.pl/produkt/royal-clean-magic-preparat-do-mycia-posadzek-siciliano-5-l;Roy000040;ten sam adres
+712;TEN000047;https://sonax.sklep.pl/produkt/tenzi-detailer-skora-pielegnacja-600ml-czysci-i-impregnuje-skorzana-tapicerke;https://sonax.sklep.pl/produkt/tenzi-detailer-skora-pielegnacja-600ml-czysci-i-impregnuje-skorzana-tapicerke;TEN000047;ten sam adres
+744;;https://sonax.sklep.pl/produkt/tenzi-gran-smog-1l-czyszczenie-wedzarni-piekarnikow-kuchenek;https://sonax.sklep.pl/produkt/tenzi-gran-smog-1l-czyszczenie-wedzarni-piekarnikow-kuchenek-2;TEN000054;stary dubel, jest nowy adres
+775;TEN000066;https://sonax.sklep.pl/produkt/tenzi-office-clean-spray-1l-preparat-do-pielegnacji-wnetrz;https://sonax.sklep.pl/produkt/tenzi-office-clean-spray-1l-preparat-do-pielegnacji-wnetrz;TEN000066;ten sam adres
+825;TEN000028;https://sonax.sklep.pl/produkt/tenzi-super-green-specjal-nf-10l-usuwanie-zanieczyszczen-ropopochodnych;https://sonax.sklep.pl/produkt/tenzi-super-green-specjal-nf-10l-usuwanie-zanieczyszczen-ropopochodnych;TEN000028;ten sam adres
+829;TEN000080;https://sonax.sklep.pl/produkt/tenzi-super-green-specjal-nf-1l-usuwanie-zanieczyszczen-ropopochodnych;https://sonax.sklep.pl/produkt/tenzi-super-green-specjal-nf-1l-usuwanie-zanieczyszczen-ropopochodnych;TEN000080;ten sam adres
+977;Son000026;https://sonax.sklep.pl/produkt/sonax-politura-250-ml-300-100;https://sonax.sklep.pl/produkt/sonax-politura-250-ml-300-100;Son000026;ten sam adres
+1170;SON000110;https://sonax.sklep.pl/produkt/sonax-szczotka-usuwania-siersci-491-400;https://sonax.sklep.pl/produkt/sonax-szczotka-usuwania-siersci-491-400;son000110;ten sam adres
+1178;Son000023;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-nanopro-czerwony-500-ml-296-400;https://sonax.sklep.pl/produkt/sonax-wosk-koloryzujacy-nanopro-czerwony-500-ml-296-400;Son000023;ten sam adres
+1685;TEN000033;https://sonax.sklep.pl/produkt/tenzi-alux-5l-kwasowy-koncentrat-czyszczenia-felg;https://sonax.sklep.pl/produkt/tenzi-alux-5l-kwasowy-koncentrat-czyszczenia-felg;TEN000033;ten sam adres
+1928;EAS000004;https://sonax.sklep.pl/produkt/easy-wash-vinyl-outside-protect-5l-preparat-nablyszczania-gumy-plastiku;https://sonax.sklep.pl/produkt/easy-wash-vinyl-outside-protect-5l-preparat-nablyszczania-gumy-plastiku;EAS000004;ten sam adres
+2345;Son000093;https://sonax.sklep.pl/produkt/sonax-pasta-naprawcza-tlumikow-200g-553-100;https://sonax.sklep.pl/produkt/sonax-pasta-naprawcza-tlumikow-200g-553-100;Son000093;ten sam adres
+2347;Son000094;https://sonax.sklep.pl/produkt/sonax-zestaw-naprawczy-tlumikow-553-141;https://sonax.sklep.pl/produkt/sonax-zestaw-naprawczy-tlumikow-553-141;Son000094;ten sam adres
+2610;Son000089;https://sonax.sklep.pl/produkt/sonax-professional-zmywacz-hamulcow-400ml-483-341;https://sonax.sklep.pl/produkt/sonax-professional-zmywacz-hamulcow-400ml-483-341;Son000089;ten sam adres
+2629;NER000011;https://sonax.sklep.pl/produkt/nerta-wheelshine-super-5l-zasadowy-preparat-mycia-felg;https://sonax.sklep.pl/produkt/nerta-wheelshine-super-5l-zasadowy-preparat-mycia-felg;Ner000011;ten sam adres
+2762;KWAZ0018;https://sonax.sklep.pl/produkt/kwazar-zespol-koncowki-lancy;https://sonax.sklep.pl/produkt/kwazar-zespol-koncowki-lancy;KWAZ0018;ten sam adres
+2887;;https://sonax.sklep.pl/produkt/tenzi-steel-shine-600ml-nablyszczacz-stali-nierdzewnej;;;nie ma w nowym sklepie
+3363;INNE0516;https://sonax.sklep.pl/produkt/clinex-fast-plast-1l-czyszczenia-plastiku-77-695;https://sonax.sklep.pl/produkt/clinex-fast-plast-1l-czyszczenia-plastiku-77-695;INNE0516;ten sam adres
+3365;INNE0514;https://sonax.sklep.pl/produkt/clinex-floral-blush-1l;https://sonax.sklep.pl/produkt/clinex-floral-blush-1l;INNE0514;ten sam adres
+3386;INNE0515;https://sonax.sklep.pl/produkt/clinex-m3acid-1-l-kwasny-preparat-mycia-posadzek-77-696;https://sonax.sklep.pl/produkt/clinex-m3acid-1-l-kwasny-preparat-mycia-posadzek-77-696;INNE0515;ten sam adres
+3545;TEN000022;https://sonax.sklep.pl/produkt/tenzi-betorast-5l-usuwanie-rdzy-kamienia-betonu-pojazdow-koncentrat;https://sonax.sklep.pl/produkt/tenzi-betorast-5l-usuwanie-rdzy-kamienia-betonu-pojazdow-koncentrat;TEN000022;ten sam adres
+4019;son000078;https://sonax.sklep.pl/produkt/sonax-profiline-waterspot-remover-usuwanie-sladow-twardej-wodzie-1l-275300;https://sonax.sklep.pl/produkt/sonax-profiline-waterspot-remover-usuwanie-sladow-twardej-wodzie-1l-275300;son000078;ten sam adres
+4300;;https://sonax.sklep.pl/produkt/odplamiacz-do-tapicerki-i-alcantary-300ml-252200;https://sonax.sklep.pl/produkt/sonax-odplamiacz-do-tapicerki-i-alcantary-300ml-252200;SON000068;stary dubel, jest nowy adres
+5092;ADB000023;https://sonax.sklep.pl/produkt/adbl-tickler-okragly-aplikator-z-mikrofibry;https://sonax.sklep.pl/produkt/adbl-tickler-okragly-aplikator-z-mikrofibry;ADB000023;ten sam adres
+5099;;https://sonax.sklep.pl/produkt/adbl-vampire-liquid-1l-mycie-felg-i-karoserii;;;nie ma w nowym sklepie
+5118;ADB000010;https://sonax.sklep.pl/produkt/adbl-bonnet-1l-czyszczenie-podsufitki-i-tapicerki;https://sonax.sklep.pl/produkt/adbl-bonnet-1l-czyszczenie-podsufitki-i-tapicerki;ADB000010;ten sam adres
+5370;ADB000013;https://sonax.sklep.pl/produkt/adbl-hybrid-glass-500ml-plyn-do-mycia-z-niewidzialna-wycieraczka;https://sonax.sklep.pl/produkt/adbl-hybrid-glass-500ml-plyn-do-mycia-z-niewidzialna-wycieraczka;ADB000013;ten sam adres
+5377;ADB000012;https://sonax.sklep.pl/produkt/adbl-ceramic-qd-500ml-syntetyczny-quick-detailer-do-lakieru;https://sonax.sklep.pl/produkt/adbl-ceramic-qd-500ml-syntetyczny-quick-detailer-do-lakieru;ADB000012;ten sam adres
+6187;son000132;https://sonax.sklep.pl/produkt/sonax-car-wash-shampoo-havana-2l;https://sonax.sklep.pl/produkt/sonax-car-wash-shampoo-havana-2l;son000132;ten sam adres
+6349;ADB000002;https://sonax.sklep.pl/produkt/adbl-mr-gray-towel-recznik-mikrofibra;https://sonax.sklep.pl/produkt/adbl-mr-gray-towel-recznik-mikrofibra;ADB000002;ten sam adres
+6413;;https://sonax.sklep.pl/produkt/adbl-roller-one-step-da-125-pomaranczowy;;;nie ma w nowym sklepie
+6675;INNE0536;https://sonax.sklep.pl/produkt/clinex-grill-1-l;https://sonax.sklep.pl/produkt/clinex-grill-1-l;INNE0536;ten sam adres
+6994;TEN000087;https://sonax.sklep.pl/produkt/tenzi-tfc-coating-1l;https://sonax.sklep.pl/produkt/tenzi-tfc-coating-1l;TEN000087;ten sam adres
+7480;;https://sonax.sklep.pl/produkt/k2-evos-boss-perfumy-zawieszka-drewniana;;;nie ma w nowym sklepie
+7650;;https://sonax.sklep.pl/produkt/autobella-1l-szampon-mycia-samochodu;https://sonax.sklep.pl/produkt/autobella-szampon-woskiem-1l;ATAS0171;stary dubel, jest nowy adres
+7665;;https://sonax.sklep.pl/produkt/quixx-zestaw-naprawczy-skory;;;nie ma w nowym sklepie
+7739;;https://sonax.sklep.pl/produkt/sonax-profiline-cc36-ceramic-coating-gloss-coat-2-210ml-236241;;;nie ma w nowym sklepie
+7928;TEN000045;https://sonax.sklep.pl/produkt/tenzi-detailer-quartz-reloader-300ml;https://sonax.sklep.pl/produkt/tenzi-detailer-quartz-reloader-300ml;TEN000045;ten sam adres
+8145;son000121;https://sonax.sklep.pl/produkt/sonax-xtreme-ppf-vinyl-detailer-500-ml;https://sonax.sklep.pl/produkt/sonax-xtreme-ppf-vinyl-detailer-500-ml;son000121;ten sam adres
+8299;;https://sonax.sklep.pl/produkt/royal-air-magic-1l-odswiezacz-powietrza;;;nie ma w nowym sklepie
+8850;INNE0501;https://sonax.sklep.pl/produkt/prestone-zimowy-plyn-spryskiwaczy-20c-4l;;INNE0501;nie ma w nowym sklepie
+11149;TEN000081;https://sonax.sklep.pl/produkt/tenzi-super-green-specjal-nf-plyn-do-mycia-posadzek-warsztatowych-5l;https://sonax.sklep.pl/produkt/tenzi-super-green-specjal-nf-plyn-do-mycia-posadzek-warsztatowych-5l;TEN000081;ten sam adres
+10496;k2000060;https://sonax.sklep.pl/produkt/k2-evos-boss-perfumy-50ml-perfumy-samochodowe;https://sonax.sklep.pl/produkt/k2-evos-boss-perfumy-do-samochodu-50ml-meski-zapach;k2000060;adres się zmienił
+10501;k2000061;https://sonax.sklep.pl/produkt/k2-evos-hunter-perfumy-50ml-perfumy-samochodowe;https://sonax.sklep.pl/produkt/k2-evos-hunter-perfumy-50ml-perfumy-samochodowe;k2000061;ten sam adres
+10687;Roy000005;https://sonax.sklep.pl/produkt/royal-air-magic-5l-green-tea;https://sonax.sklep.pl/produkt/royal-air-magic-5l-green-tea;Roy000005;ten sam adres
+10691;roy000004;https://sonax.sklep.pl/produkt/royal-air-magic-5l-odswiezacz-powietrza-nektarynka;https://sonax.sklep.pl/produkt/royal-air-magic-5l-odswiezacz-powietrza-nektarynka;roy000004;ten sam adres
+10706;ten000002;https://sonax.sklep.pl/produkt/tenzi-mikrofibra-na-rolce-20-szt-niebieska;https://sonax.sklep.pl/produkt/tenzi-mikrofibra-na-rolce-20-szt-niebieska;ten000002;ten sam adres
+10725;DAF000132;https://sonax.sklep.pl/produkt/cilit-bang-spray-zero-kamienia-750ml-usuwa-kamien-i-rdze;https://sonax.sklep.pl/produkt/cilit-bang-spray-zero-kamienia-750ml-usuwa-kamien-i-rdze;DAF000132;ten sam adres
+11607;TEN000031;https://sonax.sklep.pl/produkt/tenzi-top-efekt-sanit-5l-codzienne-mycie-pomieszczen-i-urzadzen-sanitarnych-2;https://sonax.sklep.pl/produkt/tenzi-top-efekt-sanit-5l-codzienne-mycie-pomieszczen-i-urzadzen-sanitarnych-2;TEN000031;ten sam adres
+11845;K2000001;https://sonax.sklep.pl/produkt/k2-mikrofibra-flossy-pro-recznik-z-mikrofibry-do-osuszania-lakieru;https://sonax.sklep.pl/produkt/k2-mikrofibra-flossy-pro-recznik-z-mikrofibry-do-osuszania-lakieru;K2000001;ten sam adres
+12607;INNE0603;https://sonax.sklep.pl/produkt/krypton-do-regeneracji-lamp-samochodowych-400ml;https://sonax.sklep.pl/produkt/krypton-do-regeneracji-lamp-samochodowych-400ml;INNE0603;ten sam adres
+12627;TEN000043;https://sonax.sklep.pl/produkt/tenzi-detailer-carnauba-wax-wosk-carnauba-do-samochodu-zabezpieczenie-karoserii-03l;https://sonax.sklep.pl/produkt/tenzi-detailer-carnauba-wax-wosk-carnauba-do-samochodu-zabezpieczenie-karoserii-03l;TEN000043;ten sam adres
+12642;ATAS0196;https://sonax.sklep.pl/produkt/dr-marcus-zawieszka-zapachowa-sonic-mix;https://sonax.sklep.pl/produkt/dr-marcus-zawieszka-zapachowa-sonic-mix;ATAS0196;ten sam adres
+12692;TEN000014;https://sonax.sklep.pl/produkt/tenzi-sapone-paradise-coco-biale-mydlo-w-plynie-o-zapachu-kokosowym-5l;https://sonax.sklep.pl/produkt/tenzi-sapone-paradise-coco-biale-mydlo-w-plynie-o-zapachu-kokosowym-5l;TEN000014;ten sam adres

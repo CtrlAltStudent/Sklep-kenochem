@@ -5,6 +5,7 @@ import { notFound, permanentRedirect, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { ChevronDown } from "lucide-react";
 import { toCard, usableImages } from "@/lib/data";
+import { categoryPhoto } from "@/lib/photos";
 import { getByCategory, getCategoryCounts, getShopCategories } from "@/lib/catalog";
 import { findRedirect, getCms, getPosts } from "@/lib/cms";
 import { getLayout } from "@/integrations/vault";
@@ -12,6 +13,8 @@ import { ProductGrid } from "@/components/home/HomeBits";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Listing } from "@/components/Listing";
 import { RichContent } from "@/components/RichContent";
+import { JsonLd } from "@/components/JsonLd";
+import { siteBase } from "@/lib/site";
 
 export async function generateStaticParams() {
   return (await getShopCategories()).map((c) => ({ slug: c.slug }));
@@ -33,7 +36,7 @@ export async function generateMetadata(props: PageProps<"/kategoria/[slug]">): P
     : sub
       ? `${sub.name}: ${sub.types.slice(0, 6).map((t) => t.name.toLowerCase()).join(", ")}. Sklep SONAX Białystok – wysyłka w 24 h.`
       : `${c.name} – ${c.children.map((s) => s.name).join(", ")}. Sklep Sonax Białystok, wysyłka InPost.`;
-  return { title: name, description, alternates: { canonical } };
+  return { title: name, description, alternates: { canonical }, openGraph: { type: "website", siteName: "Sklep Sonax", locale: "pl_PL", title: name, description, images: [categoryPhoto[c.slug] || "/sonax/logo.png"] } };
 }
 
 async function getCategoryDescription(slug: string) {
@@ -69,6 +72,7 @@ export default async function CategoryPage(props: PageProps<"/kategoria/[slug]">
     ),
     description: description && (
       <section className="mt-16 rounded-xl bg-white p-6 ring-1 ring-brand-100 sm:p-10">
+        <h2 className="mb-4 text-2xl font-extrabold text-navy">O dziale: {category.name}</h2>
         <RichContent data={description} />
       </section>
     ),
@@ -87,8 +91,17 @@ export default async function CategoryPage(props: PageProps<"/kategoria/[slug]">
     ),
   };
 
+  const origin = siteBase();
   return (
     <div className="mx-auto max-w-shop px-4 pt-6">
+      <JsonLd data={[
+        { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Sklep", item: origin },
+          { "@type": "ListItem", position: 2, name: category.name, item: `${origin}/kategoria/${category.slug}` },
+        ] },
+        { "@context": "https://schema.org", "@type": "CollectionPage", name: category.name, url: `${origin}/kategoria/${category.slug}`,
+          mainEntity: { "@type": "ItemList", numberOfItems: items.length, itemListElement: items.slice(0, 24).map((p, i) => ({ "@type": "ListItem", position: i + 1, name: p.name, url: `${origin}/produkt/${p.slug}` })) } },
+      ]} />
       <Breadcrumbs items={[{ label: category.name }]} />
 
       <header className="mt-3 mb-5 border-b border-brand-100 pb-4">

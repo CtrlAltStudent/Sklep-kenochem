@@ -13,6 +13,7 @@ import { mergeLayout, type LayoutItem, type PageKind } from "@/lib/layoutSection
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { dataDir } from "@/lib/dataDir";
 import { defaultAuto, providers, type AutoSettings, type JobId, type JobRun, type ModuleId, type ModuleState } from "./registry";
 
 type VaultFile = {
@@ -25,6 +26,7 @@ type VaultFile = {
   layout?: Partial<Record<PageKind, LayoutItem[]>>; // układ sekcji stron (src/lib/layoutSections.ts)
   mail?: Partial<MailSettings>; // konfigurator maili (src/integrations/mail/catalog.ts)
   mailState?: MailState; // co już wysłały automaty (prośby o opinię)
+  googleReviews?: GoogleReviewsFile; // wybrane opinie z wizytówki, pokazywane na stronie głównej
   updatedAt?: string;
   updatedBy?: string;
 };
@@ -33,9 +35,7 @@ const empty = (): VaultFile => ({ secrets: {}, values: {}, auto: {}, runs: {} })
 
 export function vaultPath() {
   if (process.env.INTEGRATIONS_FILE) return path.resolve(process.env.INTEGRATIONS_FILE);
-  const db = process.env.DATABASE_URL ?? "file:./sonax.db";
-  if (db.startsWith("file:")) return path.join(path.dirname(path.resolve(db.slice(5))), "integrations.json");
-  return path.resolve("data/integrations.json");
+  return path.join(dataDir(), "integrations.json");
 }
 
 const cryptoKey = () => {
@@ -157,6 +157,34 @@ export function setMailSettings(next: MailSettings, by?: string) {
 // Prośby o opinię: id zamówienia → kiedy wysłano (wpisy starsze niż 120 dni są usuwane)
 export type MailState = { reviews?: Record<string, string> };
 export const getMailState = (): MailState => load().mailState ?? {};
+export type GoogleReviewCard = { id: string; name: string; photo: string; text: string; rating: number; visible: boolean };
+export type GoogleReviewsFile = { placeUrl: string; items: GoogleReviewCard[] };
+
+const clip = (v: unknown, n: number) => (typeof v === "string" ? v.trim().slice(0, n) : "");
+
+export function cleanGoogleReviews(raw: unknown): GoogleReviewsFile {
+  const src = raw && typeof raw === "object" ? raw as { placeUrl?: unknown; items?: unknown } : {};
+  const place = clip(src.placeUrl, 400);
+  const placeUrl = /^https:\/\/(www\.)?google\.[a-z.]+\/(maps|search)/i.test(place) ? place : "";
+  const items = (Array.isArray(src.items) ? src.items : []).slice(0, 24).flatMap((row) => {
+    const r = row && typeof row === "object" ? row as Partial<GoogleReviewCard> : {};
+    const name = clip(r.name, 80);
+    const text = clip(r.text, 500);
+    if (!name || !text) return [];
+    const photo = clip(r.photo, 400);
+    const rating = Math.min(5, Math.max(1, Math.round(Number(r.rating) || 5)));
+    return [{ id: clip(r.id, 40) || name.slice(0, 12), name, text, rating, visible: r.visible !== false, photo: photo.startsWith("/") || photo.startsWith("https://") ? photo : "" }];
+  });
+  return { placeUrl, items };
+}
+
+export const getGoogleReviews = (): GoogleReviewsFile => cleanGoogleReviews(load().googleReviews);
+
+export function setGoogleReviews(next: unknown, by?: string) {
+  const v = load();
+  save({ ...v, googleReviews: cleanGoogleReviews(next), updatedAt: new Date().toISOString(), updatedBy: by });
+}
+
 export function markReviewSent(orderIds: (number | string)[]) {
   if (!orderIds.length) return;
   const v = load();

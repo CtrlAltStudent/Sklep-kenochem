@@ -81,7 +81,7 @@ export default async function ReturnPage({ searchParams }: { searchParams: Promi
           <h1 className="mt-6 text-3xl font-black">Czekamy na potwierdzenie płatności</h1>
           <p className="mt-2 text-slate-600">
             {orderNumber ? <>Zamówienie <b>{orderNumber}</b> jest zapisane. </> : null}
-            Jeśli zapłaciłeś, status zaktualizuje się za chwilę. W razie wątpliwości zadzwoń: 500 021 705.
+            Jeśli zapłaciłeś, status zaktualizuje się za chwilę. W razie wątpliwości zadzwoń: 664 953 377.
           </p>
         </>
       )}

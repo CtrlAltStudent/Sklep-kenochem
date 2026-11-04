@@ -4,6 +4,7 @@ import { BadgeCheck, Boxes, Clock, Mail, MapPin, Phone, Store, Truck } from "luc
 import { Newsletter } from "./Newsletter";
 import { CookieSettingsLink } from "./CookieConsent";
 import { BrandMark, type MarkName } from "./checkout/BrandMarks";
+import { SHOP_PHONE, shopTel } from "@/lib/data";
 
 const columns: { title: string; links: [string, string][] }[] = [
   {
@@ -25,7 +26,7 @@ const columns: { title: string; links: [string, string][] }[] = [
 
 const marks: MarkName[] = ["blik", "p24", "inpost-paczkomat", "inpost-kurier", "orlen"];
 
-export function Footer({ productCount }: { productCount: number }) {
+export function Footer({ productCount, phone = SHOP_PHONE }: { productCount: number; phone?: string }) {
   const badges = [
     { icon: BadgeCheck, title: "Oryginalne produkty", text: "SONAX i sprawdzone marki" },
     { icon: Store, title: "Sklep w Białymstoku", text: "odbiór osobisty i doradztwo" },
@@ -56,7 +57,7 @@ export function Footer({ productCount }: { productCount: number }) {
             <ul className="mt-5 space-y-2.5 text-sm">
               <li className="flex gap-2"><MapPin className="h-4 w-4 shrink-0 text-lime" /> ul. Gen. Wł. Andersa 40, 15-113 Białystok</li>
               <li className="flex gap-2"><Clock className="h-4 w-4 shrink-0 text-lime" /> Pn–Pt 8:00–16:00</li>
-              <li><a href="tel:+48500021705" className="flex gap-2 hover:text-white"><Phone className="h-4 w-4 text-lime" /> +48 500 021 705</a></li>
+              <li><a href={shopTel(phone)} className="flex gap-2 hover:text-white"><Phone className="h-4 w-4 text-lime" /> {phone}</a></li>
               <li><a href="mailto:aukcje@sonax.bialystok.pl" className="flex gap-2 hover:text-white"><Mail className="h-4 w-4 text-lime" /> aukcje@sonax.bialystok.pl</a></li>
             </ul>
           </div>

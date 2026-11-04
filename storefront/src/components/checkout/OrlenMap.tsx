@@ -33,7 +33,15 @@ export function OrlenMap({ token, onSelect, onClose }: { token: string; onSelect
     s.src = `https://mapa.orlenpaczka.pl/widget.js?token=${encodeURIComponent(token)}&v=1.0.0&t=${Math.floor(Date.now() / 1000)}`;
     s.onerror = () => setError("Nie udało się wczytać mapy ORLEN Paczka.");
     document.head.appendChild(s);
-    return () => { s.remove(); };
+    // Widget mierzy mapę przy starcie. Po ułożeniu okna prosimy ją, żeby wypełniła wolne miejsce.
+    const kick = () => window.dispatchEvent(new Event("resize"));
+    document.addEventListener("orlenWidgetInit", kick);
+    const later = window.setTimeout(kick, 400);
+    return () => {
+      s.remove();
+      document.removeEventListener("orlenWidgetInit", kick);
+      window.clearTimeout(later);
+    };
   }, [token]);
 
   useEffect(() => {
@@ -71,7 +79,7 @@ export function OrlenMap({ token, onSelect, onClose }: { token: string; onSelect
             <X className="h-5 w-5" />
           </button>
         </header>
-        <div className="relative min-h-0 flex-1">
+        <div className="kc-orlen relative min-h-0 flex-1">
           {error ? (
             <div className="grid h-full place-items-center p-6 text-center text-sm text-slate-600">
               <p><MapPin className="mx-auto mb-2 h-8 w-8 text-slate-300" />{error}</p>
@@ -81,10 +89,11 @@ export function OrlenMap({ token, onSelect, onClose }: { token: string; onSelect
               <input id="orlen-point-code" ref={codeRef} readOnly tabIndex={-1} aria-hidden className="sr-only" />
               <input id="orlen-point-label" ref={labelRef} readOnly tabIndex={-1} aria-hidden className="sr-only" />
               <div
-                className="orlen-widget h-full min-h-[420px]"
+                className="orlen-widget h-full"
                 data-target="#orlen-point-code"
                 data-label="#orlen-point-label"
                 data-type="dropoff"
+                data-layout="normal"
               />
             </>
           )}

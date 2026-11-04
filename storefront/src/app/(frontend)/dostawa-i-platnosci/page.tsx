@@ -13,6 +13,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Dostawa i płatności",
   description: "Formy dostawy (InPost Paczkomat i kurier, ORLEN Paczka, odbiór osobisty) i płatności (Przelewy24, BLIK, karta, przelew, pobranie) w sklepie Sonax.",
+  alternates: { canonical: "/dostawa-i-platnosci" },
 };
 
 const payIcon = { przelewy24: Smartphone, transfer: Banknote, cod: PackageCheck, deferred: CreditCard } as const;

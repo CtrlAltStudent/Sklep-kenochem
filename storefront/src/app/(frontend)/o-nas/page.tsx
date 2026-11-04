@@ -10,6 +10,7 @@ import { ConsentMap, OpenNowBadge } from "@/components/ClientBits";
 export const metadata: Metadata = {
   title: "O nas – sklep SONAX Białystok",
   description: "Sklep SONAX w Białymstoku: chemia samochodowa, kosmetyki detailingowe i środki do myjni. Sklep stacjonarny przy ul. Gen. Andersa 40 i wysyłka w całej Polsce.",
+  alternates: { canonical: "/o-nas" },
 };
 
 const mapQuery = "Gen. Władysława Andersa 40, 15-113 Białystok";
@@ -30,7 +31,7 @@ const team = [
 
 export default async function AboutPage() {
   const [products, brands, s] = await Promise.all([getProducts(), getBrands(), getStoreSettings()]);
-  const phone = s.phone ?? "+48 500 021 705";
+  const phone = s.phone ?? "+48 664 953 377";
   const email = s.email ?? "aukcje@sonax.bialystok.pl";
   const hours = s.hours ?? "Pn–Pt 8:00–16:00";
   const stats = [

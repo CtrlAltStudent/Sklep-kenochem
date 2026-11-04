@@ -1,4 +1,5 @@
-import type { CollectionConfig } from "payload";
+import { APIError, type CollectionConfig } from "payload";
+import { redirectLoop } from "@/integrations/shopTools";
 import { anyone, isAdmin, isEditor, isOrdersTeam, isPromo, canReadCoupons, isStockTeam, hasRole } from "../access";
 import { section } from "../fields";
 import { returnStatusMailHook } from "@/integrations/mail/events";
@@ -178,6 +179,12 @@ export const Redirects: CollectionConfig = {
         let from = String(data.from).trim().replace(/^https?:\/\/[^/]+/i, "");
         if (!from.startsWith("/")) from = `/${from}`;
         return { ...data, from: from.length > 1 ? from.replace(/\/+$/, "") : from };
+      },
+      async ({ data, req, originalDoc }) => {
+        if (!data?.from || !data?.to) return data;
+        const problem = await redirectLoop(req, String(data.from), String(data.to), originalDoc?.id);
+        if (problem) throw new APIError(problem, 400);
+        return data;
       },
     ],
   },

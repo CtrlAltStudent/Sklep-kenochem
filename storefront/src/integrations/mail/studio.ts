@@ -98,7 +98,7 @@ export const mailStudioEndpoints: Endpoint[] = [
     path: "/mail-studio",
     method: "get",
     handler: async (req) => {
-      if (!hasRole(req, "admin")) return deny();
+      if (!(await hasRole(req, "admin"))) return deny();
       const { docs } = await req.payload.find({ collection: "orders", sort: "-createdAt", limit: 15, depth: 0, overrideAccess: true, select: { orderNumber: true, status: true, total: true, email: true } });
       return Response.json({
         ok: true, settings: getMailSettings(), ready: mailReady(), configured: Boolean(mailConfig()), testTo: userEmail(req),
@@ -110,7 +110,7 @@ export const mailStudioEndpoints: Endpoint[] = [
     path: "/mail-studio",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "admin")) return deny();
+      if (!(await hasRole(req, "admin"))) return deny();
       const b = await body(req);
       try {
         setMailSettings(cleanMailSettings(b.settings), userEmail(req));
@@ -124,7 +124,7 @@ export const mailStudioEndpoints: Endpoint[] = [
     path: "/mail-studio/preview",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "admin")) return deny();
+      if (!(await hasRole(req, "admin"))) return deny();
       const b = await body(req);
       const id = idOf(b);
       if (!id) return Response.json({ ok: false, message: "Nieznany mail" }, { status: 400 });
@@ -140,7 +140,7 @@ export const mailStudioEndpoints: Endpoint[] = [
     path: "/mail-studio/test",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "admin")) return deny();
+      if (!(await hasRole(req, "admin"))) return deny();
       if (!mailConfig()) return Response.json({ ok: false, message: "Najpierw skonfiguruj pocztę: Integracje → Poczta (SMTP)." });
       const b = await body(req);
       const id = idOf(b);

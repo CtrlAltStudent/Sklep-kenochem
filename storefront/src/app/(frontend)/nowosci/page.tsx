@@ -4,7 +4,7 @@ import { getCategoryCounts, getNewest } from "@/lib/catalog";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Listing } from "@/components/Listing";
 
-export const metadata: Metadata = { title: "Nowości" };
+export const metadata: Metadata = { title: "Nowości", description: "Nowości w sklepie Sonax – chemia samochodowa i kosmetyki detailingowe, które właśnie doszły.", alternates: { canonical: "/nowosci" } };
 
 export default async function NewPage() {
   const [newest, counts] = await Promise.all([getNewest(), getCategoryCounts()]);

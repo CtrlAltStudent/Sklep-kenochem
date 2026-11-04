@@ -7,6 +7,7 @@ import { formatPrice, usableImages } from "@/lib/data";
 export const metadata: Metadata = {
   title: "Rozcieńczanie chemii — kalkulator",
   description: "Jak czytać proporcję 1:10 i ile koncentratu wlać do wody. Kalkulator z przykładami produktów ze sklepu Sonax.",
+  alternates: { canonical: "/rozcienczanie" },
 };
 
 const EXAMPLES: { slug: string; ratio: number; note: string }[] = [

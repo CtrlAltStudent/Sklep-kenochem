@@ -4,10 +4,13 @@ import { ArrowRight, BookOpen, Building2, Clock, Landmark, Mail, MapPin, Phone, 
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ConsentMap, CopyButton, OpenNowBadge } from "@/components/ClientBits";
 import { ContactForm } from "@/components/forms/Forms";
+import { getStoreSettings } from "@/lib/cms";
+import { SHOP_PHONE, shopTel } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Kontakt",
-  description: "Kontakt ze sklepem Sonax w Białymstoku: telefon +48 500 021 705, aukcje@sonax.bialystok.pl, ul. Gen. Andersa 40. Pn–Pt 8:00–16:00.",
+  description: "Kontakt ze sklepem Sonax w Białymstoku: telefon, aukcje@sonax.bialystok.pl, ul. Gen. Andersa 40. Pn–Pt 8:00–16:00.",
+  alternates: { canonical: "/kontakt" },
 };
 
 const company = {
@@ -27,8 +30,10 @@ export default async function ContactPage(props: PageProps<"/kontakt">) {
   const { produkt, slug } = await props.searchParams;
   const product = typeof produkt === "string" ? produkt.slice(0, 200) : undefined;
   const productSlug = typeof slug === "string" ? slug.slice(0, 200) : undefined;
+  const store = await getStoreSettings();
+  const phone = store.phone || SHOP_PHONE;
   const cards = [
-    { icon: Phone, label: "Telefon", value: "+48 500 021 705", note: "Doradzimy w doborze chemii", action: { label: "Zadzwoń", href: "tel:+48500021705" } },
+    { icon: Phone, label: "Telefon", value: phone, note: "Doradzimy w doborze chemii", action: { label: "Zadzwoń", href: shopTel(phone) } },
     { icon: Mail, label: "E-mail", value: "aukcje@sonax.bialystok.pl", note: "Odpowiadamy w dni robocze", action: { label: "Napisz e-mail", href: "mailto:aukcje@sonax.bialystok.pl" } },
     { icon: MapPin, label: "Adres", value: "ul. Gen. Andersa 40", note: "15-113 Białystok", action: { label: "Wyznacz trasę", href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`, external: true } },
     { icon: Clock, label: "Godziny pracy", value: "Pn–Pt 8:00–16:00", note: "Sobota i niedziela nieczynne", badge: true },
@@ -46,8 +51,8 @@ export default async function ContactPage(props: PageProps<"/kontakt">) {
             <h1 className="title-sport mt-2 text-5xl sm:text-6xl">Kontakt</h1>
             <p className="mt-3 text-white/75">Pytanie o produkt, zamówienie albo dobór chemii? Zadzwoń, napisz lub odwiedź nas w Białymstoku.</p>
           </div>
-          <a href="tel:+48500021705" className="skew-cta inline-flex bg-accent px-5 py-3 font-bold text-white transition hover:bg-white hover:text-accent">
-            <span className="flex items-center gap-2"><Phone className="h-5 w-5" /> 500 021 705</span>
+          <a href={shopTel(phone)} className="skew-cta inline-flex bg-accent px-5 py-3 font-bold text-white transition hover:bg-white hover:text-accent">
+            <span className="flex items-center gap-2"><Phone className="h-5 w-5" /> {phone.replace("+48 ", "")}</span>
           </a>
         </div>
       </header>

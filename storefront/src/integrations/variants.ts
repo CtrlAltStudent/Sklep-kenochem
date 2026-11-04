@@ -133,7 +133,7 @@ export const variantEndpoints: Endpoint[] = [
     path: "/product-tools/:id/variants",
     method: "get",
     handler: async (req) => {
-      if (!hasRole(req, "editor", "orders")) return deny();
+      if (!(await hasRole(req, "editor", "orders"))) return deny();
       const id = idOf(req.routeParams?.id);
       const { current, main, members } = await group(req.payload, id);
       const key = nameKey(current.name);
@@ -174,7 +174,7 @@ export const variantEndpoints: Endpoint[] = [
     path: "/product-tools/:id/variants/search",
     method: "get",
     handler: async (req) => {
-      if (!hasRole(req, "editor", "orders")) return deny();
+      if (!(await hasRole(req, "editor", "orders"))) return deny();
       const id = idOf(req.routeParams?.id);
       const q = String(req.searchParams.get("q") ?? "").trim();
       if (q.length < 2) return Response.json({ ok: true, hits: [] });
@@ -213,7 +213,7 @@ export const variantEndpoints: Endpoint[] = [
     path: "/product-tools/:id/variants",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "editor")) return deny();
+      if (!(await hasRole(req, "editor"))) return deny();
       const id = idOf(req.routeParams?.id);
       const body = (await req.json?.()) as { action?: string; productId?: number; order?: number[]; unitLabel?: string; display?: string; nav?: string } | null;
       const action = body?.action;

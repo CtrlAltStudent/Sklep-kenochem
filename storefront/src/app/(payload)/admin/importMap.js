@@ -98,6 +98,9 @@ import { AdminActions as AdminActions_ac8b49a3f101aca2fea9a6701d416f1e } from '@
 import { Dashboard as Dashboard_4f6ef188764bbc8b33c5f6a80c7e6350 } from '@/payload/components/Dashboard'
 import { Reports as Reports_fe4edc933387717636192b9fcef8bc94 } from '@/payload/components/Reports'
 import { Stats as Stats_cdef489e63a3da230790798d87819a99 } from '@/payload/components/Stats'
+import { MissingPages as MissingPages_93330ac77a4b8e1ee80fe4f3bfeb15b3 } from '@/payload/components/MissingPages'
+import { Promotions as Promotions_b24f030c7f6448034d645beeae080f84 } from '@/payload/components/Promotions'
+import { GoogleReviews as GoogleReviews_f36ba1db9d17d5ede8c8a84160e51f69 } from '@/payload/components/GoogleReviews'
 import { LayoutView as LayoutView_fd7ce4bef19984b07d41b5cf416ac4f1 } from '@/payload/components/LayoutView'
 import { BrandsView as BrandsView_604140ef61e089acb2226141803638f0 } from '@/payload/components/BrandsView'
 import { MailView as MailView_6965038045128b4d90f1c04c8996bd73 } from '@/payload/components/MailView'
@@ -210,6 +213,9 @@ export const importMap = {
   "@/payload/components/Dashboard#Dashboard": Dashboard_4f6ef188764bbc8b33c5f6a80c7e6350,
   "@/payload/components/Reports#Reports": Reports_fe4edc933387717636192b9fcef8bc94,
   "@/payload/components/Stats#Stats": Stats_cdef489e63a3da230790798d87819a99,
+  "@/payload/components/MissingPages#MissingPages": MissingPages_93330ac77a4b8e1ee80fe4f3bfeb15b3,
+  "@/payload/components/Promotions#Promotions": Promotions_b24f030c7f6448034d645beeae080f84,
+  "@/payload/components/GoogleReviews#GoogleReviews": GoogleReviews_f36ba1db9d17d5ede8c8a84160e51f69,
   "@/payload/components/LayoutView#LayoutView": LayoutView_fd7ce4bef19984b07d41b5cf416ac4f1,
   "@/payload/components/BrandsView#BrandsView": BrandsView_604140ef61e089acb2226141803638f0,
   "@/payload/components/MailView#MailView": MailView_6965038045128b4d90f1c04c8996bd73,

@@ -4,6 +4,7 @@ import { anyone, isEditor } from "../access";
 import { seoFields, slugField } from "../fields";
 import { iconOptions } from "../iconOptions";
 import { invalidateCatalogHook } from "../productHooks";
+import { rememberOldAddress } from "../slugRedirect";
 
 const parentIdOf = (value: unknown) => {
   if (value == null || value === "") return undefined;
@@ -75,7 +76,7 @@ export const Categories: CollectionConfig = {
     afterDelete: [invalidateCatalogHook],
     // Ścieżka „Główna › Podkategoria” – sortowanie listy jako drzewa
     beforeChange: [placeInTree],
-    afterChange: [invalidateCatalogHook, refreshChildren],
+    afterChange: [invalidateCatalogHook, refreshChildren, rememberOldAddress("/kategoria/")],
   },
   fields: [
     { name: "name", label: "Nazwa", type: "text", required: true, admin: { components: { Cell: "@/payload/components/Cells#CategoryNameCell" } } },

@@ -1,13 +1,23 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Home, Phone, Search } from "lucide-react";
 import { getShopCategories } from "@/lib/catalog";
+import { getStoreSettings } from "@/lib/cms";
 import { CatIcon } from "@/components/CatIcon";
 
-export const dynamic = "force-dynamic";
+export const metadata: Metadata = { title: "Nie znaleziono strony", robots: { index: false, follow: true } };
+
+// Ta funkcja musi być zwykła (bez czekania na bazę). Inaczej Next oddaje kod 200 zamiast 404.
 
 // Strona 404 – zamiast ślepego zaułka: wyszukiwarka, kategorie, kontakt
-export default async function NotFound() {
-  const categories = await getShopCategories();
+export default function NotFound() {
+  return <MissingPage />;
+}
+
+async function MissingPage() {
+  const [categories, store] = await Promise.all([getShopCategories(), getStoreSettings()]);
+  const phone = store.phone || "+48 664 953 377";
+  const tel = phone.replace(/[^\d+]/g, "");
   return (
     <div className="mx-auto max-w-4xl px-4 py-16 text-center" data-sonax-404="">
       <p className="text-8xl font-black tracking-tight text-brand-100">404</p>
@@ -31,7 +41,7 @@ export default async function NotFound() {
 
       <div className="mt-10 flex flex-wrap justify-center gap-3">
         <Link href="/" className="flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-3 text-sm font-bold text-white hover:bg-accent"><Home className="h-4 w-4" /> Strona główna</Link>
-        <a href="tel:+48500021705" className="flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-brand-800 ring-1 ring-brand-200 hover:bg-brand-50"><Phone className="h-4 w-4" /> Zadzwoń: 500 021 705</a>
+        <a href={`tel:${tel}`} className="flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-brand-800 ring-1 ring-brand-200 hover:bg-brand-50"><Phone className="h-4 w-4" /> Zadzwoń: {phone.replace(/^\+48\s*/, "")}</a>
         <Link href="/kontakt" className="flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-brand-800 ring-1 ring-brand-200 hover:bg-brand-50">Napisz do nas <ArrowRight className="h-4 w-4" /></Link>
       </div>
     </div>

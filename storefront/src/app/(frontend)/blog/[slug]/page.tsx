@@ -10,6 +10,8 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { LegalToc } from "@/components/LegalToc";
 import { ProductCard } from "@/components/ProductCard";
 import { RichContent } from "@/components/RichContent";
+import { JsonLd } from "@/components/JsonLd";
+import { siteBase } from "@/lib/site";
 import type { Media, Product } from "@/payload-types";
 
 export async function generateMetadata(props: PageProps<"/blog/[slug]">): Promise<Metadata> {
@@ -19,8 +21,9 @@ export async function generateMetadata(props: PageProps<"/blog/[slug]">): Promis
   return {
     title: post.seo?.title || post.title,
     description: post.seo?.description ?? post.excerpt ?? undefined,
+    alternates: { canonical: `/blog/${post.slug}` },
     robots: post.seo?.noindex ? { index: false } : undefined,
-    openGraph: { type: "article", publishedTime: post.publishedAt ?? undefined, images: cover?.url ? [cover.url] : undefined },
+    openGraph: { type: "article", siteName: "Sklep Sonax", locale: "pl_PL", title: post.seo?.title || post.title, description: post.seo?.description ?? post.excerpt ?? undefined, publishedTime: post.publishedAt ?? undefined, images: cover?.url ? [cover.url] : undefined },
   };
 }
 
@@ -38,8 +41,21 @@ export default async function PostPage(props: PageProps<"/blog/[slug]">) {
   const products = (await Promise.all(slugs.map(getProduct))).filter((p) => p !== undefined).slice(0, 8);
   const more = (await getPosts()).filter((p) => p.slug !== post.slug).slice(0, 3);
 
+  const origin = siteBase();
+  const image = cover?.url ? (cover.url.startsWith("http") ? cover.url : `${origin}${cover.url.startsWith("/") ? "" : "/"}${cover.url}`) : undefined;
   return (
     <div className="mx-auto max-w-shop px-4 pt-6">
+      <JsonLd data={{
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        headline: post.title,
+        description: post.excerpt || undefined,
+        datePublished: post.publishedAt || undefined,
+        image,
+        author: { "@type": "Organization", name: "Sklep Sonax Białystok" },
+        publisher: { "@type": "Organization", name: "Sklep Sonax Białystok", logo: { "@type": "ImageObject", url: `${origin}/sonax/logo.png` } },
+        mainEntityOfPage: `${origin}/blog/${post.slug}`,
+      }} />
       <Breadcrumbs items={[{ label: "Blog", href: "/blog" }, { label: post.title }]} />
 
       <header className="mt-4 grid items-center gap-8 overflow-hidden rounded-3xl bg-navy text-white lg:grid-cols-2">

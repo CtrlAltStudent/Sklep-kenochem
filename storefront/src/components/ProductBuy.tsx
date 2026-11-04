@@ -53,27 +53,34 @@ function VariantChoices({ product, variantId, onChange }: { product: Product; va
   );
 }
 
-// Środek karty (opis, warianty, zestaw) i skrzynka z ceną obok. Warianty są na środku, żeby nie rozpychały ceny.
-export function ProductStage({ product, initialVariantId, gallery, lead, extra, shipCutoff, sameDay = true }: {
+// Zdjęcia i opis po lewej, cena po prawej. Prawa kolumna jest tak wysoka jak opis,
+// więc przy przewijaniu cena i „Do koszyka” zostają na ekranie.
+export function ProductStage({ product, initialVariantId, gallery, lead, extra, below, shipCutoff, sameDay = true }: {
   product: Product;
   initialVariantId?: string;
   gallery: ReactNode;
   lead: ReactNode;
   extra: ReactNode;
+  below?: ReactNode;
   shipCutoff?: string | null;
   sameDay?: boolean;
 }) {
   const first = product.variants.find((v) => v.id === initialVariantId) ?? product.variants[0];
   const [variantId, setVariantId] = useState(first.id);
   return (
-    <div className="mt-5 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(300px,360px)] lg:gap-8">
-      {gallery}
-      <div className="min-w-0">
-        {lead}
-        {product.variants.length > 1 && <VariantChoices product={product} variantId={variantId} onChange={setVariantId} />}
-        {extra}
+    <div className="mt-5 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(300px,360px)] lg:gap-8">
+      <div className="contents lg:block lg:min-w-0">
+        <div className="order-1 grid items-start gap-6 lg:grid-cols-2 lg:gap-8">
+          {gallery}
+          <div className="min-w-0">
+            {lead}
+            {product.variants.length > 1 && <VariantChoices product={product} variantId={variantId} onChange={setVariantId} />}
+            {extra}
+          </div>
+        </div>
+        {below && <div className="order-3 mt-12 min-w-0">{below}</div>}
       </div>
-      <div className="lg:sticky lg:top-28">
+      <div className="order-2 lg:sticky lg:top-28 lg:order-none">
         <ProductBuy product={product} variantId={variantId} shipCutoff={shipCutoff} sameDay={sameDay} />
       </div>
     </div>

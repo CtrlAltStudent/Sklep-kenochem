@@ -3,7 +3,7 @@ import { Trophy } from "lucide-react";
 import { getBestsellers, getCategoryCounts, getFeatured } from "@/lib/catalog";
 import { CollectionPage } from "@/components/CollectionPage";
 
-export const metadata: Metadata = { title: "Bestsellery", description: "Najchętniej kupowane produkty w sklepie Sonax." };
+export const metadata: Metadata = { title: "Bestsellery", description: "Najchętniej kupowane produkty w sklepie Sonax.", alternates: { canonical: "/bestsellery" } };
 
 // Produkty z etykietą „Bestseller” (Sklep → Produkty → Etykiety)
 export default async function BestsellersPage() {

@@ -74,7 +74,7 @@ export const orderBulkEndpoints: Endpoint[] = [
     path: "/order-bulk",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "orders")) return deny();
+      if (!(await hasRole(req, "orders"))) return deny();
       const b = await body(req);
       const ids = parseIds(b.ids);
       if (!ids.length) return Response.json({ ok: false, message: "Zaznacz zamówienia" }, { status: 400 });
@@ -124,7 +124,7 @@ export const orderBulkEndpoints: Endpoint[] = [
     path: "/order-bulk/print",
     method: "get",
     handler: async (req) => {
-      if (!hasRole(req, "orders")) return deny();
+      if (!(await hasRole(req, "orders"))) return deny();
       const ids = parseIds(new URL(req.url ?? "http://x").searchParams.get("ids"));
       const [orders, store] = await Promise.all([
         req.payload.find({ collection: "orders", where: { id: { in: ids } }, limit: ids.length || 1, depth: 0, overrideAccess: true, sort: "createdAt" }),
@@ -138,7 +138,7 @@ export const orderBulkEndpoints: Endpoint[] = [
     path: "/order-bulk/search",
     method: "get",
     handler: async (req) => {
-      if (!hasRole(req, "orders")) return deny();
+      if (!(await hasRole(req, "orders"))) return deny();
       const q = new URL(req.url ?? "http://x").searchParams.get("q") ?? "";
       return Response.json({ ok: true, docs: await searchOrders(req.payload, q.slice(0, 100)) });
     },

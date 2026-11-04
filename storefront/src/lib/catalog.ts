@@ -6,6 +6,7 @@ import "server-only";
 import { getCms } from "./cms";
 import { catalogVersion } from "./catalogCache";
 import { brandSlug, categories as fallbackCategories, mediaPath, shopLabel, usableImages, variantDisplayOf, variantNavOf, type Category, type IconName, type Product, type QtyTier, type Variant } from "./data";
+import { fold, scoreQuery, tokens } from "./searchText";
 import { categoryPhoto } from "./photos";
 import { relId, volumeMl } from "@/integrations/variants";
 import { tidyDescription } from "@/payload/productHooks";
@@ -17,7 +18,7 @@ const NOT_BRANDS = new Set(["marka niezdefiniowana", "brak danych"]);
 type Catalog = {
   products: Product[];
   bySlug: Map<string, Product>;
-  index: { p: Product; text: string }[];
+  index: { p: Product; tokens: string[]; name: string; codes: string }[];
   counts: Record<string, number>;
   total: number;
   tree: Category[];
@@ -25,7 +26,21 @@ type Catalog = {
 
 const g = globalThis as typeof globalThis & { __kcCatalog?: { at: number; version: number; data: Promise<Catalog> } };
 
-const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ł/g, "l");
+// Krótki opis pod nazwą ma być zwykłym zdaniem. Stary sklep wstawił tu czasem cały układ HTML.
+function plainShort(raw: string | null | undefined) {
+  const s = (raw ?? "").trim();
+  if (!s) return "";
+  if (/<(div|section|style|table|font|img|iframe|script|h[1-6])\b/i.test(s)) return "";
+  return s
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, "\"")
+    .replace(/&#0?39;|&apos;/gi, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 function qtyDealOf(d: Pick<CmsProduct, "qtyPromo" | "qtyTiers">, at: number): QtyTier[] | undefined {
   const g = d.qtyPromo;
@@ -109,7 +124,7 @@ async function load(): Promise<Catalog> {
         variantDisplay: variantDisplayOf(d.variantDisplay).id,
         variantNav: variantNavOf(d.variantNav).id,
         images,
-        short: d.shortDescription ?? "",
+        short: plainShort(d.shortDescription),
         badges,
         lowestPrice30d: oldPrice ? d.lowestPrice30d ?? undefined : undefined,
         saleTo: onSale ? d.sale?.to ?? undefined : undefined,
@@ -200,7 +215,11 @@ async function load(): Promise<Catalog> {
   return {
     products,
     bySlug,
-    index: products.map((p) => ({ p, text: norm(`${p.name} ${p.brand} ${p.sku} ${p.ean} ${p.variants.map((v) => `${v.sku ?? ""} ${v.ean ?? ""} ${v.label}`).join(" ")}`) })),
+    index: products.map((p) => {
+      const codes = [p.sku, p.ean, ...p.variants.flatMap((v) => [v.sku, v.ean])].filter(Boolean).join(" ");
+      const bag = [p.name, p.brand, p.short, p.sku, p.ean, p.category, p.subcategory, p.type, ...p.variants.flatMap((v) => [v.sku, v.ean, v.label])].filter(Boolean).join(" ");
+      return { p, tokens: [...new Set(tokens(bag))], name: fold(p.name), codes: fold(codes).replace(/[^a-z0-9]/g, "") };
+    }),
     counts,
     total: rows.length,
     tree: shopTree(cats.docs),
@@ -292,18 +311,16 @@ export async function getRelated(slug: string) {
   return slugs.map((s) => c.bySlug.get(s)).filter((p): p is Product => Boolean(p));
 }
 
-// Wyszukiwanie: wszystkie słowa zapytania muszą wystąpić (bez polskich znaków, bez wielkości liter)
+// Wyszukiwanie: każde słowo musi pasować do nazwy, marki, opisu, SKU albo EAN.
+// Bierze pod uwagę polskie końcówki (politury = politura) i jedną–dwie literówki.
 export async function searchProducts(q: string, limit = Infinity) {
-  const words = norm(q).split(/\s+/).filter(Boolean);
-  if (!words.length) return [];
-  const out: Product[] = [];
-  for (const { p, text } of (await getCatalog()).index) {
-    if (words.every((w) => text.includes(w))) {
-      out.push(p);
-      if (out.length >= limit) break;
-    }
+  const found: { p: Product; score: number }[] = [];
+  for (const doc of (await getCatalog()).index) {
+    const score = scoreQuery(q, doc);
+    if (score) found.push({ p: doc.p, score });
   }
-  return out;
+  found.sort((a, b) => b.score - a.score || a.p.name.localeCompare(b.p.name, "pl"));
+  return found.slice(0, limit).map((h) => h.p);
 }
 
 const withImage = (list: Product[]) => list.filter((p) => usableImages(p.images).length && p.stock > 0);

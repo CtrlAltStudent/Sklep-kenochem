@@ -28,6 +28,7 @@ import { productBulkEndpoints } from "./integrations/productBulk";
 import { variantEndpoints } from "./integrations/variants";
 import { bundleEndpoints } from "./integrations/bundles";
 import { productPickerEndpoints } from "./integrations/productPicker";
+import { shopToolEndpoints } from "./integrations/shopTools";
 import { shopEmailAdapter } from "./integrations/mail/payloadAdapter";
 import { rememberRoles } from "./payload/access";
 
@@ -41,6 +42,8 @@ const withListSize = (c: CollectionConfig): CollectionConfig => ({
 
 export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000",
+  // Zapis w panelu wysyła adres strony. Bez www i z www to dwa różne adresy — oba muszą być dopuszczone.
+  csrf: ["https://sonax.sklep.pl", "https://www.sonax.sklep.pl", "https://185-193-112-21.sslip.io"],
   admin: {
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
@@ -51,6 +54,9 @@ export default buildConfig({
         dashboard: { Component: "@/payload/components/Dashboard#Dashboard" },
         reports: { Component: "@/payload/components/Reports#Reports", path: "/raporty", meta: { title: "Raporty sprzedaży" } },
         stats: { Component: "@/payload/components/Stats#Stats", path: "/statystyki", meta: { title: "Statystyki sklepu" } },
+        missing: { Component: "@/payload/components/MissingPages#MissingPages", path: "/brakujace-strony", meta: { title: "Brakujące strony" } },
+        promotions: { Component: "@/payload/components/Promotions#Promotions", path: "/promocje", meta: { title: "Kampania promocyjna" } },
+        googleReviews: { Component: "@/payload/components/GoogleReviews#GoogleReviews", path: "/opinie-google", meta: { title: "Opinie z Google" } },
         layout: { Component: "@/payload/components/LayoutView#LayoutView", path: "/uklad", meta: { title: "Układ strony" } },
         brands: { Component: "@/payload/components/BrandsView#BrandsView", path: "/marki", meta: { title: "Marki" } },
         mails: { Component: "@/payload/components/MailView#MailView", path: "/maile", meta: { title: "Maile do klientów" } },
@@ -68,7 +74,7 @@ export default buildConfig({
   i18n: { supportedLanguages: { pl }, fallbackLanguage: "pl" },
   collections: [Orders, Returns, FormSubmissions, Carts, StockAlerts, Customers, Products, Categories, Coupons, Reviews, Newsletter, Pages, Posts, Media, IntegrationLogs, Users, Redirects].map(withListSize),
   globals: [Homepage, Navigation, StoreSettings, BaseLinkerSettings],
-  endpoints: [...baselinkerEndpoints, ...integrationEndpoints, ...adminToolEndpoints, ...mailStudioEndpoints, ...orderBulkEndpoints, ...productBulkEndpoints, ...variantEndpoints, ...bundleEndpoints, ...productPickerEndpoints],
+  endpoints: [...baselinkerEndpoints, ...integrationEndpoints, ...adminToolEndpoints, ...mailStudioEndpoints, ...orderBulkEndpoints, ...productBulkEndpoints, ...variantEndpoints, ...bundleEndpoints, ...productPickerEndpoints, ...shopToolEndpoints],
   editor: lexicalEditor(),
   email: shopEmailAdapter,
   secret: process.env.PAYLOAD_SECRET || "",
@@ -79,7 +85,11 @@ export default buildConfig({
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   // DATABASE_URL=postgres://… → PostgreSQL (docker compose / serwer), file:./… → SQLite (lokalnie bez Dockera)
   db: (process.env.DATABASE_URL ?? "").startsWith("postgres")
-    ? postgresAdapter({ pool: { connectionString: process.env.DATABASE_URL } })
+    ? postgresAdapter({
+        pool: { connectionString: process.env.DATABASE_URL },
+        // Tak samo jak SQLite: schemat dopisujemy tylko świadomie (PAYLOAD_DB_PUSH=1), nie przy każdym starcie sklepu.
+        push: process.env.PAYLOAD_DB_PUSH === "1",
+      })
     : sqliteAdapter({
         client: { url: process.env.DATABASE_URL || "file:./sonax.db" },
         // Push wyłączony na stałe: przy każdym żądaniu Next próbował dodać indeks, który już jest

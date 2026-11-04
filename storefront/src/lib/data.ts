@@ -1,6 +1,19 @@
 // Typy, kategorie i funkcje pomocnicze – bezpieczne do użycia w komponentach klienckich.
 // Sam katalog produktów (kilka MB) ładuje tylko serwer – patrz lib/catalog.ts.
 
+// Opis do Google ma być zwykłym zdaniem. Stary sklep zostawiał w nim znaczniki HTML.
+export function plainText(raw?: string | null) {
+  return (raw ?? "")
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, "\"")
+    .replace(/&#0?39;|&apos;/gi, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export type Category = {
   slug: string;
   name: string;
@@ -105,6 +118,10 @@ export const toCard = (p: Product): ProductCardData => ({
   image: usableImages(p.images)[0],
   lowestPrice30d: p.lowestPrice30d,
 });
+
+// Publiczny telefon sklepu. Nagłówek bierze numer z ustawień, a gdy go nie ma – ten.
+export const SHOP_PHONE = "+48 664 953 377";
+export const shopTel = (phone = SHOP_PHONE) => `tel:${phone.replace(/[^\d+]/g, "")}`;
 
 export const FREE_SHIPPING = 249.99;
 // Kwota pokazywana na stronie (pasek, etykieta, koszyk). Ustawienia sklepu → Dostawa.

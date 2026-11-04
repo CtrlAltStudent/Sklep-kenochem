@@ -26,7 +26,7 @@ export const productBulkEndpoints: Endpoint[] = [
     path: "/product-bulk",
     method: "post",
     handler: async (req) => {
-      if (!hasRole(req, "editor")) return deny();
+      if (!(await hasRole(req, "editor"))) return deny();
       const b = await body(req);
       const ids = parseIds(b.ids);
       if (!ids.length) return Response.json({ ok: false, message: "Zaznacz produkty" }, { status: 400 });

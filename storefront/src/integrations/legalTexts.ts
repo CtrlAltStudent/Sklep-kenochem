@@ -14,7 +14,7 @@ export const REGULAMIN: Block[] = [
   ["h2", "1. Postanowienia ogólne"],
   ["ul", [
     `Sklep internetowy działający pod adresem https://sonax.sklep.pl (dalej: „Sklep”) jest prowadzony przez ${SELLER}, dalej: „Sprzedawca”.`,
-    `Kontakt ze Sprzedawcą: e-mail ${MAIL}, telefon +48 500 021 705 (pn–pt 8:00–16:00), pisemnie na adres siedziby Sprzedawcy.`,
+    `Kontakt ze Sprzedawcą: e-mail ${MAIL}, telefon +48 664 953 377 (pn–pt 8:00–16:00), pisemnie na adres siedziby Sprzedawcy.`,
     "Regulamin określa zasady korzystania ze Sklepu, zakładania i prowadzenia konta, składania zamówień, zawierania i wykonywania umów sprzedaży, płatności, dostawy, reklamacji, odstąpienia od umowy oraz korzystania z usług świadczonych drogą elektroniczną.",
     "Do korzystania ze Sklepu potrzebne są urządzenie z dostępem do Internetu, aktualna przeglądarka internetowa z włączoną obsługą JavaScript i plików cookies niezbędnych do działania koszyka oraz aktywny adres e-mail.",
     "Regulamin jest udostępniany nieodpłatnie w sposób umożliwiający jego pobranie, utrwalenie i wydrukowanie.",
@@ -119,7 +119,7 @@ export const POLITYKA: Block[] = [
   ["p", "Wyjaśniamy, jakie dane przetwarzamy w sklepie sonax.sklep.pl, dlaczego to robimy, komu je powierzamy i jakie prawa Ci przysługują."],
   ["h2", "1. Administrator danych"],
   ["p", `Administratorem Twoich danych osobowych jest ${SELLER} (dalej: „my”).`],
-  ["p", `W sprawach prywatności napisz na ${MAIL}, zadzwoń pod +48 500 021 705 albo napisz na adres siedziby.`],
+  ["p", `W sprawach prywatności napisz na ${MAIL}, zadzwoń pod +48 664 953 377 albo napisz na adres siedziby.`],
   ["h2", "2. Jakie dane przetwarzamy"],
   ["ul", [
     "dane identyfikacyjne i kontaktowe: imię i nazwisko, adres, telefon, e-mail;",

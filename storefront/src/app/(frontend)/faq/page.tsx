@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronDown, MessageCircleQuestion, Phone } from "lucide-react";
-import { formatPrice, freeShippingFrom } from "@/lib/data";
+import { formatPrice, freeShippingFrom, SHOP_PHONE, shopTel } from "@/lib/data";
 import { getStoreSettings } from "@/lib/cms";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { JsonLd } from "@/components/JsonLd";
@@ -9,12 +9,14 @@ import { JsonLd } from "@/components/JsonLd";
 export const metadata: Metadata = {
   title: "Najczęstsze pytania (FAQ)",
   description: "Odpowiedzi na najczęstsze pytania: dostawa InPost i ORLEN Paczka, płatności, zwroty, faktury VAT i karty charakterystyki w sklepie Sonax.",
+  alternates: { canonical: "/faq" },
 };
 
 export default async function FaqPage() {
   const s = await getStoreSettings();
   const free = formatPrice(freeShippingFrom(s));
   const hours = s.hours ?? "Pn–Pt 8:00–16:00";
+  const phone = s.phone || SHOP_PHONE;
   const ship = s as { sameDayShipping?: boolean | number | null; shipCutoff?: string | null };
   const cutoff = ship.sameDayShipping !== false && ship.sameDayShipping !== 0 ? ship.shipCutoff?.trim() : "";
 
@@ -46,7 +48,7 @@ export default async function FaqPage() {
       title: "Dobór produktów",
       items: [
         ["Nie wiem, od czego zacząć – co kupić?", <>Zajrzyj do <Link href="/blog" className="font-semibold text-accent-dark underline">przewodników zakupowych</Link>: pierwszy zestaw detailingowy, mycie auta, felgi i wnętrze.</>, "Przewodniki zakupowe na blogu: pierwszy zestaw, mycie, felgi i wnętrze."],
-        ["Czy doradzicie dobór chemii?", <>Tak. Zadzwoń: +48 500 021 705 ({hours}) albo napisz na <a href="mailto:aukcje@sonax.bialystok.pl" className="font-semibold text-accent-dark underline">aukcje@sonax.bialystok.pl</a>.</>, "Tak, doradzimy telefonicznie lub e-mailem."],
+        ["Czy doradzicie dobór chemii?", <>Tak. Zadzwoń: {phone} ({hours}) albo napisz na <a href="mailto:aukcje@sonax.bialystok.pl" className="font-semibold text-accent-dark underline">aukcje@sonax.bialystok.pl</a>.</>, "Tak, doradzimy telefonicznie lub e-mailem."],
       ],
     },
     {
@@ -94,7 +96,7 @@ export default async function FaqPage() {
           <MessageCircleQuestion className="h-8 w-8 text-leaf" />
           <h2 className="mt-3 text-lg font-black text-navy">Nie znalazłeś odpowiedzi?</h2>
           <p className="mt-1 text-sm text-slate-600">Napisz albo zadzwoń – odpowiadamy w dni robocze, {hours}.</p>
-          <a href="tel:+48500021705" className="btn-kc mt-4 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white"><Phone className="h-4 w-4" /> +48 500 021 705</a>
+          <a href={shopTel(phone)} className="btn-kc mt-4 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white"><Phone className="h-4 w-4" /> {phone}</a>
           <Link href="/kontakt" className="mt-2 block rounded-xl py-3 text-center text-sm font-bold text-brand-800 ring-1 ring-brand-200 hover:bg-leaf-50">Formularz kontaktowy</Link>
         </aside>
       </div>

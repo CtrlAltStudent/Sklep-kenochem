@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight, ChevronDown, ChevronRight, Clock, Headset, Heart, Loader2, Menu, Phone, Search, ShoppingCart, Truck, User, X,
 } from "lucide-react";
-import { formatPrice, minPrice, type ProductCardData } from "@/lib/data";
+import { formatPrice, minPrice, SHOP_PHONE, type ProductCardData } from "@/lib/data";
 import { useShopCategories } from "@/lib/shopConfig";
 import { resolveCart } from "@/lib/cart";
 import { actions, useStore } from "@/lib/store";
@@ -287,7 +287,7 @@ function MobileMenu({ onClose, counts }: { onClose: () => void; counts: Category
   );
 }
 
-export function Header({ counts, bar, phone = "+48 500 021 705", hours = "Pn–Pt 8:00–16:00" }: {
+export function Header({ counts, bar, phone = SHOP_PHONE, hours = "Pn–Pt 8:00–16:00" }: {
   counts: CategoryCounts;
   bar?: { text: string; href?: string } | null;
   phone?: string;

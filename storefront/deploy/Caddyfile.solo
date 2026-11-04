@@ -1,14 +1,49 @@
 # Sklep na własnej domenie. Adres próbny zostaje za hasłem.
+# defer: nagłówki dokładane są do odpowiedzi sklepu, a nie zanim proxy ją podmieni.
+(bezpiecznie) {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "SAMEORIGIN"
+		defer
+	}
+}
+
 sonax.sklep.pl {
 	encode zstd gzip
-	reverse_proxy sonax:3000
+	handle /api/media/file/* {
+		import bezpiecznie
+		header Cache-Control "public, max-age=604800"
+		reverse_proxy sonax:3000
+	}
+	handle {
+		reverse_proxy sonax:3000 {
+			header_down Strict-Transport-Security "max-age=31536000"
+			header_down X-Content-Type-Options "nosniff"
+			header_down Referrer-Policy "strict-origin-when-cross-origin"
+			header_down X-Frame-Options "SAMEORIGIN"
+		}
+	}
 }
 
 # Ten sam sklep co bez www. Nie odsyłamy na adres bez www: stary sklep nadal
 # odsyła odwrotnie, a telefon zapamiętuje oba odesłania i kręci się w kółko.
 www.sonax.sklep.pl {
 	encode zstd gzip
-	reverse_proxy sonax:3000
+	handle /api/media/file/* {
+		import bezpiecznie
+		header Cache-Control "public, max-age=604800"
+		reverse_proxy sonax:3000
+	}
+	handle {
+		reverse_proxy sonax:3000 {
+			header_down Strict-Transport-Security "max-age=31536000"
+			header_down X-Content-Type-Options "nosniff"
+			header_down Referrer-Policy "strict-origin-when-cross-origin"
+			header_down X-Frame-Options "SAMEORIGIN"
+		}
+	}
 }
 
 {$SITE_DOMAIN} {

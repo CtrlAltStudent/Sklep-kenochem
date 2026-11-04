@@ -16,7 +16,7 @@ RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
 COPY next.config.ts tsconfig.json ./
 COPY public ./public
 COPY .next ./.next
-COPY fix-links.mjs ./
+COPY fix-links.mjs watch.mjs ./
 RUN node fix-links.mjs
 
 EXPOSE 3000

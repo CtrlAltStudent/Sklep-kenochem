@@ -3,10 +3,13 @@ import Link from "next/link";
 import { CalendarClock, ClipboardList, PackageCheck, Phone, ShieldCheck, Truck } from "lucide-react";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ReturnForm } from "@/components/forms/Forms";
+import { getStoreSettings } from "@/lib/cms";
+import { SHOP_PHONE, shopTel } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Zwroty i reklamacje",
   description: "Zwróć produkt w ciągu 14 dni lub zgłoś reklamację online. Formularz zwrotu i reklamacji sklepu Sonax.",
+  alternates: { canonical: "/zwroty-i-reklamacje" },
 };
 
 const steps = [
@@ -16,7 +19,9 @@ const steps = [
   { icon: PackageCheck, title: "Gotowe", text: "Zwrot pieniędzy w ciągu 14 dni od otrzymania przesyłki." },
 ];
 
-export default function ReturnsPage() {
+export default async function ReturnsPage() {
+  const store = await getStoreSettings();
+  const phone = store.phone || SHOP_PHONE;
   return (
     <div className="mx-auto max-w-shop px-4 pt-6">
       <Breadcrumbs items={[{ label: "Zwroty i reklamacje" }]} />
@@ -51,9 +56,9 @@ export default function ReturnsPage() {
             </ul>
             <Link href="/regulamin" className="mt-4 inline-block text-sm font-bold text-accent-dark hover:underline">Pełne zasady w regulaminie →</Link>
           </div>
-          <a href="tel:+48500021705" className="flex items-center gap-4 rounded-2xl bg-lime/20 p-5 ring-1 ring-lime/40">
+          <a href={shopTel(phone)} className="flex items-center gap-4 rounded-2xl bg-lime/20 p-5 ring-1 ring-lime/40">
             <span className="grid h-11 w-11 place-items-center rounded-xl bg-white text-brand-700"><Phone className="h-5 w-5" /></span>
-            <span className="text-sm"><b className="block text-brand-900">Wolisz porozmawiać?</b><span className="text-slate-600">+48 500 021 705 · Pn–Pt 8–16</span></span>
+            <span className="text-sm"><b className="block text-brand-900">Wolisz porozmawiać?</b><span className="text-slate-600">{phone} · Pn–Pt 8–16</span></span>
           </a>
         </aside>
       </section>

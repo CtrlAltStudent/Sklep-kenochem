@@ -20,7 +20,7 @@ echo "▸ Pakowanie…"
 PKG="$(mktemp -d)/app.tgz"
 tar -czf "$PKG" --exclude=.next/cache --exclude=.next/dev \
   package.json package-lock.json .npmrc next.config.ts tsconfig.json public .next \
-  -C deploy Dockerfile fix-links.mjs
+  -C deploy Dockerfile fix-links.mjs watch.mjs
 echo "  $(du -h "$PKG" | cut -f1)"
 
 echo "▸ Wysyłanie na serwer…"

@@ -11,6 +11,12 @@ export type SiteSettings = {
   feedOutOfStock: boolean; // produkty niedostępne w pliku Merchant Center (jako out_of_stock)
   maintenance: boolean; // przerwa techniczna – klienci widzą komunikat, panel działa
   maintenanceText: string;
+  facebook: string;
+  instagram: string;
+  youtube: string;
+  googleProfile: string;
+  lat: number | null;
+  lng: number | null;
 };
 
 export const defaultSite: SiteSettings = {
@@ -22,7 +28,13 @@ export const defaultSite: SiteSettings = {
   feedEnabled: true,
   feedOutOfStock: true,
   maintenance: false,
-  maintenanceText: "Trwa przerwa techniczna – wracamy za chwilę. Zamówienia telefoniczne: +48 500 021 705.",
+  maintenanceText: "Trwa przerwa techniczna – wracamy za chwilę. Zamówienia telefoniczne: +48 664 953 377.",
+  facebook: "",
+  instagram: "",
+  youtube: "",
+  googleProfile: "",
+  lat: null,
+  lng: null,
 };
 
 // Roboty AI blokowane, gdy aiBots = false
@@ -36,5 +48,17 @@ export function cleanSite(raw: Partial<Record<keyof SiteSettings, unknown>>): Pa
     out.robotsExtra = raw.robotsExtra.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.startsWith("/")).slice(0, 50).join("\n");
   if (typeof raw.llmsIntro === "string") out.llmsIntro = raw.llmsIntro.slice(0, 3000);
   if (typeof raw.maintenanceText === "string") out.maintenanceText = raw.maintenanceText.slice(0, 500);
+  for (const k of ["facebook", "instagram", "youtube", "googleProfile"] as const) {
+    if (typeof raw[k] !== "string") continue;
+    const t = raw[k].trim();
+    if (!t) out[k] = "";
+    else if (/^https:\/\/[^\s]+$/i.test(t)) out[k] = t.slice(0, 300);
+  }
+  for (const k of ["lat", "lng"] as const) {
+    const v = raw[k];
+    if (v == null || v === "") out[k] = null;
+    else if (typeof v === "number" && Number.isFinite(v)) out[k] = Math.round(v * 1e6) / 1e6;
+    else if (typeof v === "string" && /^-?\d+(\.\d+)?$/.test(v.trim())) out[k] = Math.round(Number(v) * 1e6) / 1e6;
+  }
   return out;
 }

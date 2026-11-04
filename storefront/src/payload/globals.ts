@@ -239,7 +239,7 @@ export const StoreSettings: GlobalConfig = {
             section("Firma i kontakt", "Dane pokazywane w stopce, na stronie kontaktu i w mailach.", "info", [
             { name: "storeName", label: "Nazwa sklepu", type: "text", defaultValue: "Sklep SONAX" },
             { type: "row", fields: [
-              { name: "phone", label: "Telefon", type: "text", defaultValue: "+48 500 021 705", admin: { width: "50%" } },
+              { name: "phone", label: "Telefon", type: "text", defaultValue: "+48 664 953 377", admin: { width: "50%" } },
               { name: "email", label: "E-mail", type: "email", admin: { width: "50%" } },
             ] },
             { name: "address", label: "Adres", type: "textarea", defaultValue: "ul. Gen. Wł. Andersa 40, Boks 16\n15-113 Białystok" },

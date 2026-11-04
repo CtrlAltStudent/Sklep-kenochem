@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowDown, BookOpen, Download, FileText, ShieldAlert, Star, TriangleAlert } from "lucide-react";
-import { brandSlug, freeShippingFrom, toCard, usableImages, variantDisplayOf } from "@/lib/data";
+import { brandSlug, freeShippingFrom, plainText, toCard, usableImages, variantDisplayOf } from "@/lib/data";
 import { getDescription, getProduct, getProducts, getSafety, getShopCategories } from "@/lib/catalog";
 import { findRedirect, getPostsAboutProduct, getReviews, getStoreSettings } from "@/lib/cms";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -30,13 +30,13 @@ export async function generateMetadata(props: PageProps<"/produkt/[slug]">): Pro
   const p = await getProduct(slug);
   if (!p) return {};
   // Zakładka „SEO i Google” w panelu; puste pola → nazwa i krótki opis (przycięty do długości wyniku Google)
-  const description = (p.seo?.description || p.short || `${p.name} – oryginalny produkt ${p.brand || "SONAX"}. Sklep Sonax Białystok, wysyłka w 24 h.`).replace(/\s+/g, " ").slice(0, 160);
+  const description = plainText(p.seo?.description || p.short || `${p.name} – oryginalny produkt ${p.brand || "SONAX"}. Sklep Sonax Białystok, wysyłka w 24 h.`).slice(0, 160);
   return {
     title: p.seo?.title || p.name,
     description,
     alternates: { canonical: p.seo?.canonical || `/produkt/${slug}` },
     robots: p.seo?.noindex ? { index: false, follow: true } : undefined,
-    openGraph: { type: "website", title: p.seo?.title || p.name, description, images: p.images.slice(0, 1) },
+    openGraph: { type: "website", siteName: "Sklep Sonax", locale: "pl_PL", title: p.seo?.title || p.name, description, images: p.images.slice(0, 1) },
   };
 }
 
@@ -187,7 +187,7 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
               </ul>
             </details>
           )}
-          <a href="#opis" className="mt-2 inline-flex w-fit items-center gap-1 text-sm font-semibold text-accent hover:underline">Pełny opis <ArrowDown className="h-4 w-4" /></a>
+          <a href="#zakladki" className="mt-2 inline-flex w-fit items-center gap-1 text-sm font-semibold text-accent hover:underline">Pełny opis <ArrowDown className="h-4 w-4" /></a>
           {materials.length > 0 && (
             <div className="mt-6">
               <p className="text-xs font-bold tracking-wide text-slate-400 uppercase">Materiały powiązane</p>
@@ -199,10 +199,7 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
             </div>
           )}
         </>}
-      />
-    ),
-    tabs: (
-      <div className="mt-12 min-w-0">
+        below={getLayout("product").some((s) => s.id === "tabs" && s.visible) ? (
           <ProductTabs tabs={orderTabs([
             { id: "opis", label: "Opis produktu", content: (<>
           <h2 className="sr-only">Opis produktu – {product.name}</h2>
@@ -302,8 +299,10 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
           </div>
         </>) },
           ])} />
-      </div>
+        ) : undefined}
+      />
     ),
+    tabs: null,
     related: related.length > 0 && (
         <section className="mt-14">
           <h2 className="mb-6 text-2xl font-extrabold text-navy">Podobne produkty</h2>

@@ -6,6 +6,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 export const metadata: Metadata = {
   title: "Marki w sklepie",
   description: "Marki dostępne w sklepie Sonax. Oryginalne produkty, wysyłka w 1 dzień roboczy.",
+  alternates: { canonical: "/marki" },
 };
 
 export default async function BrandsPage() {

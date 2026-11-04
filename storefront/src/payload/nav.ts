@@ -31,6 +31,7 @@ export const navSections: NavSection[] = [
       { id: "nav-dashboard", label: "Pulpit", href: "/admin", exact: true },
       { id: "nav-reports", label: "Raporty sprzedaży", href: "/admin/raporty", collection: "orders" },
       { id: "nav-stats", label: "Statystyki sklepu", href: "/admin/statystyki", collection: "orders" },
+      { id: "nav-missing", label: "Brakujące strony", href: "/admin/brakujace-strony", collection: "redirects" },
       { id: "nav-help", label: "Instrukcja", href: "/admin/pomoc" },
     ],
   },
@@ -57,6 +58,8 @@ export const navSections: NavSection[] = [
   {
     label: "Marketing",
     items: [
+      { id: "nav-promo", label: "Kampania promocyjna", href: "/admin/promocje", collection: "coupons" },
+      { id: "nav-google-reviews", label: "Opinie z Google", href: "/admin/opinie-google", collection: "reviews" },
       col("coupons", "Kody rabatowe"),
       col("reviews", "Opinie", { badge: { collection: "reviews", where: { status: { equals: "pending" } }, tone: "amber" } }),
       col("newsletter", "Newsletter"),
