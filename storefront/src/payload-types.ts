@@ -2197,7 +2197,7 @@ export interface Navigation {
   announcement?: {
     enabled?: boolean | null;
     /**
-     * Puste = „Darmowa dostawa od … · wysyłka zwykle w 1 dzień roboczy”. Kwota darmowej dostawy jest w Ustawieniach sklepu → Dostawa.
+     * Puste = „Darmowa dostawa od … · wysyłka 24h”. Kwota darmowej dostawy jest w Ustawieniach sklepu → Dostawa.
      */
     text?: string | null;
     link?: string | null;

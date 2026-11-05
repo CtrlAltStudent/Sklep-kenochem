@@ -5,7 +5,7 @@
 import Link from "next/link";
 import { useDocumentInfo, useField, useForm } from "@payloadcms/ui";
 import { useEffect, useState } from "react";
-import { Archive, Ban, Banknote, BellRing, CheckCircle2, Download, ListOrdered, Mail, PackageCheck, Printer, Receipt, RefreshCw, TrendingUp, Truck } from "lucide-react";
+import { Archive, Ban, Banknote, BellRing, CheckCircle2, Download, ListOrdered, Mail, PackageCheck, Printer, Receipt, RefreshCw, Trash2, TrendingUp, Truck } from "lucide-react";
 
 type Res = { ok: boolean; message: string };
 const pln = (n: number) => `${n.toFixed(2).replace(".", ",")} zł`;
@@ -24,19 +24,33 @@ const NEXT: { to: string; label: string; icon: typeof Truck; from: string[] }[] 
 
 export function OrderActions() {
   const { id } = useDocumentInfo();
-  const { submit } = useForm();
   const status = useField<string>({ path: "status" });
   const email = useField<string>({ path: "email" });
   const [busy, setBusy] = useState("");
   const [res, setRes] = useState<Res | null>(null);
   if (!id) return null;
 
-  const setStatus = (to: string, label: string) => {
+  const setStatus = async (to: string, label: string) => {
     if (to === "cancelled" && !confirm("Anulować zamówienie? Stany produktów wrócą, a klient dostanie mail o anulowaniu.")) return;
-    status.setValue(to);
+    setBusy(to);
     setRes({ ok: true, message: `${label} – zapisuję…` });
-    // zapis po aktualizacji pola w formularzu
-    setTimeout(() => void submit(), 50);
+    const r: Res = await fetch(`/api/order-tools/${id}/status`, {
+      method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: to }),
+    }).then((x) => x.json()).catch(() => ({ ok: false, message: "Brak połączenia" }));
+    setBusy("");
+    setRes(r);
+    if (r.ok) {
+      status.setValue(to);
+      window.location.reload();
+    }
+  };
+  const remove = async () => {
+    if (!confirm("Usunąć to zamówienie z panelu? Tej operacji nie cofniesz. Klient nie dostanie maila.")) return;
+    setBusy("delete");
+    const r: Res = await fetch(`/api/order-tools/${id}/delete`, { method: "POST", credentials: "include" })
+      .then((x) => x.json()).catch(() => ({ ok: false, message: "Brak połączenia" }));
+    if (r.ok) window.location.href = "/admin/collections/orders";
+    else { setBusy(""); setRes(r); }
   };
   const resend = async () => {
     setBusy("resend");
@@ -49,8 +63,9 @@ export function OrderActions() {
     <div className="kc-act">
       <h4>Szybkie akcje</h4>
       {NEXT.filter((n) => n.from.includes(status.value ?? "")).map(({ to, label, icon: Icon }) => (
-        <button key={to} type="button" className={`kc-act__btn ${to === "cancelled" ? "is-danger" : ""}`} onClick={() => setStatus(to, label)}><Icon size={15} /> {label}</button>
+        <button key={to} type="button" className={`kc-act__btn ${to === "cancelled" ? "is-danger" : ""}`} disabled={busy !== ""} onClick={() => void setStatus(to, label)}><Icon size={15} /> {label}</button>
       ))}
+      <button type="button" className="kc-act__btn is-danger" disabled={busy !== ""} onClick={() => void remove()}><Trash2 size={15} /> {busy === "delete" ? "Usuwam…" : "Usuń zamówienie"}</button>
       <button type="button" className="kc-act__btn" disabled={busy === "resend"} onClick={resend}><Mail size={15} /> {busy === "resend" ? "Wysyłam…" : "Wyślij ponownie potwierdzenie"}</button>
       <a className="kc-act__btn" href={`/api/order-tools/${id}/print`} target="_blank" rel="noreferrer"><Printer size={15} /> Drukuj zamówienie</a>
       {email.value && (

@@ -50,6 +50,7 @@ export function orderPlacedMails(payload: Payload, orderId: number | string) {
 
 // Hook kolekcji Orders: mail przy zmianie statusu (także zmienionego ręcznie w panelu)
 export const orderStatusMailHook: CollectionAfterChangeHook<Order> = ({ doc, previousDoc, operation, req, context: hookContext }) => {
+  if (hookContext?.skipMail) return doc;
   if (operation !== "update" || !previousDoc || doc.status === previousDoc.status || !mailReady()) return doc;
   const status = doc.status;
   if (status !== "paid" && status !== "shipped" && status !== "cancelled") return doc;

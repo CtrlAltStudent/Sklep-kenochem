@@ -198,7 +198,7 @@ export const Navigation: GlobalConfig = {
     section("Pasek na górze", "Czarny pasek nad menu. Pusty tekst = darmowa dostawa i czas wysyłki.", "info", [
     { name: "announcement", label: "Pasek", type: "group", fields: [
       { name: "enabled", label: "Pokaż pasek", type: "checkbox", defaultValue: true },
-      { name: "text", label: "Tekst", type: "text", admin: { description: "Puste = „Darmowa dostawa od … · wysyłka zwykle w 1 dzień roboczy”. Kwota darmowej dostawy jest w Ustawieniach sklepu → Dostawa." } },
+      { name: "text", label: "Tekst", type: "text", admin: { description: "Puste = „Darmowa dostawa od … · wysyłka 24h”. Kwota darmowej dostawy jest w Ustawieniach sklepu → Dostawa." } },
       { name: "link", label: "Link (opcjonalnie)", type: "text" },
     ] },
     ], { id: "pasek" }),

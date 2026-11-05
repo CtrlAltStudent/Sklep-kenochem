@@ -43,7 +43,7 @@ const activeNow = (from?: string | null, to?: string | null) => {
   return (!from || new Date(from).getTime() <= now) && (!to || new Date(to).getTime() + 86_400_000 > now);
 };
 const perks = (freeShipping: number, phone: string, hours: string) => [
-  { icon: Truck, title: "Wysyłka w 1 dzień roboczy", text: "InPost i ORLEN Paczka" },
+  { icon: Truck, title: "Wysyłka 24h", text: "InPost i ORLEN Paczka" },
   { icon: Store, title: "Odbiór w Białymstoku", text: "ul. Gen. Andersa 40" },
   { icon: ShieldCheck, title: `Darmowa dostawa od ${formatPrice(freeShipping)}`, text: "BLIK, karta, przelew" },
   { icon: Headset, title: `Doradztwo ${hours}`, text: phone.replace(/^\+48\s*/, "") },
@@ -154,7 +154,7 @@ export async function HomeScreen({ draft = false, sectionIds = null }: { draft?:
         <div className="mx-auto max-w-shop px-4 py-16 sm:py-24">
           <p className="text-xs font-bold tracking-[0.2em] text-white/70 uppercase">Oficjalny sklep SONAX · Białystok</p>
           <h1 className="mt-4 max-w-xl text-4xl font-extrabold tracking-tight sm:text-6xl">Chemia i kosmetyki<br />do auta</h1>
-          <p className="mt-5 max-w-lg text-base text-white/80 sm:text-lg">{productTotal.toLocaleString("pl-PL")} produktów do mycia, polerowania i ochrony. Większość zamówień wysyłamy w 1 dzień roboczy.</p>
+          <p className="mt-5 max-w-lg text-base text-white/80 sm:text-lg">{productTotal.toLocaleString("pl-PL")} produktów do mycia, polerowania i ochrony. Większość zamówień wysyłamy w 24h.</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/kategoria/mycie-auta" className="rounded-lg bg-accent px-6 py-3 text-sm font-bold text-white hover:bg-accent-dark">Przeglądaj chemię</Link>
             <Link href="/marki/sonax" className="rounded-lg bg-white px-6 py-3 text-sm font-bold text-navy hover:bg-slate-100">Produkty SONAX</Link>

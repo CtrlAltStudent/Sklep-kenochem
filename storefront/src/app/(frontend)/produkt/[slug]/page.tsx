@@ -30,7 +30,7 @@ export async function generateMetadata(props: PageProps<"/produkt/[slug]">): Pro
   const p = await getProduct(slug);
   if (!p) return {};
   // Zakładka „SEO i Google” w panelu; puste pola → nazwa i krótki opis (przycięty do długości wyniku Google)
-  const description = plainText(p.seo?.description || p.short || `${p.name} – oryginalny produkt ${p.brand || "SONAX"}. Sklep Sonax Białystok, wysyłka w 24 h.`).slice(0, 160);
+  const description = plainText(p.seo?.description || p.short || `${p.name} – oryginalny produkt ${p.brand || "SONAX"}. Sklep Sonax Białystok, wysyłka 24h.`).slice(0, 160);
   return {
     title: p.seo?.title || p.name,
     description,

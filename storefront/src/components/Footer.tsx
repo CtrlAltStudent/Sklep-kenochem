@@ -31,7 +31,7 @@ export function Footer({ productCount, phone = SHOP_PHONE }: { productCount: num
     { icon: BadgeCheck, title: "Oryginalne produkty", text: "SONAX i sprawdzone marki" },
     { icon: Store, title: "Sklep w Białymstoku", text: "odbiór osobisty i doradztwo" },
     { icon: Boxes, title: `${productCount.toLocaleString("pl-PL")} produktów`, text: "do mycia, polerowania i ochrony" },
-    { icon: Truck, title: "InPost i ORLEN Paczka", text: "zwykle w 1 dzień roboczy" },
+    { icon: Truck, title: "InPost i ORLEN Paczka", text: "wysyłka 24h" },
   ];
   return (
     <footer className="mt-20">

@@ -8,11 +8,12 @@ import type { Order, StoreSetting } from "@/payload-types";
 import { getMailSettings } from "../vault";
 import { DEFAULT_FRAME, fill, htmlToText, mailDef, mailEnabled, type MailId, type MailSettings, type Vars } from "./catalog";
 
-const DARK = "#181c21";
-const MUTED = "#66727c";
+// Kolory jak w sklepie (globals.css): grafit i szarości; czerwień (accent) tylko na przyciskach i akcentach
+const DARK = "#15191e";
+const MUTED = "#5b6470";
+const FAINT = "#9aa3ab";
 const BORDER = "#e5e7eb";
-const SOFT = "#f5f6f7";
-const GREEN = "#15803d";
+const SOFT = "#f6f7f8";
 
 export const siteUrl = () => (process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000").replace(/\/$/, "");
 const esc = (s: unknown) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -28,8 +29,12 @@ export const withMailSettings = <R,>(s: MailSettings, fn: () => R) => draft.run(
 const settings = () => draft.getStore() ?? getMailSettings();
 const accent = () => settings().brand.accent;
 
+// Odstęp działający też w Outlooku (nie respektuje marginesów tabel)
+const gap = (h: number) => `<div style="height:${h}px;line-height:${h}px;font-size:1px">&nbsp;</div>`;
+const caption = (s: string) => `<span style="color:${MUTED};font-size:11px;line-height:16px;font-weight:600;letter-spacing:.08em;text-transform:uppercase">${s}</span>`;
+
 const button = (href: string, label: string) =>
-  `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:22px 0 10px"><tr><td style="background:${accent()};border-radius:12px"><a href="${esc(href)}" style="display:inline-block;padding:14px 26px;color:#fff;font-weight:700;text-decoration:none;font-size:15px">${esc(label)} &rarr;</a></td></tr></table>`;
+  `${gap(24)}<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="${accent()}" style="background:${accent()};border-radius:24px;mso-padding-alt:13px 28px"><a href="${esc(href)}" style="display:inline-block;padding:13px 28px;color:#ffffff;font-weight:600;text-decoration:none;font-size:15px;line-height:20px">${esc(label)}</a></td></tr></table>`;
 
 type Data = {
   vars?: Vars;
@@ -60,14 +65,18 @@ function render(id: MailId, shop: Shop, d: Data): Built {
     wstep: esc(lead).replace(/\n/g, "<br>"),
   };
   const body = fill(o.body ?? def.body, vars, blocks);
+  // Domyślna stopka jest grafitowa; własna ramka właściciela może mieć jasne tło
+  const footerLink = b.frame ? MUTED : "#cfd4da";
   const contact = [
-    shop.phone && `tel. <a href="tel:${esc(String(shop.phone).replace(/\s/g, ""))}" style="color:${MUTED};text-decoration:none">${esc(shop.phone)}</a>`,
-    shop.email && `<a href="mailto:${esc(shop.email)}" style="color:${MUTED}">${esc(shop.email)}</a>`,
+    shop.phone && `tel. <a href="tel:${esc(String(shop.phone).replace(/\s/g, ""))}" style="color:${footerLink};text-decoration:none">${esc(shop.phone)}</a>`,
+    shop.email && `<a href="mailto:${esc(shop.email)}" style="color:${footerLink};text-decoration:none">${esc(shop.email)}</a>`,
     shop.hours && esc(shop.hours),
-  ].filter(Boolean).join(" &nbsp;·&nbsp; ");
+  ].filter(Boolean).join(" &middot; ");
+  const logo = b.logo || "/sonax/logo.png";
   const frameVars: Vars = {
-    ...vars, tytul: title, zajawka: d.preheader ?? lead, logo: b.logo || `${siteUrl()}/sonax/logo.png`, stopka: b.footer, atuty: b.perks,
-    adres: String(shop.address ?? "").replace(/\n/g, ", "),
+    ...vars, tytul: title, zajawka: d.preheader ?? lead, logo: logo.startsWith("/") ? `${siteUrl()}${logo}` : logo, stopka: b.footer, atuty: b.perks,
+    adres: String(shop.address || "ul. Gen. Andersa 40, 15-113 Białystok").replace(/\n/g, ", "),
+    nip: /NIP/i.test(b.footer) ? "" : "5423224790",
   };
   const html = fill(b.frame || DEFAULT_FRAME, frameVars, { tresc: body, postep: d.top ?? "", kontakt: contact });
   return { subject, html, text: `${title}\n\n${htmlToText(body)}`, skip: !mailEnabled(s, id) };
@@ -85,37 +94,35 @@ const STEPS = ["Przyjęte", "Opłacone", "Wysłane", "U Ciebie"];
 function progress(step: number) {
   const cells = STEPS.map((s, n) => {
     const done = n <= step;
-    return `<td align="center" style="width:25%;padding:0 2px;font-size:11px;font-weight:700;color:${done ? DARK : "#9aa3ab"}">
-<div style="height:6px;border-radius:3px;background:${n < step ? GREEN : n === step ? accent() : BORDER};margin-bottom:6px"></div>${done && n < step ? "&#10003; " : ""}${s}</td>`;
+    return `<td align="left" style="width:25%;padding:0 ${n < STEPS.length - 1 ? 6 : 0}px 0 0;font-size:11px;line-height:16px;font-weight:${n === step ? 600 : 400};color:${done ? DARK : FAINT}">
+<div style="height:3px;line-height:3px;font-size:1px;background:${n < step ? DARK : n === step ? accent() : BORDER};margin-bottom:6px">&nbsp;</div>${s}</td>`;
   }).join("");
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 22px"><tr>${cells}</tr></table>`;
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>${cells}</tr></table>${gap(28)}`;
 }
-const chip = (o: Order) => `<p style="margin:0 0 6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:${MUTED}">Zamówienie <b style="color:${DARK}">${esc(o.orderNumber)}</b> · ${new Date(o.createdAt).toLocaleDateString("pl-PL", { day: "numeric", month: "long", year: "numeric" })}</p>`;
+const chip = (o: Order) => `<p style="margin:0 0 16px;font-size:13px;line-height:1.5;color:${MUTED}">Zamówienie <b style="color:${DARK};font-weight:600">${esc(o.orderNumber)}</b> &middot; ${new Date(o.createdAt).toLocaleDateString("pl-PL", { day: "numeric", month: "long", year: "numeric" })}</p>`;
 const productId = (p: unknown) => String(typeof p === "object" && p ? (p as { id: unknown }).id : p ?? "");
 
+// Miniatura w białym kwadracie: obraz nie rozciąga się, nawet gdy nie jest kwadratowy (Gmail i Outlook nie znają object-fit)
 const thumb = (img?: string) =>
-  img
-    ? `<img src="${esc(img)}" alt="" width="64" height="64" style="display:block;width:64px;height:64px;object-fit:contain;border-radius:10px;background:${SOFT};border:1px solid ${BORDER}">`
-    : `<div style="width:64px;height:64px;border-radius:10px;background:${SOFT};border:1px solid ${BORDER}"></div>`;
+  `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td width="64" height="64" align="center" valign="middle" bgcolor="#ffffff" style="width:64px;height:64px;background:#ffffff;border:1px solid ${BORDER};border-radius:8px;font-size:1px;line-height:1px">${img ? `<img src="${esc(img)}" alt="" width="58" style="display:block;border:0;width:auto;max-width:58px;max-height:58px;height:auto;margin:0 auto">` : "&nbsp;"}</td></tr></table>`;
 
 type Line = { name: string; label?: string | null; qty: number; price: number; image?: string };
 function linesTable(lines: Line[], totals: [string, string][], total: number) {
   const rows = lines.map((i) => `<tr>
-<td style="padding:12px 12px 12px 0;border-bottom:1px solid ${BORDER};width:64px;vertical-align:top">${thumb(i.image)}</td>
-<td style="padding:12px 8px 12px 0;border-bottom:1px solid ${BORDER};vertical-align:top;font-size:14px;line-height:1.4"><b>${esc(i.name)}</b>${i.label ? `<br><span style="color:${MUTED};font-size:12px">${esc(i.label)}</span>` : ""}<br><span style="color:${MUTED};font-size:12px">${i.qty} szt. × ${pln(i.price)}</span></td>
-<td align="right" style="padding:12px 0;border-bottom:1px solid ${BORDER};white-space:nowrap;font-weight:700;vertical-align:top;font-size:14px">${pln(i.price * i.qty)}</td></tr>`).join("");
-  const line = ([k, v]: [string, string]) => `<tr><td style="padding:3px 0;color:${MUTED};font-size:14px">${k}</td><td align="right" style="padding:3px 0;font-size:14px">${v}</td></tr>`;
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:18px 0 0">${rows}</table>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:12px 0 6px;background:${SOFT};border-radius:12px"><tr><td style="padding:14px 16px">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${totals.map(line).join("")}
-<tr><td style="padding:10px 0 0;border-top:1px solid ${BORDER};font-size:16px;font-weight:800">Razem</td><td align="right" style="padding:10px 0 0;border-top:1px solid ${BORDER};font-size:20px;font-weight:800;color:${accent()}">${pln(total)}</td></tr>
-</table></td></tr></table>`;
+<td valign="top" style="padding:14px 14px 14px 0;border-bottom:1px solid ${BORDER};width:66px">${thumb(i.image)}</td>
+<td valign="top" style="padding:14px 10px 14px 0;border-bottom:1px solid ${BORDER};font-size:14px;line-height:1.45;color:${DARK}"><b style="font-weight:600">${esc(i.name)}</b>${i.label ? `<br><span style="color:${MUTED};font-size:12px">${esc(i.label)}</span>` : ""}<br><span style="color:${MUTED};font-size:12px">${i.qty} szt. × ${pln(i.price)}</span></td>
+<td align="right" valign="top" style="padding:14px 0;border-bottom:1px solid ${BORDER};white-space:nowrap;font-weight:600;font-size:14px;line-height:1.45;color:${DARK}">${pln(i.price * i.qty)}</td></tr>`).join("");
+  const line = ([k, v]: [string, string]) => `<tr><td style="padding:3px 0;color:${MUTED};font-size:14px;line-height:1.45">${k}</td><td align="right" style="padding:3px 0;font-size:14px;line-height:1.45;color:${DARK}">${v}</td></tr>`;
+  return `${gap(16)}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${rows}</table>
+${gap(10)}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${totals.map(line).join("")}
+<tr><td style="padding:8px 0 0;font-size:15px;line-height:24px;font-weight:600;color:${DARK}">Razem</td><td align="right" style="padding:8px 0 0;font-size:18px;line-height:24px;font-weight:700;color:${DARK}">${pln(total)}</td></tr>
+</table>`;
 }
 
 function itemsTable(o: Order, c?: Ctx) {
   const lines = (o.items ?? []).map((i) => ({ name: i.name, label: i.variantLabel, qty: Number(i.quantity), price: Number(i.priceGross), image: c?.images?.[productId(i.product)] }));
   const subtotal = lines.reduce((n, i) => n + i.price * i.qty, 0);
-  const ship = Number(o.shipping?.price) ? pln(o.shipping?.price) : `<span style="color:${GREEN};font-weight:700">gratis</span>`;
+  const ship = Number(o.shipping?.price) ? pln(o.shipping?.price) : "gratis";
   return linesTable(lines, [["Produkty", pln(subtotal)], ["Dostawa", ship]], Number(o.total));
 }
 
@@ -126,9 +133,9 @@ function deliveryBox(o: Order, c: Ctx) {
     : s?.method === "pickup"
       ? "Odbiór osobisty w sklepie – damy znać, gdy paczka będzie gotowa."
       : `${esc(s?.fullName)}<br>${esc(s?.street)}<br>${esc(s?.postcode)} ${esc(s?.city)}`;
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:14px 0;font-size:14px;line-height:1.5;border:1px solid ${BORDER};border-radius:12px"><tr>
-<td style="padding:14px 16px;vertical-align:top;width:50%;border-right:1px solid ${BORDER}"><span style="color:${MUTED};font-size:12px;text-transform:uppercase;letter-spacing:.06em">Dostawa</span><br><b>${esc(c.shipLabel || shipName(s?.method ?? ""))}</b><br>${where}</td>
-<td style="padding:14px 16px;vertical-align:top"><span style="color:${MUTED};font-size:12px;text-transform:uppercase;letter-spacing:.06em">Płatność</span><br><b>${esc(c.payLabel || o.payment?.method)}</b><br>${o.payment?.status === "paid" ? "opłacone" : o.payment?.status === "deferred" ? "przy odbiorze" : "czeka na wpłatę"}</td>
+  return `${gap(20)}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${SOFT}" style="background:${SOFT};border-radius:8px"><tr>
+<td valign="top" class="m-stack" style="padding:16px 18px;width:50%;font-size:14px;line-height:1.5;color:${DARK}">${caption("Dostawa")}<br><b style="font-weight:600">${esc(c.shipLabel || shipName(s?.method ?? ""))}</b><br>${where}</td>
+<td valign="top" class="m-stack" style="padding:16px 18px;font-size:14px;line-height:1.5;color:${DARK}">${caption("Płatność")}<br><b style="font-weight:600">${esc(c.payLabel || o.payment?.method)}</b><br>${o.payment?.status === "paid" ? "opłacone" : o.payment?.status === "deferred" ? "przy odbiorze" : "czeka na wpłatę"}</td>
 </tr></table>`;
 }
 
@@ -148,7 +155,7 @@ function orderData(o: Order, c: Ctx): { vars: Vars; blocks: Record<string, strin
     blocks: {
       naglowek_zamowienia: chip(o), produkty: itemsTable(o, c), dostawa_i_platnosc: deliveryBox(o, c),
       dane_do_przelewu: transfer && c.bank && pay !== "paid"
-        ? `<div style="margin:16px 0;padding:14px 16px;border:2px dashed ${accent()};border-radius:12px;font-size:14px"><b>Dane do przelewu</b><br>${esc(c.bank)}<br>Kwota: <b>${pln(o.total)}</b><br>Tytuł: <b>${esc(o.orderNumber)}</b></div>`
+        ? `${gap(16)}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${SOFT}" style="background:${SOFT}"><tr><td style="padding:16px 18px;border-left:3px solid ${accent()};font-size:14px;line-height:1.6;color:${DARK}">${caption("Dane do przelewu")}<br>${esc(c.bank)}<br>Kwota: <b style="font-weight:600">${pln(o.total)}</b><br>Tytuł: <b style="font-weight:600">${esc(o.orderNumber)}</b></td></tr></table>`
         : "",
     },
   };
@@ -167,7 +174,7 @@ export type Parcel = { number: string; courier: string; url: string };
 
 export function orderShipped(o: Order, c: Ctx, parcels: Parcel[]): Built {
   const d = orderData(o, c);
-  const list = (label: string) => parcels.map((p) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:14px 0 0;border:2px solid ${GREEN};border-radius:12px"><tr><td style="padding:14px 16px;font-size:14px"><span style="color:${MUTED};font-size:12px;text-transform:uppercase;letter-spacing:.06em">Numer przesyłki</span><br><b style="font-size:17px">${esc(p.number)}</b><br>${esc(p.courier)}${p.url && label ? button(p.url, label) : ""}</td></tr></table>`).join("");
+  const list = (label: string) => parcels.map((p) => `${gap(16)}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${SOFT}" style="background:${SOFT};border-radius:8px"><tr><td style="padding:18px;font-size:14px;line-height:1.5;color:${DARK}">${caption("Numer przesyłki")}<br><b style="font-size:16px;font-weight:600;word-break:break-all">${esc(p.number)}</b><br><span style="color:${MUTED}">${esc(p.courier)}</span>${p.url && label ? button(p.url, label) : ""}</td></tr></table>`).join("");
   return render("order-shipped", c.shop, { vars: d.vars, blocks: (label) => ({ ...d.blocks, paczki: list(label) }), top: progress(2) });
 }
 
@@ -200,11 +207,10 @@ export function shopNewOrder(o: Order, c: Ctx): Built {
 
 export function reviewRequest(o: Order, c: Ctx, products: { name: string; slug: string; image?: string }[]): Built {
   const d = orderData(o, c);
-  const list = (label: string) => products.map((p) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:14px 0 0;border:1px solid ${BORDER};border-radius:12px"><tr>
-<td style="padding:12px;width:64px;vertical-align:middle">${thumb(p.image)}</td>
-<td style="padding:12px 8px;vertical-align:middle;font-size:14px;line-height:1.4"><b>${esc(p.name)}</b><br><span style="color:#f5a524;font-size:18px;letter-spacing:2px">&#9733;&#9733;&#9733;&#9733;&#9733;</span></td>
-<td align="right" style="padding:12px;vertical-align:middle"><a href="${esc(`${siteUrl()}/produkt/${p.slug}#opinie`)}" style="display:inline-block;padding:10px 16px;border-radius:10px;background:${accent()};color:#fff;font-weight:700;font-size:13px;text-decoration:none;white-space:nowrap">${esc(label || "Oceń")}</a></td>
-</tr></table>`).join("");
+  const list = (label: string) => `${gap(16)}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${products.map((p) => `<tr>
+<td valign="top" style="padding:14px 14px 14px 0;border-bottom:1px solid ${BORDER};width:66px">${thumb(p.image)}</td>
+<td valign="middle" style="padding:14px 0;border-bottom:1px solid ${BORDER};font-size:14px;line-height:1.45;color:${DARK}"><b style="font-weight:600">${esc(p.name)}</b><br><a href="${esc(`${siteUrl()}/produkt/${p.slug}#opinie`)}" style="color:${accent()};font-weight:600;font-size:13px;text-decoration:underline">${esc(label || "Wystaw opinię")}</a></td>
+</tr>`).join("")}</table>`;
   return render("review-request", c.shop, { vars: d.vars, blocks: (label) => ({ produkty_do_oceny: list(label) }) });
 }
 
@@ -224,10 +230,10 @@ export function cartReminder(shop: Shop, cart: { lines: CartMailLine[]; total: n
 // ---------- Formularze i dostępność ----------
 
 export function shopFormNotice(shop: Shop, title: string, rows: [string, unknown][], adminPath: string): Built {
-  const list = rows.filter(([, v]) => v != null && v !== "").map(([k, v]) => `<tr><td style="padding:6px 12px 6px 0;color:${MUTED};vertical-align:top;white-space:nowrap">${esc(k)}</td><td style="padding:6px 0">${esc(v).replace(/\n/g, "<br>")}</td></tr>`).join("");
+  const list = rows.filter(([, v]) => v != null && v !== "").map(([k, v]) => `<tr><td valign="top" style="padding:10px 14px 10px 0;border-bottom:1px solid ${BORDER};color:${MUTED};font-size:14px;line-height:1.5;white-space:nowrap">${esc(k)}</td><td style="padding:10px 0;border-bottom:1px solid ${BORDER};font-size:14px;line-height:1.5;color:${DARK}">${esc(v).replace(/\n/g, "<br>")}</td></tr>`).join("");
   return render("shop-form-notice", shop, {
     vars: { tytul_formularza: title },
-    blocks: { dane: `<table role="presentation" cellpadding="0" cellspacing="0" style="font-size:14px">${list}</table>` },
+    blocks: { dane: `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${list}</table>` },
     link: `${siteUrl()}${adminPath}`,
   });
 }
@@ -263,7 +269,7 @@ export function messageReply(shop: Shop, m: { name?: string | null; subject?: st
     vars: { imie: m.name?.split(" ")[0], temat: m.subject || "Twoja wiadomość", produkt: m.product?.name, link_produktu: m.product ? `${siteUrl()}/produkt/${m.product.slug}` : "" },
     blocks: {
       odpowiedz: `<div style="white-space:pre-line">${esc(reply)}</div>`,
-      cytat: quote ? `<div style="margin:22px 0 0;padding:12px 16px;border-left:3px solid ${BORDER};color:${MUTED};font-size:13px;white-space:pre-line"><b>Twoja wiadomość:</b>\n${esc(quote)}</div>` : "",
+      cytat: quote ? `${gap(24)}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:2px 0 2px 16px;border-left:3px solid ${BORDER};color:${MUTED};font-size:13px;line-height:1.6">${caption("Twoja wiadomość")}<br>${esc(quote).replace(/\n/g, "<br>")}</td></tr></table>` : "",
     },
     preheader: reply.slice(0, 120),
   });

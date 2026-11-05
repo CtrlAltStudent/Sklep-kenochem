@@ -46,7 +46,7 @@ export function ProductRow({ product }: { product: ProductCardData }) {
           </div>
           <p className={`mt-2 flex items-center gap-3 text-xs font-medium ${product.stock > 0 ? "text-green-700" : "text-amber-700"}`}>
             {product.stock > 0
-              ? <><span className="flex items-center gap-1"><CircleCheck className="h-3.5 w-3.5" /> dostępny</span><span className="flex items-center gap-1 text-slate-500"><Truck className="h-3.5 w-3.5" /> wysyłka w 24 h</span></>
+              ? <><span className="flex items-center gap-1"><CircleCheck className="h-3.5 w-3.5" /> dostępny</span><span className="flex items-center gap-1 text-slate-500"><Truck className="h-3.5 w-3.5" /> wysyłka 24h</span></>
               : <span className="flex items-center gap-1 text-slate-500"><Clock3 className="h-3.5 w-3.5" /> chwilowo niedostępny</span>}
           </p>
         </div>

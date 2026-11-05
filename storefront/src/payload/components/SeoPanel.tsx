@@ -61,7 +61,7 @@ export function SeoPanel({ kind = "product" }: { kind?: Kind }) {
   const phrase: Check[] = keyword
     ? [
         { ok: has(shownTitle, keyword), text: `Fraza „${keyword}” jest w tytule w Google.`, hint: `Zacznij tytuł od frazy, np. „${keyword} – ${name.slice(0, 40)}”.` },
-        { ok: has(shownDesc, keyword), text: `Fraza „${keyword}” jest w opisie w Google.`, hint: `Dopisz zdanie: „${keyword} – wysyłka w 24 h ze sklepu Sonax w Białymstoku.”` },
+        { ok: has(shownDesc, keyword), text: `Fraza „${keyword}” jest w opisie w Google.`, hint: `Dopisz zdanie: „${keyword} – wysyłka 24h ze sklepu Sonax w Białymstoku.”` },
         { ok: has(slug.replace(/-/g, " "), keyword) ? true : "warn", text: "Fraza jest w adresie strony.", hint: "Adres z frazą pomaga, ale zmiana obecnego adresu wymaga przekierowania ze starego." },
         { ok: has(firstBits, keyword), text: "Fraza jest w pierwszych zdaniach tekstu.", hint: "Wstaw frazę w pierwszym akapicie, naturalnie, nie jako lista słów." },
         { ok: hits === 0 ? false : density > 3 ? "warn" : true, text: hits === 0 ? "Fraza nie pojawia się w tekście." : `Fraza w tekście ${hits} ${hits === 1 ? "raz" : "razy"} (ok. ${density.toFixed(1)}%).`, hint: hits === 0 ? "Użyj frazy 2–4 razy: na początku, przy zastosowaniu i przy pojemności." : "Fraza powtarza się za często. Zostaw 2–4 naturalne użycia." },

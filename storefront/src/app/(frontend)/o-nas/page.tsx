@@ -24,7 +24,7 @@ const offer = [
 
 const team = [
   { icon: Headset, title: "Doradztwo", text: "Pomagamy dobrać preparat do lakieru, felg, wnętrza i twardości wody. Zadzwoń – odpowiemy konkretnie." },
-  { icon: Warehouse, title: "Magazyn i wysyłka", text: "Większość dostępnych produktów przekazujemy do wysyłki w ciągu 1 dnia roboczego." },
+  { icon: Warehouse, title: "Magazyn i wysyłka", text: "Większość dostępnych produktów wysyłamy w 24h." },
   { icon: Store, title: "Sklep stacjonarny", text: "Zapraszamy do Białegostoku – doradzimy na miejscu, a towar odbierzesz od ręki." },
   { icon: Truck, title: "Cała Polska", text: "Wysyłamy kurierem InPost, do Paczkomatów i punktów ORLEN Paczka. Odbiór osobisty po uzgodnieniu." },
 ];
@@ -37,7 +37,7 @@ export default async function AboutPage() {
   const stats = [
     [`${products.length}`, "produktów w ofercie"],
     [`${brands.length}`, "marek"],
-    ["1 dzień", "zwykle do wysyłki"],
+    ["24h", "wysyłka"],
     ["Białystok", "sklep stacjonarny"],
   ];
 

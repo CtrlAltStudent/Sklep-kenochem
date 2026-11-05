@@ -75,7 +75,7 @@ export function ProductCard({ product, priority }: { product: ProductCardData; p
             <p className="mt-0.5 text-[10px] leading-tight text-slate-400">Najniższa z 30 dni: {formatPrice(product.lowestPrice30d)}</p>
           )}
           <p className={`mt-2 flex items-center gap-1 text-[11px] font-medium ${inStock ? "text-green-700" : "text-amber-700"}`}>
-            {inStock ? <><CircleCheck className="h-3.5 w-3.5" /> wysyłka 24 h</> : <><Clock3 className="h-3.5 w-3.5" /> brak w magazynie</>}
+            {inStock ? <><CircleCheck className="h-3.5 w-3.5" /> wysyłka 24h</> : <><Clock3 className="h-3.5 w-3.5" /> brak w magazynie</>}
           </p>
           {inStock ? (
             <button type="button" onClick={add} aria-label={`Dodaj do koszyka: ${product.name}`}

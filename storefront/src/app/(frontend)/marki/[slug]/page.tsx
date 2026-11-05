@@ -16,7 +16,7 @@ export async function generateMetadata(props: PageProps<"/marki/[slug]">): Promi
   const { slug } = await props.params;
   const brand = (await getShopBrands()).find((b) => b.slug === slug);
   const title = brand ? `${brand.name} – produkty` : undefined;
-  const description = brand ? `${brand.name}: ${brand.count} produktów w sklepie Sonax. Oryginalne produkty, wysyłka zwykle w 1 dzień roboczy.` : undefined;
+  const description = brand ? `${brand.name}: ${brand.count} produktów w sklepie Sonax. Oryginalne produkty, wysyłka 24h.` : undefined;
   return brand ? { title, description, alternates: { canonical: `/marki/${brand.slug}` }, openGraph: { type: "website", siteName: "Sklep Sonax", locale: "pl_PL", title, description } } : {};
 }
 

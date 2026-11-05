@@ -346,7 +346,7 @@ export function Listing({ products, category, counts, params = {} }: {
       )}
 
       <Section title="Dostępność i oferta" count={offerCount}>
-        <CheckRow checked={onlyAvailable} onChange={() => { setOnlyAvailable(!onlyAvailable); setShown(PAGE); }} label="Dostępne od ręki – wysyłka 24 h" />
+        <CheckRow checked={onlyAvailable} onChange={() => { setOnlyAvailable(!onlyAvailable); setShown(PAGE); }} label="Dostępne od ręki – wysyłka 24h" />
         <CheckRow checked={onlyPromo} onChange={() => { setOnlyPromo(!onlyPromo); setShown(PAGE); }} label="Promocje" />
         <CheckRow checked={onlyNew} onChange={() => { setOnlyNew(!onlyNew); setShown(PAGE); }} label="Nowości" />
       </Section>

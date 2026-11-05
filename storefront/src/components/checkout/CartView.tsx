@@ -107,7 +107,7 @@ export function CartView({ minShip, shipping }: { minShip: number; shipping: Car
             </div>
           </div>
           <ul className="grid gap-2 rounded-3xl bg-white p-5 text-[13px] text-slate-600 ring-1 ring-brand-100">
-            <li className="flex items-center gap-2.5"><Truck className="h-4 w-4 text-leaf" /> Wysyłka w 24 h, darmowa od {formatPrice(freeShipping)}</li>
+            <li className="flex items-center gap-2.5"><Truck className="h-4 w-4 text-leaf" /> Wysyłka 24h, darmowa od {formatPrice(freeShipping)}</li>
             <li className="flex items-center gap-2.5"><Lock className="h-4 w-4 text-leaf" /> Bezpieczne płatności Przelewy24</li>
             <li className="flex items-center gap-2.5"><RotateCcw className="h-4 w-4 text-leaf" /> 14 dni na zwrot nieotwartego produktu</li>
             <li className="flex items-center gap-2.5"><ShieldCheck className="h-4 w-4 text-leaf" /> Faktura VAT na firmę</li>

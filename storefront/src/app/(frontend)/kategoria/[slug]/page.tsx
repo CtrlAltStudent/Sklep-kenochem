@@ -32,9 +32,9 @@ export async function generateMetadata(props: PageProps<"/kategoria/[slug]">): P
   const canonical = `/kategoria/${c.slug}${sub ? `?sub=${sub.slug}${type ? `&typ=${type.slug}` : ""}` : ""}`;
   const name = type ? `${type.name} – ${sub!.name}` : sub ? `${sub.name} – ${c.name}` : c.name;
   const description = type
-    ? `${type.name} (${sub!.name.toLowerCase()}) w sklepie SONAX Białystok. Oryginalne produkty, wysyłka w 24 h InPost i ORLEN Paczka.`
+    ? `${type.name} (${sub!.name.toLowerCase()}) w sklepie SONAX Białystok. Oryginalne produkty, wysyłka 24h InPost i ORLEN Paczka.`
     : sub
-      ? `${sub.name}: ${sub.types.slice(0, 6).map((t) => t.name.toLowerCase()).join(", ")}. Sklep SONAX Białystok – wysyłka w 24 h.`
+      ? `${sub.name}: ${sub.types.slice(0, 6).map((t) => t.name.toLowerCase()).join(", ")}. Sklep SONAX Białystok – wysyłka 24h.`
       : `${c.name} – ${c.children.map((s) => s.name).join(", ")}. Sklep Sonax Białystok, wysyłka InPost.`;
   return { title: name, description, alternates: { canonical }, openGraph: { type: "website", siteName: "Sklep Sonax", locale: "pl_PL", title: name, description, images: [categoryPhoto[c.slug] || "/sonax/logo.png"] } };
 }

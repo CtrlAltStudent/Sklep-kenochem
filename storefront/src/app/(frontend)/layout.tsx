@@ -47,7 +47,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const [{ counts, total, tree }, store, nav] = await Promise.all([getCatalog(), getStoreSettings(), getNavigation()]);
   const customBar = nav?.announcement?.text?.trim();
   const bar = nav?.announcement?.enabled === false ? null : {
-    text: customBar || `Darmowa dostawa od ${formatPrice(freeShippingFrom(store))} · wysyłka zwykle w 1 dzień roboczy`,
+    text: customBar || `Darmowa dostawa od ${formatPrice(freeShippingFrom(store))} · wysyłka 24h`,
     href: customBar ? nav?.announcement?.link || undefined : undefined,
   };
   const tags = marketingConfig();

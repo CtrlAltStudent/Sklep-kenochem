@@ -14,7 +14,7 @@ type Meta = { product?: { id: number; slug: string; name: string; sku?: string }
 const when = (d?: unknown) => (d ? new Date(String(d)).toLocaleString("pl-PL", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }) : "");
 
 const QUICK = [
-  ["Dostępność", "Dziękujemy za pytanie. Produkt jest dostępny – wysyłamy w 1 dzień roboczy od zaksięgowania płatności."],
+  ["Dostępność", "Dziękujemy za pytanie. Produkt jest dostępny – wysyłamy w 24h od zaksięgowania płatności."],
   ["Brak na stanie", "Dziękujemy za pytanie. Produkt chwilowo jest niedostępny – spodziewamy się dostawy w ciągu ok. 7 dni. Na stronie produktu można zostawić e-mail, a powiadomimy automatycznie."],
   ["Zastosowanie", "Dziękujemy za pytanie. Produkt nadaje się do …\n\nSposób użycia: …"],
 ];

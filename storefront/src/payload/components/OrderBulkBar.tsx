@@ -6,7 +6,7 @@
 import { useSelection } from "@payloadcms/ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Download, Mail, Printer, RefreshCw, X } from "lucide-react";
+import { Download, Mail, Printer, RefreshCw, Trash2, X } from "lucide-react";
 
 const STATUSES: [string, string][] = [
   ["new", "Nowe"], ["awaiting_payment", "Czeka na płatność"], ["paid", "Opłacone"], ["processing", "W realizacji"], ["shipped", "Wysłane"], ["cancelled", "Anulowane"],
@@ -37,6 +37,11 @@ export function OrderBulkBar() {
     setRes(r);
     return r;
   };
+  const remove = async () => {
+    if (!confirm(`Usunąć ${n} ${word} z panelu? Tej operacji nie cofniesz. Klienci nie dostaną maila.`)) return;
+    const r = await post({ action: "delete" }, "delete");
+    if (r.ok) { toggleAll(false); router.refresh(); }
+  };
   const changeStatus = async () => {
     const label = STATUSES.find(([v]) => v === status)?.[1];
     if (!confirm(`Zmienić status ${n} ${word} na „${label}”?\n\nKlienci dostaną maile tak jak przy ręcznej zmianie (np. „Wysłane”, „Anulowane”).`)) return;
@@ -63,6 +68,7 @@ export function OrderBulkBar() {
           <button type="button" disabled={!!busy} onClick={changeStatus}><RefreshCw size={14} /> {busy === "status" ? "Zmieniam…" : "Zmień status"}</button>
         </span>
         <button type="button" onClick={() => open("/api/order-bulk/print")}><Printer size={14} /> Drukuj</button>
+        <button type="button" disabled={!!busy} onClick={remove}><Trash2 size={14} /> {busy === "delete" ? "Usuwam…" : "Usuń"}</button>
         <button type="button" onClick={() => open("/api/export/orders")}><Download size={14} /> Excel (CSV)</button>
         <span className="kc-bulk__group">
           <select value={mail} onChange={(e) => setMail(e.target.value as typeof mail)} aria-label="Rodzaj maila">

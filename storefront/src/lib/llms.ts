@@ -28,7 +28,7 @@ async function header() {
     `- Dostawa: ${ship.map((m) => `${m.label} (${m.price ? formatPrice(m.price) : "gratis"})`).join(", ")}.`,
     `- Darmowa dostawa od ${formatPrice(free)} (dla metod objętych promocją).`,
     `- Płatności: ${pay.map((m) => m.label).join(", ")}.`,
-    "- Wysyłka zwykle w 1 dzień roboczy. Zwrot do 14 dni od otrzymania paczki.",
+    "- Wysyłka 24h. Zwrot do 14 dni od otrzymania paczki.",
     `- Kontakt: tel. ${store.phone || "+48 664 953 377"}, e-mail ${store.email || "aukcje@sonax.bialystok.pl"}${store.hours ? `, ${oneLine(store.hours)}` : ""}.`,
     "",
   ];

@@ -330,6 +330,48 @@ export const adminToolEndpoints: Endpoint[] = [
     },
   },
   {
+    // Zmiana statusu bez zapisu całego formularza (ten przy Postgresie potrafił zawiesić panel)
+    path: "/order-tools/:id/status",
+    method: "post",
+    handler: async (req) => {
+      if (!(await hasRole(req, "orders"))) return deny();
+      const body = ((await req.json?.().catch(() => ({}))) ?? {}) as { status?: string };
+      const status = String(body.status ?? "");
+      if (!ORDER_ST[status]) return Response.json({ ok: false, message: "Nieznany status" }, { status: 400 });
+      try {
+        const updated = await req.payload.update({
+          collection: "orders", id: idOf(req), req, overrideAccess: true, data: { status: status as "new" },
+        });
+        return Response.json({ ok: true, message: `Status: ${ORDER_ST[updated.status ?? status] ?? status}` });
+      } catch (e) {
+        const err = e as { message?: string; data?: { errors?: { message?: string }[] } };
+        const field = err.data?.errors?.map((x) => x.message).filter(Boolean).slice(0, 2).join(", ");
+        return Response.json({ ok: false, message: (field || err.message || "Nie udało się zapisać").slice(0, 220) }, { status: 400 });
+      }
+    },
+  },
+  {
+    path: "/order-tools/:id/delete",
+    method: "post",
+    handler: async (req) => {
+      if (!(await hasRole(req, "orders"))) return deny();
+      const id = idOf(req);
+      try {
+        const order = await req.payload.findByID({ collection: "orders", id, depth: 0, overrideAccess: true });
+        if (order.status !== "cancelled") {
+          await req.payload.update({
+            collection: "orders", id, req, overrideAccess: true, context: { skipMail: true }, data: { status: "cancelled" },
+          });
+        }
+        await req.payload.delete({ collection: "orders", id, req, overrideAccess: true });
+        return Response.json({ ok: true, message: `Usunięto zamówienie ${order.orderNumber}` });
+      } catch (e) {
+        const err = e as { message?: string };
+        return Response.json({ ok: false, message: (err.message || "Nie udało się usunąć").slice(0, 220) }, { status: 400 });
+      }
+    },
+  },
+  {
     path: "/product-tools/:id/stats",
     method: "get",
     handler: async (req) => {

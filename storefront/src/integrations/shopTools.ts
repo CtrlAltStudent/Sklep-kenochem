@@ -170,7 +170,7 @@ export const shopToolEndpoints: Endpoint[] = [
     method: "post",
     handler: async (req) => {
       if (!(await staff(req))) return deny();
-      const body = ((await req.json?.().catch(() => ({}))) ?? {}) as { percent?: number; from?: string; to?: string; lines?: string; category?: string; clear?: boolean };
+      const body = ((await req.json?.().catch(() => ({}))) ?? {}) as { percent?: number; from?: string; to?: string; category?: string; productIds?: unknown; clear?: boolean };
       const clear = Boolean(body.clear);
       const percent = Number(body.percent);
       if (!clear && !(percent >= 1 && percent <= 89)) return Response.json({ ok: false, message: "Obniżka od 1 do 89 procent." }, { status: 400 });
@@ -178,14 +178,16 @@ export const shopToolEndpoints: Endpoint[] = [
       const to = day(body.to);
       if (!clear && body.to && !to) return Response.json({ ok: false, message: "Data końca jest nieprawidłowa." }, { status: 400 });
       if (!clear && from && to && from > to) return Response.json({ ok: false, message: "Data końca jest wcześniejsza niż początek." }, { status: 400 });
-      const lines = String(body.lines ?? "").split(/\r?\n/).map((s) => s.trim()).filter(Boolean).slice(0, 400);
+      const ids = (Array.isArray(body.productIds) ? body.productIds : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 400);
       const category = typeof body.category === "string" ? body.category.trim() : "";
-      if (!lines.length && !category) return Response.json({ ok: false, message: "Wybierz kategorię albo wpisz kody produktów, po jednym w linii." }, { status: 400 });
+      if (!ids.length && !category) return Response.json({ ok: false, message: "Wybierz kategorię albo produkty z wyszukiwarki." }, { status: 400 });
 
-      const all = await req.payload.find({
-        collection: "products", limit: 1000, pagination: false, depth: 0, overrideAccess: true,
-        select: { name: true, sku: true, price: true, category: true },
-      });
+      const all = category
+        ? await req.payload.find({
+          collection: "products", limit: 1000, pagination: false, depth: 0, overrideAccess: true,
+          select: { name: true, sku: true, price: true, category: true },
+        })
+        : { docs: [] as { id: number; name: string; sku?: string | null; price?: number | null; category?: unknown }[] };
       const chosen = new Map<string | number, (typeof all.docs)[number]>();
       const notes: string[] = [];
       if (category) {
@@ -193,29 +195,27 @@ export const shopToolEndpoints: Endpoint[] = [
         const root = cats.docs.find((c) => c.slug === category);
         if (!root) notes.push("Nie ma takiej kategorii.");
         else {
-          const ids = new Set([String(root.id)]);
+          const catIds = new Set([String(root.id)]);
           let grew = true;
           while (grew) {
             grew = false;
             for (const c of cats.docs) {
               const parent = c.parent == null ? "" : String(typeof c.parent === "object" ? (c.parent as { id: unknown }).id : c.parent);
-              if (ids.has(parent) && !ids.has(String(c.id))) { ids.add(String(c.id)); grew = true; }
+              if (catIds.has(parent) && !catIds.has(String(c.id))) { catIds.add(String(c.id)); grew = true; }
             }
           }
-          const inCat = all.docs.filter((p) => ids.has(String(p.category ?? "")));
+          const inCat = all.docs.filter((p) => catIds.has(String(p.category ?? "")));
           for (const p of inCat) chosen.set(p.id, p);
           if (!inCat.length) notes.push("W tej kategorii nie ma produktów.");
         }
       }
-      for (const line of lines) {
-        const q = line.toLowerCase();
-        const bySku = all.docs.filter((p) => p.sku && p.sku.toLowerCase() === q);
-        const byName = all.docs.filter((p) => p.name.toLowerCase() === q);
-        const byPart = q.length >= 8 ? all.docs.filter((p) => p.name.toLowerCase().includes(q)) : [];
-        const hit = bySku.length === 1 ? bySku : byName.length === 1 ? byName : byPart.length === 1 ? byPart : [];
-        if (hit.length === 1) chosen.set(hit[0].id, hit[0]);
-        else if (bySku.length + byName.length + byPart.length > 1) notes.push(`„${line}” pasuje do kilku produktów – dopisz kod.`);
-        else notes.push(`Nie znaleziono: ${line}`);
+      if (ids.length) {
+        const picked = await req.payload.find({
+          collection: "products", where: { id: { in: ids } }, limit: ids.length, pagination: false, depth: 0, overrideAccess: true,
+          select: { name: true, sku: true, price: true, category: true },
+        });
+        for (const p of picked.docs) chosen.set(p.id, p);
+        if (picked.docs.length < ids.length) notes.push("Część wybranych produktów już nie istnieje.");
       }
       let changed = 0;
       for (const p of chosen.values()) {

@@ -10,6 +10,8 @@ services:
       POSTGRES_DB: sonax_shop
     volumes:
       - pgdata:/var/lib/postgresql/data
+    # Zawieszony zapis nie może trzymać blokady godzinami (wtedy nie da się zmienić statusu ani usunąć zamówienia).
+    command: ["postgres", "-c", "idle_in_transaction_session_timeout=600000", "-c", "lock_timeout=15000"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U sonax -d sonax_shop"]
       interval: 5s

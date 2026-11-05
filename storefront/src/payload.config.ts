@@ -34,6 +34,12 @@ import { rememberRoles } from "./payload/access";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Odczyt w chwili startu serwera. Zwykły process.env.PAYLOAD_SECRET Next wkleja przy budowaniu i wtedy panel ma inny sekret niż serwer.
+const serverSecret = () => {
+  const name = "PAYLOAD_SECRET";
+  return process.env[name] || "";
+};
+
 // Listy w panelu: 50 pozycji na stronę (domyślnie Payload pokazuje 10 – wyglądało, jakby brakowało zamówień), do wyboru do 200
 const withListSize = (c: CollectionConfig): CollectionConfig => ({
   ...c,
@@ -77,7 +83,7 @@ export default buildConfig({
   endpoints: [...baselinkerEndpoints, ...integrationEndpoints, ...adminToolEndpoints, ...mailStudioEndpoints, ...orderBulkEndpoints, ...productBulkEndpoints, ...variantEndpoints, ...bundleEndpoints, ...productPickerEndpoints, ...shopToolEndpoints],
   editor: lexicalEditor(),
   email: shopEmailAdapter,
-  secret: process.env.PAYLOAD_SECRET || "",
+  secret: serverSecret(),
   onInit: async (payload) => {
     const users = await payload.find({ collection: "users", depth: 0, limit: 200, overrideAccess: true });
     for (const user of users.docs) rememberRoles(user.id, user.roles);

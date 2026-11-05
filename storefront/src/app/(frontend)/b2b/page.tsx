@@ -18,7 +18,7 @@ export default async function B2BPage() {
   const perks = [
     { icon: Handshake, title: "Warunki ustalane indywidualnie", text: "Ceny i rabaty dopasowane do skali zakupów Twojej firmy." },
     { icon: Building2, title: "Faktura VAT na firmę", text: "Dokumenty przez nasz system księgowy – bez dodatkowych formalności." },
-    { icon: Truck, title: "Szybka wysyłka", text: "Większość produktów wysyłamy w 1 dzień roboczy, także w większych ilościach." },
+    { icon: Truck, title: "Szybka wysyłka", text: "Większość produktów wysyłamy w 24h, także w większych ilościach." },
     { icon: Phone, title: "Doradztwo", text: `Pomożemy dobrać chemię do myjni, detailingu czy serwisu: ${phone}.` },
   ];
   return (

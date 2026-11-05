@@ -13,6 +13,23 @@ import { mailConfig, sendMail } from "./mail/send";
 import * as T from "./mail/templates";
 
 const STATUSES = ["new", "awaiting_payment", "paid", "processing", "shipped", "cancelled"] as const;
+
+const explain = (e: unknown) => {
+  const err = e as { message?: string; data?: { errors?: { message?: string }[] }; cause?: { message?: string } };
+  const field = err.data?.errors?.map((x) => x.message).filter(Boolean).slice(0, 2).join(", ");
+  return (field || err.cause?.message || err.message || "Nie udało się zapisać").replace(/[\w.+-]+@[\w.-]+/g, "adres e-mail").slice(0, 220);
+};
+
+// Anulowanie bez maila zwraca sztuki na stan, potem kasujemy rekord.
+async function removeOrder(req: PayloadRequest, id: number) {
+  const order = await req.payload.findByID({ collection: "orders", id, depth: 0, overrideAccess: true });
+  if (order.status !== "cancelled") {
+    await req.payload.update({
+      collection: "orders", id, req, overrideAccess: true, context: { skipMail: true }, data: { status: "cancelled" },
+    });
+  }
+  await req.payload.delete({ collection: "orders", id, req, overrideAccess: true });
+}
 const deny = () => Response.json({ ok: false, message: "Brak uprawnień" }, { status: 403 });
 const esc = (s: unknown) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 export const parseIds = (v: unknown) => [...new Set((Array.isArray(v) ? v : String(v ?? "").split(",")).map(Number).filter((n) => Number.isInteger(n) && n > 0))].slice(0, 200);
@@ -83,12 +100,33 @@ export const orderBulkEndpoints: Endpoint[] = [
         const status = String(b.status);
         if (!STATUSES.includes(status as (typeof STATUSES)[number])) return Response.json({ ok: false, message: "Nieznany status" }, { status: 400 });
         let done = 0;
+        let problem = "";
         for (const id of ids) {
-          // przez req – historia zapisze pracownika; hooki wyślą maile i zaktualizują BaseLinkera jak przy zmianie ręcznej
-          const r = await req.payload.update({ collection: "orders", id, req, overrideAccess: true, data: { status: status as Order["status"] } }).catch(() => null);
-          if (r) done++;
+          try {
+            // przez req – historia zapisze pracownika; hooki wyślą maile i zaktualizują BaseLinkera jak przy zmianie ręcznej
+            await req.payload.update({ collection: "orders", id, req, overrideAccess: true, data: { status: status as Order["status"] } });
+            done++;
+          } catch (e) {
+            if (!problem) problem = explain(e);
+          }
         }
-        return Response.json({ ok: done > 0, message: `Zmieniono status: ${done} z ${ids.length}` });
+        const message = `Zmieniono status: ${done} z ${ids.length}${problem ? `. ${problem}` : ""}`;
+        return Response.json({ ok: done > 0, message });
+      }
+
+      if (b.action === "delete") {
+        let done = 0;
+        let problem = "";
+        for (const id of ids) {
+          try {
+            await removeOrder(req, id);
+            done++;
+          } catch (e) {
+            if (!problem) problem = explain(e);
+          }
+        }
+        const message = `Usunięto: ${done} z ${ids.length}${problem ? `. ${problem}` : ""}`;
+        return Response.json({ ok: done > 0, message });
       }
 
       if (b.action === "mail") {

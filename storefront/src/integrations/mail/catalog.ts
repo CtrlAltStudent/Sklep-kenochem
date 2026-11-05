@@ -32,12 +32,12 @@ export type MailDef = {
 };
 
 const P = (s: string) => `<p style="margin:0">${s}</p>`;
-const NOTE = (s: string) => `<p style="margin:12px 0 0;color:#66727c;font-size:13px">${s}</p>`;
+const NOTE = (s: string) => `<p style="margin:20px 0 0;color:#5b6470;font-size:13px;line-height:1.6">${s}</p>`;
 
 const ORDER_VARS: [string, string][] = [
   ["numer", "numer zamówienia, np. SX00012"], ["imie", "imię klienta"], ["kwota", "kwota zamówienia"], ["data", "data złożenia"],
   ["metoda_dostawy", "nazwa dostawy"], ["metoda_platnosci", "nazwa płatności"], ["sklep", "nazwa sklepu"], ["telefon", "telefon sklepu"],
-  ["naglowek_zamowienia", "blok: numer i data nad tytułem"], ["produkty", "blok: tabela produktów z miniaturami i sumą"],
+  ["naglowek_zamowienia", "blok: numer i data zamówienia"], ["produkty", "blok: tabela produktów z miniaturami i sumą"],
   ["dostawa_i_platnosc", "blok: adres dostawy i płatność"], ["przycisk", "blok: główny przycisk"], ["wstep", "blok: tekst wstępu"],
 ];
 const SHOP_VARS: [string, string][] = [["sklep", "nazwa sklepu"], ["telefon", "telefon sklepu"], ["email_sklepu", "e-mail sklepu"], ["link_sklepu", "adres sklepu"], ["wstep", "blok: tekst wstępu"]];
@@ -47,8 +47,8 @@ export const MAILS: MailDef[] = [
   {
     id: "order-placed", group: "Zamówienia", label: "Zamówienie przyjęte", when: "Zaraz po złożeniu zamówienia (także ponowne wysłanie z panelu).",
     subject: "Zamówienie {{numer}} przyjęte",
-    title: "Dziękujemy za zamówienie!",
-    lead: "Dziękujemy za zakupy! {{#oplacone}}Zamówienie jest opłacone – przygotowujemy je do wysyłki.{{/oplacone}}{{#pobranie}}Zapłacisz przy odbiorze. Przygotowujemy zamówienie do wysyłki.{{/pobranie}}{{#przelew}}Wyślemy zamówienie, gdy wpłata pojawi się na naszym koncie.{{/przelew}}{{#czeka}}Gdy tylko potwierdzimy płatność, przygotujemy zamówienie do wysyłki.{{/czeka}}",
+    title: "Dziękujemy za zamówienie",
+    lead: "{{#oplacone}}Zamówienie jest opłacone – przygotowujemy je do wysyłki.{{/oplacone}}{{#pobranie}}Zapłacisz przy odbiorze. Przygotowujemy zamówienie do wysyłki.{{/pobranie}}{{#przelew}}Wyślemy zamówienie, gdy wpłata pojawi się na naszym koncie.{{/przelew}}{{#czeka}}Gdy tylko potwierdzimy płatność, przygotujemy zamówienie do wysyłki.{{/czeka}}",
     button: "{{#konto}}Zobacz zamówienie w koncie{{/konto}}{{^konto}}Wróć do sklepu{{/konto}}",
     body: `{{naglowek_zamowienia}}
 ${P("{{wstep}}")}
@@ -56,13 +56,13 @@ ${P("{{wstep}}")}
 {{produkty}}
 {{dostawa_i_platnosc}}
 {{przycisk}}
-<p style="margin:4px 0 0;color:#66727c;font-size:13px">Masz pytanie? Odpowiedz na tego maila albo zadzwoń{{#telefon}}: {{telefon}}{{/telefon}}.</p>`,
+<p style="margin:16px 0 0;color:#5b6470;font-size:13px;line-height:1.6">Masz pytanie? Odpowiedz na tego maila albo zadzwoń{{#telefon}}: {{telefon}}{{/telefon}}.</p>`,
     vars: [...ORDER_VARS, ["dane_do_przelewu", "blok: numer konta (tylko przelew tradycyjny)"], ["oplacone", "warunek: opłacone"], ["pobranie", "warunek: płatność przy odbiorze"], ["przelew", "warunek: przelew tradycyjny"], ["czeka", "warunek: czeka na płatność online"], ["konto", "warunek: klient ma konto"]],
   },
   {
     id: "order-paid", group: "Zamówienia", label: "Płatność przyjęta", when: "Gdy zamówienie zmieni status na „Opłacone”.",
     subject: "Płatność za zamówienie {{numer}} przyjęta",
-    title: "Płatność przyjęta – dziękujemy!",
+    title: "Płatność przyjęta",
     lead: "Otrzymaliśmy płatność {{kwota}} za zamówienie {{numer}}. Przygotowujemy paczkę do wysyłki – numer przesyłki wyślemy w osobnym mailu.",
     body: `{{naglowek_zamowienia}}
 ${P("{{wstep}}")}
@@ -73,12 +73,12 @@ ${P("{{wstep}}")}
     id: "order-shipped", group: "Zamówienia", label: "Zamówienie wysłane", when: "Gdy zamówienie zmieni status na „Wysłane” (numer przesyłki z BaseLinkera).",
     subject: "{{#odbior_osobisty}}Zamówienie {{numer}} gotowe do odbioru{{/odbior_osobisty}}{{^odbior_osobisty}}Zamówienie {{numer}} wysłane{{/odbior_osobisty}}",
     title: "{{#odbior_osobisty}}Gotowe do odbioru{{/odbior_osobisty}}{{^odbior_osobisty}}Twoja paczka jest w drodze{{/odbior_osobisty}}",
-    lead: "{{#odbior_osobisty}}Zamówienie {{numer}} czeka na odbiór w naszym sklepie.{{/odbior_osobisty}}{{^odbior_osobisty}}Zamówienie {{numer}} jest już w drodze!{{/odbior_osobisty}}",
+    lead: "{{#odbior_osobisty}}Zamówienie {{numer}} czeka na odbiór w naszym sklepie.{{/odbior_osobisty}}{{^odbior_osobisty}}Zamówienie {{numer}} jest już w drodze.{{/odbior_osobisty}}",
     button: "Śledź przesyłkę",
     body: `{{naglowek_zamowienia}}
 ${P("{{wstep}}")}
 {{paczki}}
-{{#punkt}}<p style="margin:12px 0 0">Paczka trafi do punktu <b>{{punkt}}</b>{{#adres_punktu}} – {{adres_punktu}}{{/adres_punktu}}. Kod odbioru przyjdzie SMS-em od przewoźnika.</p>{{/punkt}}
+{{#punkt}}<p style="margin:16px 0 0">Paczka trafi do punktu <b>{{punkt}}</b>{{#adres_punktu}} – {{adres_punktu}}{{/adres_punktu}}. Kod odbioru przyjdzie SMS-em od przewoźnika.</p>{{/punkt}}
 {{produkty}}`,
     vars: [...ORDER_VARS.filter(([k]) => k !== "przycisk"), ["paczki", "blok: numery przesyłek z przyciskiem śledzenia"], ["punkt", "kod punktu odbioru"], ["adres_punktu", "adres punktu"], ["odbior_osobisty", "warunek: odbiór w sklepie"]],
   },
@@ -96,7 +96,7 @@ ${NOTE("Jeśli to pomyłka albo masz pytania – odpowiedz na tego maila{{#telef
   {
     id: "order-message", group: "Zamówienia", label: "Wiadomość do klienta (z zamówienia)", when: "Gdy wyślesz klientowi wiadomość z listy zamówień (zaznacz zamówienia → Wyślij mail → Własna wiadomość).",
     subject: "{{temat}} – zamówienie {{numer}}",
-    title: "Dzień dobry{{#imie}}, {{imie}}{{/imie}}!",
+    title: "Dzień dobry{{#imie}}, {{imie}}{{/imie}}",
     lead: "",
     body: `{{naglowek_zamowienia}}
 {{#wstep}}<p style="margin:0 0 12px">{{wstep}}</p>{{/wstep}}
@@ -110,12 +110,12 @@ ${NOTE("Masz pytanie? Po prostu odpowiedz na tego maila.")}`,
     id: "review-request", group: "Przypomnienia", label: "Prośba o opinię", when: "Kilka dni po wysłaniu zamówienia (liczbę dni ustawisz niżej). Raz na zamówienie.",
     subject: "Jak sprawdzają się produkty z zamówienia {{numer}}?",
     title: "{{#imie}}{{imie}}, jak{{/imie}}{{^imie}}Jak{{/imie}} się sprawdzają?",
-    lead: "Mamy nadzieję, że zamówienie {{numer}} dotarło bez problemów. Twoja opinia pomoże innym kierowcom wybrać dobre produkty – wystarczy minuta i kilka gwiazdek.",
-    button: "Oceń produkty",
+    lead: "Mamy nadzieję, że zamówienie {{numer}} dotarło bez problemów. Twoja opinia pomoże innym kierowcom wybrać dobre produkty – wystarczy minuta.",
+    button: "Wystaw opinię",
     body: `${P("{{wstep}}")}
 {{produkty_do_oceny}}
 ${NOTE("Coś jest nie tak z zamówieniem? Odpowiedz na tego maila – pomożemy.")}`,
-    vars: [["numer", "numer zamówienia"], ["imie", "imię klienta"], ["sklep", "nazwa sklepu"], ["produkty_do_oceny", "blok: produkty z przyciskiem „Oceń”"], ["wstep", "blok: tekst wstępu"]],
+    vars: [["numer", "numer zamówienia"], ["imie", "imię klienta"], ["sklep", "nazwa sklepu"], ["produkty_do_oceny", "blok: produkty z odnośnikiem do opinii"], ["wstep", "blok: tekst wstępu"]],
     off: true,
   },
   {
@@ -127,7 +127,7 @@ ${NOTE("Coś jest nie tak z zamówieniem? Odpowiedz na tego maila – pomożemy.
     body: `${P("{{wstep}}")}
 {{koszyk}}
 {{przycisk}}
-<p style="margin:8px 0 0;color:#9aa3ab;font-size:12px">Wysłaliśmy to przypomnienie, bo zaznaczyłeś(-aś) zgodę przy zamówieniu. <a href="{{link_rezygnacji}}" style="color:#9aa3ab">Nie przypominaj mi więcej</a>.</p>`,
+<p style="margin:16px 0 0;color:#5b6470;font-size:12px;line-height:1.6">Wysłaliśmy to przypomnienie, bo zaznaczyłeś(-aś) zgodę przy zamówieniu. <a href="{{link_rezygnacji}}" style="color:#5b6470">Nie przypominaj mi więcej</a>.</p>`,
     vars: [["imie", "imię (gdy znane)"], ["liczba", "liczba produktów"], ["produktow", "„produkt/produkty/produktów”"], ["kwota", "wartość koszyka"], ["koszyk", "blok: produkty z koszyka"], ["przycisk", "blok: przycisk do koszyka"], ["link_koszyka", "adres przywracający koszyk"], ["link_rezygnacji", "adres rezygnacji z przypomnień"], ["wstep", "blok: tekst wstępu"]],
     off: true,
   },
@@ -136,7 +136,7 @@ ${NOTE("Coś jest nie tak z zamówieniem? Odpowiedz na tego maila – pomożemy.
     id: "welcome", group: "Konto klienta", label: "Konto założone", when: "Po rejestracji konta w sklepie.",
     subject: "Konto w sklepie SONAX założone",
     title: "Konto założone",
-    lead: "{{#imie}}{{imie}}, w{{/imie}}{{^imie}}W{{/imie}}itamy w sklepie SONAX! Twoje konto jest gotowe – zobaczysz w nim historię zamówień i status przesyłek, a przy kolejnych zakupach dane wypełnią się same.",
+    lead: "{{#imie}}{{imie}}, w{{/imie}}{{^imie}}W{{/imie}}itamy w sklepie SONAX. Twoje konto jest gotowe – zobaczysz w nim historię zamówień i status przesyłek, a przy kolejnych zakupach dane wypełnią się same.",
     button: "Przejdź do konta",
     body: `${P("{{wstep}}")}
 {{przycisk}}`,
@@ -150,7 +150,7 @@ ${NOTE("Coś jest nie tak z zamówieniem? Odpowiedz na tego maila – pomożemy.
     button: "Ustaw nowe hasło",
     body: `${P("{{wstep}}")}
 {{przycisk}}
-<p style="margin:8px 0 0;color:#66727c;font-size:12px">Jeśli to nie Ty – zignoruj tę wiadomość, hasło się nie zmieni.</p>`,
+<p style="margin:16px 0 0;color:#5b6470;font-size:12px;line-height:1.6">Jeśli to nie Ty – zignoruj tę wiadomość, hasło się nie zmieni.</p>`,
     vars: [["imie", "imię klienta"], ["link", "adres ustawienia hasła"], ...SHOP_VARS, ["przycisk", "blok: przycisk"]],
     locked: true,
   },
@@ -162,7 +162,7 @@ ${NOTE("Coś jest nie tak z zamówieniem? Odpowiedz na tego maila – pomożemy.
     button: "Dodaj do konta",
     body: `${P("{{wstep}}")}
 {{przycisk}}
-<p style="margin:8px 0 0;color:#66727c;font-size:12px">Link jest ważny 24 godziny.</p>`,
+<p style="margin:16px 0 0;color:#5b6470;font-size:12px;line-height:1.6">Link jest ważny 24 godziny.</p>`,
     vars: [["liczba", "liczba zamówień"], ["zamowien", "„zamówienie złożone / zamówienia złożone”"], ["link", "adres potwierdzenia"], ...SHOP_VARS, ["przycisk", "blok: przycisk"]],
     locked: true,
   },
@@ -180,7 +180,7 @@ ${NOTE("Faktury wystawione wcześniej przechowujemy w systemie księgowym przez 
   {
     id: "message-reply", group: "Obsługa klienta", label: "Odpowiedź na wiadomość", when: "Gdy odpowiesz klientowi w panelu: Wiadomości → Odpowiedz.",
     subject: "Re: {{temat}}{{#produkt}} – {{produkt}}{{/produkt}}",
-    title: "Dzień dobry{{#imie}}, {{imie}}{{/imie}}!",
+    title: "Dzień dobry{{#imie}}, {{imie}}{{/imie}}",
     lead: "",
     body: `{{#wstep}}<p style="margin:0 0 12px">{{wstep}}</p>{{/wstep}}
 {{odpowiedz}}
@@ -215,7 +215,7 @@ ${NOTE("Pytania? Odpowiedz na tego maila{{#telefon}} lub zadzwoń: {{telefon}}{{
     button: "Zobacz produkt",
     body: `${P("{{wstep}}")}
 {{przycisk}}
-<p style="margin:8px 0 0;color:#66727c;font-size:12px">Ilość może być ograniczona. Wysłaliśmy to powiadomienie, bo zapisałeś(-aś) się na nie w naszym sklepie.</p>`,
+<p style="margin:16px 0 0;color:#5b6470;font-size:12px;line-height:1.6">Ilość może być ograniczona. Wysłaliśmy to powiadomienie, bo zapisałeś(-aś) się na nie w naszym sklepie.</p>`,
     vars: [["produkt", "nazwa produktu"], ["cena", "cena"], ["link", "adres produktu"], ...SHOP_VARS, ["przycisk", "blok: przycisk"]],
   },
   {
@@ -258,38 +258,49 @@ ${P("{{wstep}}")}
 
 export const mailDef = (id: string) => MAILS.find((m) => m.id === id);
 
-// Ramka wspólna dla wszystkich maili: pasek z logo, treść, atuty sklepu, stopka z danymi firmy
-export const DEFAULT_FRAME = `<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>{{tytul}}</title></head>
-<body style="margin:0;padding:0;background:{{kolor_tla}};font-family:'Segoe UI',Arial,Helvetica,sans-serif;color:#181c21;-webkit-text-size-adjust:100%">
-<span style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent">{{zajawka}}</span>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{{kolor_tla}}"><tr><td align="center" style="padding:28px 12px">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:620px">
-<tr><td style="background:{{kolor_naglowka}};border-radius:18px 18px 0 0;padding:20px 28px">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-    <td><a href="{{link_sklepu}}" style="text-decoration:none"><img src="{{logo}}" alt="{{sklep}}" width="132" style="display:block;border:0;height:auto;background:#fff;border-radius:8px;padding:6px 10px"></a></td>
-    <td align="right" style="font-size:12px;color:#c9ced4"><a href="{{link_sklepu}}" style="color:#fff;text-decoration:none;font-weight:700">sklep</a> &nbsp;·&nbsp; <a href="{{link_sklepu}}/konto" style="color:#fff;text-decoration:none;font-weight:700">moje konto</a></td>
+// Czcionki systemowe (bez pobierania z sieci): na komputerach Apple i telefonach systemowa, w Windows Arial.
+// Układ jak w sklepie: grafitowy pasek, czerwona linia, logo na białym tle, grafitowa stopka.
+const FONT = "-apple-system,BlinkMacSystemFont,'Helvetica Neue',Helvetica,Arial,sans-serif";
+
+// Ramka wspólna dla wszystkich maili: tabele i style w atrybutach, żeby działała w Gmailu, Outlooku i na telefonie.
+// Sekcja <style> tylko poprawia wygląd na telefonie i w Outlooku – bez niej mail też wygląda dobrze.
+export const DEFAULT_FRAME = `<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="x-apple-disable-message-reformatting"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"><title>{{tytul}}</title>
+<!--[if mso]><style>body,table,td,p,a,h1,span,div{font-family:Arial,Helvetica,sans-serif !important}</style><![endif]-->
+<style>@media only screen and (max-width:520px){.m-outer{padding:0 !important}.m-pad{padding-left:20px !important;padding-right:20px !important}.m-flat{border-radius:0 !important}.m-stack{display:block !important;width:100% !important;box-sizing:border-box}.m-title{font-size:22px !important}}</style></head>
+<body style="margin:0;padding:0;background:{{kolor_tla}};font-family:${FONT};color:#15191e;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%">
+<span style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;mso-hide:all">{{zajawka}}</span>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="{{kolor_tla}}" style="background:{{kolor_tla}}"><tr><td align="center" class="m-outer" style="padding:32px 16px;font-family:${FONT}">
+<!--[if mso]><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px">
+<tr><td class="m-pad m-flat" bgcolor="{{kolor_naglowka}}" style="background:{{kolor_naglowka}};border-radius:10px 10px 0 0;padding:10px 32px;font-size:11px;line-height:16px;letter-spacing:.08em;text-transform:uppercase;color:#cfd4da">Oficjalny sklep SONAX &middot; Białystok</td></tr>
+<tr><td bgcolor="{{kolor}}" style="height:3px;background:{{kolor}};line-height:3px;font-size:1px">&nbsp;</td></tr>
+<tr><td class="m-pad" bgcolor="#ffffff" style="background:#ffffff;padding:24px 32px 20px;border-bottom:1px solid #e5e7eb">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+    <td><a href="{{link_sklepu}}" style="text-decoration:none"><img src="{{logo}}" alt="{{sklep}}" width="132" style="display:block;border:0;width:132px;max-width:132px;height:auto"></a></td>
+    <td align="right" style="font-size:13px;line-height:18px"><a href="{{link_sklepu}}/konto" style="color:#3d434b;text-decoration:none">Moje konto</a></td>
   </tr></table>
 </td></tr>
-<tr><td style="height:4px;background:{{kolor}};line-height:4px;font-size:0">&nbsp;</td></tr>
-<tr><td style="background:#fff;padding:30px 28px 10px;font-size:15px;line-height:1.6">
-{{postep}}<h1 style="margin:0 0 12px;font-size:24px;line-height:1.25;color:#181c21;font-weight:800">{{tytul}}</h1>
+<tr><td class="m-pad" bgcolor="#ffffff" style="background:#ffffff;padding:32px 32px 28px;font-size:15px;line-height:1.65;color:#2f343a">
+{{postep}}<h1 class="m-title" style="margin:0 0 12px;font-size:24px;line-height:1.25;letter-spacing:-.01em;color:#15191e;font-weight:700">{{tytul}}</h1>
 {{tresc}}
 </td></tr>
-{{#atuty}}<tr><td style="background:#fff;padding:8px 20px 4px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f6f7;border-radius:12px"><tr>
-<td align="center" style="padding:14px 6px;font-size:12px;line-height:1.4;color:#181c21;width:33%"><div style="font-size:18px;line-height:1;margin-bottom:4px">&#128666;</div>Wysyłka<br><b>w 24 h</b></td>
-<td align="center" style="padding:14px 6px;font-size:12px;line-height:1.4;color:#181c21;width:33%"><div style="font-size:18px;line-height:1;margin-bottom:4px">&#8617;&#65039;</div><b>14 dni</b><br>na zwrot</td>
-<td align="center" style="padding:14px 6px;font-size:12px;line-height:1.4;color:#181c21;width:33%"><div style="font-size:18px;line-height:1;margin-bottom:4px">&#9989;</div>Oryginalne<br><b>produkty SONAX</b></td>
+{{#atuty}}<tr><td class="m-pad" bgcolor="#ffffff" style="background:#ffffff;padding:0 32px 28px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #e5e7eb"><tr>
+<td valign="top" style="padding:16px 8px 0 0;width:33%;font-size:12px;line-height:1.45;color:#5b6470"><b style="color:#15191e;font-weight:600">Wysyłka</b><br>24h</td>
+<td valign="top" style="padding:16px 8px 0;width:33%;font-size:12px;line-height:1.45;color:#5b6470"><b style="color:#15191e;font-weight:600">14 dni</b><br>na zwrot</td>
+<td valign="top" style="padding:16px 0 0 8px;width:33%;font-size:12px;line-height:1.45;color:#5b6470"><b style="color:#15191e;font-weight:600">Oryginalne</b><br>produkty SONAX</td>
 </tr></table></td></tr>{{/atuty}}
-<tr><td style="background:#fff;border-radius:0 0 18px 18px;padding:18px 28px 26px;font-size:12px;line-height:1.7;color:#66727c">
-<b style="color:#181c21">{{sklep}}</b> – KENOCHEM Kuczyński Sp. J.<br>{{adres}}<br>{{kontakt}}{{#stopka}}<br>{{stopka}}{{/stopka}}
+<tr><td class="m-pad m-flat" bgcolor="{{kolor_naglowka}}" style="background:{{kolor_naglowka}};border-radius:0 0 10px 10px;padding:24px 32px;font-size:12px;line-height:1.7;color:#aeb5bd">
+<b style="color:#ffffff;font-size:13px;font-weight:600">{{sklep}}</b><br>KENOCHEM Kuczyński Sp. J.{{#nip}} &middot; NIP {{nip}}{{/nip}}<br>{{adres}}<br>{{kontakt}}{{#stopka}}<br>{{stopka}}{{/stopka}}
 </td></tr>
-<tr><td align="center" style="padding:16px 10px;font-size:11px;color:#9aa3ab">Ta wiadomość dotyczy Twoich zakupów w {{sklep}}. <a href="{{link_sklepu}}/regulamin" style="color:#9aa3ab">Regulamin</a> · <a href="{{link_sklepu}}/polityka-prywatnosci" style="color:#9aa3ab">Prywatność</a></td></tr>
-</table></td></tr></table></body></html>`;
+<tr><td align="center" class="m-pad" style="padding:16px 32px 24px;font-size:11px;line-height:1.6;color:#5b6470">Wiadomość wysłana przez {{sklep}}. <a href="{{link_sklepu}}/regulamin" style="color:#5b6470">Regulamin</a> &middot; <a href="{{link_sklepu}}/polityka-prywatnosci" style="color:#5b6470">Prywatność</a></td></tr>
+</table>
+<!--[if mso]></td></tr></table><![endif]-->
+</td></tr></table></body></html>`;
 
 export const FRAME_VARS: [string, string][] = [
   ["tytul", "nagłówek maila"], ["zajawka", "tekst podglądu w skrzynce"], ["tresc", "blok: treść maila"], ["postep", "blok: pasek postępu zamówienia"],
-  ["kolor", "kolor główny"], ["kolor_naglowka", "kolor paska z logo"], ["kolor_tla", "kolor tła"], ["logo", "adres logo"],
-  ["sklep", "nazwa sklepu"], ["adres", "adres sklepu"], ["kontakt", "blok: telefon, e-mail, godziny"], ["stopka", "dodatkowy tekst stopki"],
+  ["kolor", "kolor główny"], ["kolor_naglowka", "kolor górnego paska i stopki"], ["kolor_tla", "kolor tła"], ["logo", "adres logo"],
+  ["sklep", "nazwa sklepu"], ["adres", "adres sklepu"], ["nip", "NIP firmy (pusty, gdy NIP jest już w dodatkowym tekście stopki)"], ["kontakt", "blok: telefon, e-mail, godziny"], ["stopka", "dodatkowy tekst stopki"],
   ["link_sklepu", "adres sklepu"], ["atuty", "warunek: pasek atutów włączony"],
 ];
 
@@ -305,7 +316,7 @@ export type MailSettings = {
 };
 
 export const defaultMailSettings = (): MailSettings => ({
-  brand: { accent: "#d32e2e", header: "#15191e", background: "#eef0f2", logo: "", footer: "", perks: true, frame: "" },
+  brand: { accent: "#d32e2e", header: "#15191e", background: "#f3f4f6", logo: "", footer: "", perks: true, frame: "" },
   templates: {},
   review: { days: 7 },
   cart: { hours: 3 },

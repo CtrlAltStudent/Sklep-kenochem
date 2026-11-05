@@ -5,7 +5,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Marki w sklepie",
-  description: "Marki dostępne w sklepie Sonax. Oryginalne produkty, wysyłka w 1 dzień roboczy.",
+  description: "Marki dostępne w sklepie Sonax. Oryginalne produkty, wysyłka 24h.",
   alternates: { canonical: "/marki" },
 };
 

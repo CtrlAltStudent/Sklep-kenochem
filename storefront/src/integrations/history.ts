@@ -17,11 +17,13 @@ const who = (req: PayloadRequest) => {
   return "automat";
 };
 
-export async function addHistory(payload: Payload, order: number | string, message: string, by: string, details?: Record<string, unknown>) {
+export async function addHistory(payload: Payload, order: number | string, message: string, by: string, details?: Record<string, unknown>, req?: PayloadRequest) {
   try {
+    // req musi iść razem z zapisem zamówienia. Osobne połączenie na Postgresie czeka na blokadę tego zamówienia i panel się zawiesza.
     await payload.create({
       collection: "integration-logs",
       overrideAccess: true,
+      req,
       data: { type: "history", status: "success", message: message.slice(0, 500), mode: "live", durationMs: 0, order: order as number, details: { by, ...details } },
     });
   } catch (e) {
@@ -32,18 +34,18 @@ export async function addHistory(payload: Payload, order: number | string, messa
 export const orderHistoryHook: CollectionAfterChangeHook<Order> = async ({ doc, previousDoc, operation, req, context }) => {
   const by = who(req);
   if (operation === "create") {
-    await addHistory(req.payload, doc.id, by === "automat" || by === "klient" ? "Zamówienie złożone w sklepie" : `Zamówienie dodane w panelu`, by);
+    await addHistory(req.payload, doc.id, by === "automat" || by === "klient" ? "Zamówienie złożone w sklepie" : `Zamówienie dodane w panelu`, by, undefined, req);
     return doc;
   }
   if (!previousDoc) return doc;
   if (doc.status !== previousDoc.status) {
-    await addHistory(req.payload, doc.id, `Status: ${STATUS[previousDoc.status ?? ""] ?? previousDoc.status} → ${STATUS[doc.status ?? ""] ?? doc.status}`, by);
+    await addHistory(req.payload, doc.id, `Status: ${STATUS[previousDoc.status ?? ""] ?? previousDoc.status} → ${STATUS[doc.status ?? ""] ?? doc.status}`, by, undefined, req);
   }
   if (doc.payment?.status !== previousDoc.payment?.status) {
-    await addHistory(req.payload, doc.id, `Płatność: ${PAY[previousDoc.payment?.status ?? ""] ?? "—"} → ${PAY[doc.payment?.status ?? ""] ?? doc.payment?.status}`, by);
+    await addHistory(req.payload, doc.id, `Płatność: ${PAY[previousDoc.payment?.status ?? ""] ?? "—"} → ${PAY[doc.payment?.status ?? ""] ?? doc.payment?.status}`, by, undefined, req);
   }
   if (typeof context?.trackingNumber === "string" && context.trackingNumber) {
-    await addHistory(req.payload, doc.id, `Numer przesyłki z BaseLinkera: ${context.trackingNumber}`, "BaseLinker");
+    await addHistory(req.payload, doc.id, `Numer przesyłki z BaseLinkera: ${context.trackingNumber}`, "BaseLinker", undefined, req);
   }
   return doc;
 };

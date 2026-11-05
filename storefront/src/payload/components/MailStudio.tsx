@@ -7,7 +7,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Code2, Monitor, Palette, RotateCcw, Save, Send, Smartphone, Type, FileText, Clock } from "lucide-react";
-import { DEFAULT_FRAME, FRAME_VARS, MAILS, mailDef, mailEnabled, type MailDef, type MailId, type MailOverride, type MailSettings } from "@/integrations/mail/catalog";
+import { DEFAULT_FRAME, FRAME_VARS, MAILS, defaultMailSettings, mailDef, mailEnabled, type MailDef, type MailId, type MailOverride, type MailSettings } from "@/integrations/mail/catalog";
 
 type OrderRow = { id: number; number: string; status: string; total: number };
 type Preview = { subject: string; html: string; text: string };
@@ -155,7 +155,7 @@ export function MailStudio() {
   };
   const resetMail = () => {
     if (sel === "_brand") {
-      if (confirm("Przywrócić domyślny wygląd i kod ramki wszystkich maili?")) setSettings({ ...settings, brand: { accent: "#d32e2e", header: "#15191e", background: "#eef0f2", logo: "", footer: "", perks: true, frame: "" } });
+      if (confirm("Przywrócić domyślny wygląd i kod ramki wszystkich maili?")) setSettings({ ...settings, brand: defaultMailSettings().brand });
     } else if (def && confirm(`Przywrócić domyślną treść maila „${def.label}”?`)) {
       const rest = { ...settings.templates };
       const enabled = rest[def.id]?.enabled;
@@ -236,18 +236,18 @@ export function MailStudio() {
             </>
           ) : (
             <>
-              <header className="kc-mail__head"><div><h2>Wygląd wszystkich maili</h2><p className="kc-muted">Wspólna ramka: pasek z logo, kolory, atuty sklepu i stopka z danymi firmy (z Ustawień sklepu).</p></div></header>
+              <header className="kc-mail__head"><div><h2>Wygląd wszystkich maili</h2><p className="kc-muted">Wspólna ramka: logo, kolory, atuty sklepu i stopka z danymi firmy (z Ustawień sklepu).</p></div></header>
               <div className="kc-mail__colors">
-                {([["accent", "Kolor główny (przyciski, akcenty)"], ["header", "Pasek z logo"], ["background", "Tło wokół maila"]] as const).map(([k, l]) => (
+                {([["accent", "Kolor główny (przyciski, akcenty)"], ["header", "Górny pasek i stopka"], ["background", "Tło wokół maila"]] as const).map(([k, l]) => (
                   <label key={k}><input type="color" value={settings.brand[k]} onChange={(e) => setBrand({ [k]: e.target.value })} /><span>{l}<small>{settings.brand[k]}</small></span></label>
                 ))}
               </div>
               <div className="kc-mail__fields">
                 <label><span>Adres logo (puste = logo sklepu SONAX). Wgraj obraz w Media i wklej jego adres.</span>
                   <input type="text" className="kc-mail__input" value={settings.brand.logo} placeholder="https://…/logo.png" onChange={(e) => setBrand({ logo: e.target.value })} /></label>
-                <label><span>Dodatkowy tekst w stopce (np. NIP, numer BDO)</span>
-                  <Input field="footer" value={settings.brand.footer} placeholder="np. NIP 5423224790" onChange={(v) => change("footer", v)} onFocus={onFocus} /></label>
-                <Toggle on={settings.brand.perks} onChange={(v) => setBrand({ perks: v })} label="Pasek atutów sklepu" hint="Wysyłka w 24 h · 14 dni na zwrot · Oryginalne produkty SONAX" />
+                <label><span>Dodatkowy tekst w stopce (np. numer BDO)</span>
+                  <Input field="footer" value={settings.brand.footer} placeholder="np. numer BDO" onChange={(v) => change("footer", v)} onFocus={onFocus} /></label>
+                <Toggle on={settings.brand.perks} onChange={(v) => setBrand({ perks: v })} label="Pasek atutów sklepu" hint="Wysyłka 24h · 14 dni na zwrot · Oryginalne produkty SONAX" />
                 <details className="kc-mail__frame" open={Boolean(settings.brand.frame)}>
                   <summary><Code2 size={15} /> Kod HTML ramki (dla zaawansowanych)</summary>
                   <Input field="frame" code rows={18} value={settings.brand.frame || DEFAULT_FRAME} placeholder="" onChange={(v) => change("frame", v === DEFAULT_FRAME ? "" : v)} onFocus={onFocus} />

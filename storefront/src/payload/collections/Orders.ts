@@ -25,7 +25,7 @@ export const Orders: CollectionConfig = {
   access: { read: ownOrdersOrStaff, create: isOrdersTeam, update: isOrdersTeam, delete: isOrdersTeam },
   hooks: {
     beforeChange: [
-      async ({ data, operation, req }) => {
+      async ({ data, operation, originalDoc, req }) => {
         if (operation === "create" && !data.orderNumber) {
           // Prosty numer SX00001 – kolejny po ostatnim zamówieniu (także starym formacie SX/2026/00006)
           const last = await req.payload.find({
@@ -34,9 +34,28 @@ export const Orders: CollectionConfig = {
           const lastNo = Number(last.docs[0]?.orderNumber?.match(/(\d+)$/)?.[1] ?? 0);
           data.orderNumber = `SX${String(lastNo + 1).padStart(5, "0")}`;
         }
-        const items = (data.items ?? []) as { priceGross?: number; quantity?: number }[];
-        data.subtotal = round2(items.reduce((s, i) => s + (i.priceGross ?? 0) * (i.quantity ?? 0), 0));
-        data.total = round2(data.subtotal + (data.shipping?.price ?? 0));
+        // Postgres nie przyjmuje pustego tekstu w kolumnie liczbowej. Puste pole z formularza = brak liczby.
+        const num = (v: unknown) => {
+          if (v === "" || v == null) return null;
+          const n = typeof v === "number" ? v : Number(String(v).replace(",", "."));
+          return Number.isFinite(n) ? n : null;
+        };
+        const shipping = data.shipping as { price?: unknown } | undefined;
+        if (shipping && "price" in shipping) shipping.price = num(shipping.price) ?? 0;
+        const bl = data.baselinker as { orderId?: unknown; attempts?: unknown } | undefined;
+        if (bl && "orderId" in bl) bl.orderId = num(bl.orderId);
+        if (bl && "attempts" in bl) bl.attempts = num(bl.attempts) ?? 0;
+        if (Array.isArray(data.items)) {
+          for (const item of data.items as { quantity?: unknown; priceGross?: unknown; vatRate?: unknown }[]) {
+            item.quantity = num(item.quantity) ?? 1;
+            item.priceGross = num(item.priceGross) ?? 0;
+            if ("vatRate" in item) item.vatRate = num(item.vatRate) ?? 23;
+          }
+          const items = data.items as { priceGross?: number; quantity?: number }[];
+          data.subtotal = round2(items.reduce((s, i) => s + Number(i.priceGross ?? 0) * Number(i.quantity ?? 0), 0));
+          const ship = Number(shipping?.price ?? originalDoc?.shipping?.price ?? 0);
+          data.total = round2(Number(data.subtotal) + ship);
+        }
         return data;
       },
     ],
