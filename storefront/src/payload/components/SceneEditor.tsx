@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useField } from "@payloadcms/ui";
 import { Trash2 } from "lucide-react";
 
-type Spot = { x: number; y: number; productIds: number[] };
+type Spot = { x: number; y: number; productIds: number[]; cardX?: number; cardY?: number };
 type Hit = { id: number; name: string; sku: string; price: number; thumb: string };
 
 const FRAME = "1600 × 640";
@@ -16,8 +16,10 @@ const spotsOf = (value: unknown): Spot[] => {
     const x = Number((item as Spot).x);
     const y = Number((item as Spot).y);
     const productIds = Array.isArray((item as Spot).productIds) ? (item as Spot).productIds.map(Number).filter((n) => n > 0) : [];
+    const cardX = Number((item as Spot).cardX);
+    const cardY = Number((item as Spot).cardY);
     if (!Number.isFinite(x) || !Number.isFinite(y)) return [];
-    return [{ x, y, productIds }];
+    return [{ x, y, productIds, ...(Number.isFinite(cardX) && Number.isFinite(cardY) ? { cardX, cardY } : {}) }];
   });
 };
 
@@ -81,7 +83,7 @@ export function SceneEditor() {
   }, [q]);
 
   const place = (event: React.PointerEvent<HTMLDivElement>) => {
-    if ((event.target as HTMLElement).closest("[data-dot]")) return;
+    if ((event.target as HTMLElement).closest("[data-dot], [data-card]")) return;
     const box = event.currentTarget.getBoundingClientRect();
     const x = Math.round(Math.min(98, Math.max(2, ((event.clientX - box.left) / box.width) * 100)) * 10) / 10;
     const y = Math.round(Math.min(98, Math.max(2, ((event.clientY - box.top) / box.height) * 100)) * 10) / 10;
@@ -103,6 +105,37 @@ export function SceneEditor() {
       const x = Math.round(Math.min(98, Math.max(2, ((e.clientX - box.left) / box.width) * 100)) * 10) / 10;
       const y = Math.round(Math.min(98, Math.max(2, ((e.clientY - box.top) / box.height) * 100)) * 10) / 10;
       const next = spotsRef.current.map((s, i) => (i === index ? { ...s, x, y } : s));
+      spotsRef.current = next;
+      write(next);
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+
+  const dragCard = (index: number, event: React.PointerEvent<HTMLDivElement>) => {
+    event.stopPropagation();
+    event.preventDefault();
+    const frame = (event.currentTarget as HTMLElement).closest("[data-frame]") as HTMLElement | null;
+    const card = event.currentTarget;
+    if (!frame) return;
+    const start = card.getBoundingClientRect();
+    const grabX = event.clientX - start.left;
+    const grabY = event.clientY - start.top;
+    const move = (e: PointerEvent) => {
+      const frameBox = frame.getBoundingClientRect();
+      const width = card.offsetWidth;
+      const height = card.offsetHeight;
+      const maxX = Math.max(0, frameBox.width - width);
+      const maxY = Math.max(0, frameBox.height - height);
+      const left = Math.min(maxX, Math.max(0, e.clientX - frameBox.left - grabX));
+      const top = Math.min(maxY, Math.max(0, e.clientY - frameBox.top - grabY));
+      const cardX = Math.round((left / frameBox.width) * 1000) / 10;
+      const cardY = Math.round((top / frameBox.height) * 1000) / 10;
+      const next = spotsRef.current.map((s, i) => (i === index ? { ...s, cardX, cardY } : s));
       spotsRef.current = next;
       write(next);
     };
@@ -169,8 +202,22 @@ export function SceneEditor() {
             <span />
           </button>
         ))}
+        {spot && (
+          <div
+            data-card
+            className="kc-scene__card"
+            style={{ left: `${spot.cardX ?? 62}%`, top: `${spot.cardY ?? 6}%` }}
+            onPointerDown={(e) => dragCard(active, e)}
+          >
+            {known[spot.productIds[0]]?.thumb ? <img src={known[spot.productIds[0]].thumb} alt="" /> : <span className="kc-scene__ph" />}
+            <span>
+              <b>{known[spot.productIds[0]]?.name || "Tu pokaże się produkt"}</b>
+              <small>Przeciągnij, żeby ustawić okienko</small>
+            </span>
+          </div>
+        )}
       </div>
-      <p className="kc-scene__help">Kliknij zdjęcie, żeby dodać kropkę. Przeciągnij ją, żeby przesunąć.</p>
+      <p className="kc-scene__help">Kliknij zdjęcie, żeby dodać kropkę. Przeciągnij kropkę albo białe okienko produktu.</p>
       {spot ? (
         <div className="kc-scene__box">
           <div className="kc-scene__box-head">

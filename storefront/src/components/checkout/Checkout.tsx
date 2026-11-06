@@ -39,7 +39,9 @@ function Title({ n, children, aside }: { n: number; children: React.ReactNode; a
 }
 
 // Krok 2 – wszystko na jednym ekranie: dane, dostawa, płatność, uwagi i podsumowanie
-export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", orlenToken = "", cartReminder = false }: { shipping: ShipMethod[]; payments: PayMethod[]; freeThreshold: number; inpostToken?: string; orlenToken?: string; cartReminder?: boolean }) {
+const DRAFT = "sonax-checkout-draft";
+
+export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", orlenToken = "", cartReminder = false, placed = "", problem = "" }: { shipping: ShipMethod[]; payments: PayMethod[]; freeThreshold: number; inpostToken?: string; orlenToken?: string; cartReminder?: boolean; placed?: string; problem?: string }) {
   const { cart } = useStore();
   // Zgoda na przypomnienie o porzuconym koszyku (pamiętana w przeglądarce – src/lib/store.ts)
   const remindTo = useRemind();
@@ -57,14 +59,15 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", 
   const [ship, setShip] = useState(() => shipping.find((s) => !isCod(s.code))?.code ?? "");
   const [pay, setPay] = useState(() => payments[0]?.code ?? "");
   const [invoice, setInvoice] = useState(false);
-  const [ordered, setOrdered] = useState<string | null>(null);
+  const [ordered, setOrdered] = useState<string | null>(placed || null);
+  const [payNote, setPayNote] = useState("");
 
   const [code, setCode] = useState("");
   const [coupon, setCoupon] = useState<{ code: string; discount: number; freeShipping: boolean; message: string } | null>(null);
   const [couponMsg, setCouponMsg] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(problem || null);
   const [pointInfo, setPointInfo] = useState<string | null>(null);
   // Punkt odbioru: kod wpisany ręcznie albo wybrany z mapy InPost
   const [pointCode, setPointCode] = useState("");
@@ -79,9 +82,13 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", 
   // BLIK z kodem na stronie (metoda „blik”) – bez przekierowania do Przelewy24
   const [blikCode, setBlikCode] = useState("");
   const [p24Terms, setP24Terms] = useState(false);
-  const [blik, setBlik] = useState<{ sessionId?: string; orderNumber: string; total: number; ok: boolean; message: string; analytics?: Parameters<typeof trackPurchaseOnce>[0]; email?: string; phone?: string } | null>(null);
+  const [blik, setBlik] = useState<{ sessionId?: string; orderNumber: string; total: number; ok: boolean; message: string; analytics?: Parameters<typeof trackPurchaseOnce>[0]; email?: string; phone?: string; confirmKey?: string } | null>(null);
   const onBlikPaid = useCallback(() => {
     if (blik?.analytics) trackPurchaseOnce(blik.analytics, { email: blik.email, phone: blik.phone });
+    if (blik?.confirmKey && blik.orderNumber) {
+      window.location.href = `/zamowienie?nr=${encodeURIComponent(blik.orderNumber)}&k=${encodeURIComponent(blik.confirmKey)}`;
+      return;
+    }
     setOrdered(blik?.orderNumber ?? "");
     setBlik(null);
   }, [blik]);
@@ -104,6 +111,25 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", 
     }
   }, []);
   useEffect(() => { if (me) fillFrom(me, 0); }, [me, fillFrom]);
+  useEffect(() => {
+    if (placed) {
+      actions.clear();
+      try { sessionStorage.removeItem(DRAFT); } catch { /* przeglądarka bez pamięci */ }
+    }
+  }, [placed]);
+  useEffect(() => {
+    const f = formRef.current;
+    if (!f) return;
+    try {
+      const raw = sessionStorage.getItem(DRAFT);
+      if (!raw) return;
+      const data = JSON.parse(raw) as Record<string, string>;
+      for (const [k, v] of Object.entries(data)) {
+        const el = f.elements.namedItem(k) as HTMLInputElement | HTMLTextAreaElement | null;
+        if (el && v && !el.value) el.value = v;
+      }
+    } catch { /* szkic nieczytelny */ }
+  }, [lines.length]);
 
   const method = shipping.find((s) => s.code === ship);
   const free = (s: ShipMethod) => isShippingFree(s, subtotal, freeThreshold, Boolean(coupon?.freeShipping));
@@ -139,6 +165,7 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", 
         <CheckCircle2 className="mx-auto mt-10 h-20 w-20 text-leaf" />
         <h1 className="mt-6 text-3xl font-black">Dziękujemy za zamówienie!</h1>
         <p className="mt-2 text-slate-600">Numer zamówienia: <b>{ordered}</b>. Potwierdzenie wyślemy na podany e-mail.</p>
+        {payNote && <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">{payNote}</p>}
         <Link href="/" className="btn-kc mt-8 inline-block rounded-xl px-6 py-3.5 font-semibold text-white">Wróć do sklepu</Link>
       </div>
     );
@@ -161,6 +188,17 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", 
   return (
     <form
       ref={formRef}
+      method="post"
+      action="/api/checkout"
+      onInput={(e) => {
+        const t = e.target as HTMLInputElement | HTMLTextAreaElement;
+        if (!t.name || t.type === "hidden" || t.name === "blikCode") return;
+        try {
+          const prev = JSON.parse(sessionStorage.getItem(DRAFT) || "{}") as Record<string, string>;
+          prev[t.name] = t.value;
+          sessionStorage.setItem(DRAFT, JSON.stringify(prev));
+        } catch { /* bez szkicu */ }
+      }}
       onSubmit={async (e) => {
         e.preventDefault();
         if (submitting) return;
@@ -175,9 +213,9 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", 
         track("add_shipping_info", { value: subtotal, items, shipping_tier: method?.label ?? ship, coupon: coupon?.code });
         track("add_payment_info", { value: subtotal, items, payment_type: cod ? "pobranie" : payments.find((p) => p.code === pay)?.label ?? pay, coupon: coupon?.code });
         try {
-          const res = await fetch("/api/checkout", {
+          const raw = await fetch("/api/checkout", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
             body: JSON.stringify({
               name: fd.get("name"), email: fd.get("email"), phone: fd.get("phone"),
               street: fd.get("street"), postcode: fd.get("postcode"), city: fd.get("city"),
@@ -185,10 +223,12 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", 
               ship, pay: cod ? "cod" : pay, point: fd.get("point") || undefined,
               note: fd.get("note") || undefined, coupon: coupon?.code,
               ...(isBlik ? { blikCode, p24Terms } : {}),
-              items: lines.map((l) => ({ slug: l.slug, qty: l.qty })),
+              items: lines.map((l) => ({ slug: l.slug, qty: Math.round(Number(l.qty)) || 1 })),
             }),
-          }).then((r) => r.json());
-          if (!res.ok) { setFormError(res.message ?? "Nie udało się złożyć zamówienia."); return; }
+          });
+          const res = await raw.json().catch(() => null);
+          if (!raw.ok || !res?.ok) { setFormError(res?.message ?? "Nie udało się złożyć zamówienia. Spróbuj jeszcze raz albo zadzwoń: 664 953 377."); return; }
+          try { sessionStorage.removeItem(DRAFT); } catch { /* bez szkicu */ }
           // zamówienie złożone – przypomnienie o koszyku już niepotrzebne
           actions.setRemind(null);
           const buyer = { email: String(fd.get("email") ?? ""), phone: String(fd.get("phone") ?? "") };
@@ -200,14 +240,20 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", 
             setTimeout(() => { window.location.href = url; }, 350);
             return;
           }
+          if (res.confirmKey && res.orderNumber) {
+            actions.clear();
+            window.location.href = `/zamowienie?nr=${encodeURIComponent(res.orderNumber)}&k=${encodeURIComponent(res.confirmKey)}`;
+            return;
+          }
           if (res.blik) {
             // zamówienie już zapisane – koszyk czyścimy, dalej tylko płatność BLIK
             actions.clear();
-            setBlik({ sessionId: res.blik.sessionId, orderNumber: res.orderNumber, total: res.total, ok: res.blik.ok, message: res.blik.message, analytics: res.analytics, email: buyer.email, phone: buyer.phone });
+            setBlik({ sessionId: res.blik.sessionId, orderNumber: res.orderNumber, total: res.total, ok: res.blik.ok, message: res.blik.message, analytics: res.analytics, email: buyer.email, phone: buyer.phone, confirmKey: res.confirmKey });
             window.scrollTo({ top: 0, behavior: "smooth" });
             return;
           }
           actions.clear();
+          setPayNote(typeof res.paymentProblem === "string" ? res.paymentProblem : res.already ? String(res.message ?? "") : "");
           setOrdered(res.orderNumber);
         } catch {
           setFormError("Brak połączenia – spróbuj ponownie.");
@@ -235,6 +281,18 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", 
             ) : me === null ? (
               <Link href="/konto" className="text-xs font-semibold text-accent-dark hover:underline">Masz konto? Zaloguj się</Link>
             ) : undefined}>Twoje dane</Title>
+            <input type="hidden" name="ship" value={ship} />
+            <input type="hidden" name="pay" value={cod ? "cod" : pay} />
+            <input type="hidden" name="invoice" value={invoice ? "1" : "0"} />
+            <input type="hidden" name="blikCode" value={blikCode} />
+            <input type="hidden" name="p24Terms" value={p24Terms ? "1" : "0"} />
+            {coupon && <input type="hidden" name="coupon" value={coupon.code} />}
+            {lines.map((l, i) => (
+              <span key={`${l.slug}-${l.variantId}`} hidden>
+                <input type="hidden" name={`item_slug_${i}`} value={l.slug} />
+                <input type="hidden" name={`item_qty_${i}`} value={String(Math.round(l.qty))} />
+              </span>
+            ))}
             <div className="grid grid-cols-2 gap-2.5">
               <input required name="name" placeholder="Imię i nazwisko" autoComplete="name" className={`${input} col-span-2`} />
               <input required name="email" type="email" placeholder="E-mail" autoComplete="email" className={input}
@@ -373,6 +431,9 @@ export function Checkout({ shipping, payments, freeThreshold, inpostToken = "", 
               </div>
             )}
             {isBlik && <BlikCodeField code={blikCode} onCode={setBlikCode} terms={p24Terms} onTerms={setP24Terms} />}
+            {!cod && payments.find((p) => p.code === pay)?.provider === "transfer" && (
+              <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-sm leading-relaxed text-amber-950">Po złożeniu zamówienia pokażemy numer konta. Taki sam numer przyjdzie mailem. W tytule przelewu wpisz numer zamówienia. Paczkę wyślemy, gdy wpłata pojawi się na koncie.</p>
+            )}
             <details className="group mt-3">
               <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 text-sm font-semibold text-accent-dark">
                 <MessageSquareText className="h-4 w-4" /> Dodaj uwagi do zamówienia <ChevronDown className="h-4 w-4 transition group-open:rotate-180" />

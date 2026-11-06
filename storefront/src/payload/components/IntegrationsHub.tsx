@@ -159,7 +159,7 @@ function ProviderCard({ provider, st, onSaved }: { provider: Provider; st: State
 }
 
 const JOBS: { id: JobId; title: string; text: string; every?: keyof AutoSettings; hour?: boolean }[] = [
-  { id: "stock", title: "Stany magazynowe i ceny", text: "Pobiera z BaseLinkera ilości i ceny wszystkich produktów.", every: "stockEveryMin" },
+  { id: "stock", title: "Stany magazynowe i ceny", text: "Pobiera z BaseLinkera ilości, a po zaznaczeniu „także ceny” również ceny. Produkty z zaznaczoną ceną w polu „Nie nadpisuj przy synchronizacji” zachowują swoją cenę.", every: "stockEveryMin" },
   { id: "statuses", title: "Statusy zamówień (wysłane / anulowane)", text: "Gdy w BaseLinkerze paczka zostanie nadana, zamówienie w sklepie zmienia się na „Wysłane”.", every: "statusesEveryMin" },
   { id: "orders", title: "Ponawianie wysyłki zamówień", text: "Zamówienia, które nie doszły do BaseLinkera (np. chwilowa awaria), są wysyłane ponownie co 10 minut – maks. 5 prób." },
   { id: "products", title: "Pełne dane produktów", text: "Nazwy, opisy, zdjęcia i kategorie – raz na dobę, o wybranej godzinie.", hour: true },
@@ -251,6 +251,9 @@ function AutoCard({ state, onSaved }: { state: State; onSaved: (s: State) => voi
                 <div className="kc-ih__jobset">
                   {j.every && (
                     <label>co <input type="number" min={5} max={1440} value={Number(auto[j.every])} onChange={(e) => set(j.every!, Number(e.target.value) as never)} /> min</label>
+                  )}
+                  {j.id === "stock" && (
+                    <label><input type="checkbox" checked={auto.prices} onChange={(e) => set("prices", e.target.checked)} /> także ceny</label>
                   )}
                   {j.hour && (
                     <label>o godz. <input type="number" min={0} max={23} value={auto.productsHour} onChange={(e) => set("productsHour", Number(e.target.value))} />:00</label>

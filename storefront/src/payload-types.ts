@@ -194,7 +194,7 @@ export interface Order {
    * Nadawany automatycznie przy zapisie.
    */
   orderNumber?: string | null;
-  status?: ('new' | 'awaiting_payment' | 'paid' | 'processing' | 'shipped' | 'cancelled') | null;
+  status?: ('new' | 'awaiting_payment' | 'paid' | 'processing' | 'shipped' | 'received' | 'cancelled') | null;
   items: {
     product?: (number | null) | Product;
     name: string;
@@ -222,6 +222,10 @@ export interface Order {
      */
     method: string;
     price?: number | null;
+    /**
+     * Wpisuje się sam, gdy BaseLinker nada paczkę.
+     */
+    trackingNumber?: string | null;
     fullName?: string | null;
     company?: string | null;
     street?: string | null;
@@ -1358,6 +1362,7 @@ export interface OrdersSelect<T extends boolean = true> {
     | {
         method?: T;
         price?: T;
+        trackingNumber?: T;
         fullName?: T;
         company?: T;
         street?: T;

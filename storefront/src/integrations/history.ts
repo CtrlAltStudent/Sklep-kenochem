@@ -5,7 +5,7 @@ import type { CollectionAfterChangeHook, Payload, PayloadRequest } from "payload
 import type { Order } from "@/payload-types";
 
 const STATUS: Record<string, string> = {
-  new: "Nowe", awaiting_payment: "Czeka na płatność", paid: "Opłacone", processing: "W realizacji", shipped: "Wysłane", cancelled: "Anulowane",
+  new: "Nowe", awaiting_payment: "Nieopłacone", paid: "Opłacone", processing: "Przekazane do realizacji", shipped: "Wysłane", received: "Odebrane", cancelled: "Anulowane",
 };
 const PAY: Record<string, string> = { pending: "czeka na wpłatę", paid: "opłacone", failed: "nieudana", refunded: "zwrócona", deferred: "przy odbiorze" };
 
@@ -44,7 +44,7 @@ export const orderHistoryHook: CollectionAfterChangeHook<Order> = async ({ doc, 
   if (doc.payment?.status !== previousDoc.payment?.status) {
     await addHistory(req.payload, doc.id, `Płatność: ${PAY[previousDoc.payment?.status ?? ""] ?? "—"} → ${PAY[doc.payment?.status ?? ""] ?? doc.payment?.status}`, by, undefined, req);
   }
-  if (typeof context?.trackingNumber === "string" && context.trackingNumber) {
+  if (typeof context?.trackingNumber === "string" && context.trackingNumber && context.trackingNumber !== previousDoc.shipping?.trackingNumber) {
     await addHistory(req.payload, doc.id, `Numer przesyłki z BaseLinkera: ${context.trackingNumber}`, "BaseLinker", undefined, req);
   }
   return doc;

@@ -14,7 +14,7 @@ export function Logo() {
 
 export function Icon() {
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src="/sonax/icon-512.png" alt="Sonax" style={{ height: 26, width: "auto" }} />;
+  return <img src="/sonax/icon-512.png" alt="Sonax" style={{ width: 28, height: 28, objectFit: "contain", display: "block" }} />;
 }
 
 export function NavBrand() {

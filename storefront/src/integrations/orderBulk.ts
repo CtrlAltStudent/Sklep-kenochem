@@ -12,7 +12,7 @@ import { reviewProducts } from "./mail/automations";
 import { mailConfig, sendMail } from "./mail/send";
 import * as T from "./mail/templates";
 
-const STATUSES = ["new", "awaiting_payment", "paid", "processing", "shipped", "cancelled"] as const;
+const STATUSES = ["new", "awaiting_payment", "paid", "processing", "shipped", "received", "cancelled"] as const;
 
 const explain = (e: unknown) => {
   const err = e as { message?: string; data?: { errors?: { message?: string }[] }; cause?: { message?: string } };

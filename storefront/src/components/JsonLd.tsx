@@ -1,4 +1,5 @@
 import { plainText, type Product } from "@/lib/data";
+import { mpnOf } from "@/lib/seo";
 
 const base = (process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000").replace(/\/$/, "");
 const abs = (u: string) => (/^https?:\/\//.test(u) ? u : `${base}${u.startsWith("/") ? "" : "/"}${u}`);
@@ -74,7 +75,7 @@ function offerOf(p: Product, v: Product["variants"][number], ship?: ShippingLd, 
   };
 }
 
-export function productLd(p: Product, crumbs: { name: string; url: string }[], rating?: { average: number; count: number }, ship?: ShippingLd, pageSlug?: string) {
+export function productLd(p: Product, crumbs: { name: string; url: string }[], rating?: { average: number; count: number }, ship?: ShippingLd, pageSlug?: string, text?: string) {
   const shown = p.variants.find((v) => v.slug === pageSlug) ?? p.variants[0];
   const ean = shown.ean || p.ean;
   return [
@@ -84,12 +85,13 @@ export function productLd(p: Product, crumbs: { name: string; url: string }[], r
       name: p.name,
       url: `${base}/produkt/${pageSlug || p.slug}`,
       sku: shown.sku || p.sku || undefined,
-      mpn: shown.sku || p.sku || undefined,
+      // numer katalogowy producenta (np. SONAX 275300), nie nasz wewnętrzny SKU
+      mpn: (p.variants.length === 1 && mpnOf(p.name, p.brand)) || undefined,
       gtin13: /^\d{13}$/.test(ean) ? ean : undefined,
       gtin8: /^\d{8}$/.test(ean) ? ean : undefined,
       brand: p.brand ? { "@type": "Brand", name: p.brand } : undefined,
       image: p.images.slice(0, 5).map(abs),
-      description: plainText(p.seo?.description || p.short) || `${p.brand ? `${p.brand} ` : ""}${p.name}. Sklep SONAX Białystok.`,
+      description: text || plainText(p.seo?.description || p.short) || `${p.brand ? `${p.brand} ` : ""}${p.name}. Sklep SONAX Białystok.`,
       category: crumbs.slice(1, -1).map((c) => c.name).join(" > ") || undefined,
       offers: p.variants.length > 1 ? p.variants.map((v) => offerOf(p, v, ship, pageSlug)) : offerOf(p, shown, ship, pageSlug),
       aggregateRating: rating && rating.count ? { "@type": "AggregateRating", ratingValue: rating.average.toFixed(1), reviewCount: rating.count } : undefined,

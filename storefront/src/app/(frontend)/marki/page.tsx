@@ -29,7 +29,7 @@ export default async function BrandsPage() {
             >
               {b.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={b.image} alt="" className="h-16 w-full object-contain" />
+                <img src={b.image} alt={`Logo ${b.name}`} className="h-16 w-full object-contain" />
               ) : (
                 <span className="grid h-16 place-items-center text-sm font-black text-navy">{b.name}</span>
               )}

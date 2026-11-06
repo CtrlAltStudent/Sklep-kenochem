@@ -12,6 +12,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { RichContent } from "@/components/RichContent";
 import { JsonLd } from "@/components/JsonLd";
 import { siteBase } from "@/lib/site";
+import { faqFromLexical, faqLd } from "@/lib/seo";
 import type { Media, Product } from "@/payload-types";
 
 export async function generateMetadata(props: PageProps<"/blog/[slug]">): Promise<Metadata> {
@@ -42,6 +43,7 @@ export default async function PostPage(props: PageProps<"/blog/[slug]">) {
   const more = (await getPosts()).filter((p) => p.slug !== post.slug).slice(0, 3);
 
   const origin = siteBase();
+  const faq = faqLd(faqFromLexical(post.content));
   const image = cover?.url ? (cover.url.startsWith("http") ? cover.url : `${origin}${cover.url.startsWith("/") ? "" : "/"}${cover.url}`) : undefined;
   return (
     <div className="mx-auto max-w-shop px-4 pt-6">
@@ -56,6 +58,8 @@ export default async function PostPage(props: PageProps<"/blog/[slug]">) {
         publisher: { "@type": "Organization", name: "Sklep Sonax Białystok", logo: { "@type": "ImageObject", url: `${origin}/sonax/logo.png` } },
         mainEntityOfPage: `${origin}/blog/${post.slug}`,
       }} />
+      {/* Sekcja „Najczęstsze pytania” jako dane FAQ dla Google i asystentów AI */}
+      {faq && <JsonLd data={faq} />}
       <Breadcrumbs items={[{ label: "Blog", href: "/blog" }, { label: post.title }]} />
 
       <header className="mt-4 grid items-center gap-8 overflow-hidden rounded-3xl bg-navy text-white lg:grid-cols-2">

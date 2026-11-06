@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { getStoreSettings } from "@/lib/cms";
 import { freeShippingFrom } from "@/lib/data";
 import { Checkout, type PayMethod, type ShipMethod } from "@/components/checkout/Checkout";
+import { OrderConfirmation } from "@/components/checkout/OrderConfirmation";
+import { loadConfirmation } from "@/integrations/checkout/confirmation";
 import { paymentAvailable, shippingAvailable } from "@/integrations/availability";
 import { inpostWidgetToken } from "@/integrations/inpost";
 import { orlenMapKey } from "@/integrations/orlen";
@@ -13,7 +15,15 @@ export const metadata: Metadata = { title: "Dostawa i płatność", robots: { in
 export const dynamic = "force-dynamic";
 
 // Metody dostawy i płatności z panelu: Ustawienia sklepu → Dostawa / Płatności (kolejność jak w panelu)
-export default async function CheckoutPage() {
+export default async function CheckoutPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const q = await searchParams;
+  const placed = typeof q.nr === "string" ? q.nr : "";
+  const key = typeof q.k === "string" ? q.k : "";
+  const problem = typeof q.blad === "string" ? q.blad : "";
+  if (placed && key) {
+    const done = await loadConfirmation(placed, key);
+    if (done) return <OrderConfirmation order={done} />;
+  }
   const s = await getStoreSettings();
   const shipping: ShipMethod[] = (s.shippingMethods ?? [])
     .filter(shippingAvailable)
@@ -25,5 +35,5 @@ export default async function CheckoutPage() {
   // Token Geowidget jest publiczny (InPost wiąże go z domeną sklepu) – trafia do przeglądarki z założenia
   const inpostToken = moduleEnabled("inpost") ? inpostWidgetToken() : "";
   const orlenToken = moduleEnabled("orlen") ? orlenMapKey() : "";
-  return <Checkout shipping={shipping} payments={payments} freeThreshold={freeShippingFrom(s)} inpostToken={inpostToken} orlenToken={orlenToken} cartReminder={cartRemindersOn()} />;
+  return <Checkout shipping={shipping} payments={payments} freeThreshold={freeShippingFrom(s)} inpostToken={inpostToken} orlenToken={orlenToken} cartReminder={cartRemindersOn()} placed={placed} problem={problem} />;
 }

@@ -8,7 +8,8 @@ import type { Payload } from "payload";
 import { slugify } from "@/payload/fields";
 import { blCall } from "./client";
 import { writeLog } from "./log";
-import type { BLCategory, BLProductData, BLProductListItem, BLStockItem } from "./types";
+import { getAuto, updateVault } from "../vault";
+import type { BLCategory, BLProductData, BLProductListItem } from "./types";
 import type { BaselinkerSetting, Product } from "@/payload-types";
 
 const BATCH = 100; // produktów na jedno zapytanie getInventoryProductsData
@@ -152,6 +153,75 @@ export async function linkBySku(payload: Payload) {
   }
 }
 
+// Przenosi produkty sklepu na wskazany katalog: ten sam SKU, numer produktu z tamtego katalogu.
+// Nazwy, ceny i stany zostają bez zmian (zaktualizuje je syncStock). Po zapisie ten katalog staje się
+// katalogiem sklepu i włącza aktualizację cen razem ze stanami.
+export async function moveToCatalog(payload: Payload, inventoryId: number, { dryRun = false }: { dryRun?: boolean } = {}) {
+  const startedAt = Date.now();
+  try {
+    if (!(inventoryId > 0)) throw new Error("Podaj ID katalogu.");
+    const inv = await blCall<{ inventories: { inventory_id: number; name?: string }[] }>("getInventories");
+    const target = (inv.inventories ?? []).find((c) => c.inventory_id === inventoryId);
+    if (!target) throw new Error(`Na koncie BaseLinkera nie ma katalogu ${inventoryId}.`);
+
+    const hitsBySku = new Map<string, BLProductListItem[]>();
+    for (const item of await listAllProducts(inventoryId)) {
+      const key = normSku(item.sku);
+      if (key && !item.parent_id) hitsBySku.set(key, [...(hitsBySku.get(key) ?? []), item]);
+    }
+    const { docs } = await payload.find({ collection: "products", limit: 0, pagination: false, depth: 0, overrideAccess: true, select: { sku: true, name: true, baselinkerId: true } });
+    const taken = new Set(docs.map((d) => Number(d.baselinkerId)).filter(Boolean));
+    const same = (a: Record<string, number> | undefined, b: Record<string, number> | undefined) => JSON.stringify(a ?? {}) === JSON.stringify(b ?? {});
+    const moves: { id: number; name: string; sku: string; from: number | null; to: number }[] = [];
+    const left: string[] = [];
+    let already = 0;
+
+    for (const d of docs) {
+      const hits = hitsBySku.get(normSku(d.sku)) ?? [];
+      if (hits.some((h) => h.id === Number(d.baselinkerId))) {
+        already++;
+        continue;
+      }
+      if (!hits.length) {
+        left.push(`${d.sku || "bez SKU"}: ${d.name} (brak w katalogu)`);
+        continue;
+      }
+      // Dwa wpisy z tym samym SKU: wybór nie ma znaczenia tylko wtedy, gdy mają ten sam stan i cenę
+      if (hits.some((h) => !same(h.stock, hits[0].stock) || !same(h.prices, hits[0].prices))) {
+        left.push(`${d.sku}: ${d.name} (SKU w katalogu ${hits.length} razy, różne stany lub ceny)`);
+        continue;
+      }
+      const free = hits.find((h) => !taken.has(h.id));
+      if (!free) {
+        left.push(`${d.sku}: ${d.name} (numer zajęty przez inny produkt sklepu)`);
+        continue;
+      }
+      taken.add(free.id);
+      moves.push({ id: d.id, name: d.name, sku: d.sku ?? "", from: d.baselinkerId ?? null, to: free.id });
+    }
+
+    const errors: string[] = [];
+    if (!dryRun) {
+      for (const m of moves) {
+        try {
+          await payload.update({ collection: "products", id: m.id, overrideAccess: true, data: { baselinkerId: m.to } });
+        } catch (e) {
+          errors.push(`${m.sku}: ${(e as Error).message}`);
+        }
+      }
+      await payload.updateGlobal({ slug: "baselinker-settings", overrideAccess: true, data: { inventoryId } });
+      updateVault({ auto: { prices: true } }, "przeniesienie katalogu");
+    }
+    const message = `${dryRun ? "[podgląd] " : ""}Katalog „${target.name || inventoryId}”: do przeniesienia ${moves.length}, już tam ${already}, zostaje bez zmian ${left.length}${errors.length ? `, błędy ${errors.length}` : ""}.`;
+    await writeLog(payload, { type: "products", status: errors.length ? "warning" : "success", message, startedAt, dryRun, details: { left, errors, samples: moves.slice(0, 20) } });
+    return { ok: !errors.length, message, moved: moves.length, already, left, errors, samples: moves.slice(0, 10) };
+  } catch (e) {
+    const message = (e as Error).message;
+    await writeLog(payload, { type: "products", status: "error", message, startedAt, dryRun });
+    return { ok: false, message };
+  }
+}
+
 // Porównanie wartości bez pól technicznych (np. id wierszy tablicy zdjęć)
 const comparable = (key: string, v: unknown) =>
   JSON.stringify(key === "images" ? ((v as { url?: string | null }[] | null) ?? []).map((i) => i.url ?? null) : key === "category" && v && typeof v === "object" ? (v as { id: unknown }).id : v ?? null);
@@ -162,7 +232,7 @@ export async function syncProducts(payload: Payload, { dryRun = false, limit, id
   const sync = s.sync ?? {};
   const lang = s.language || "pl";
   const warehouse = s.warehouseId as string | undefined;
-  const stats = { found: 0, created: 0, linked: 0, updated: 0, unchanged: 0, hidden: 0, categoriesCreated: 0, unmappedCategory: 0, bundles: 0, bundlesSkipped: 0, errors: [] as string[] };
+  const stats = { found: 0, created: 0, skippedNew: 0, linked: 0, updated: 0, unchanged: 0, hidden: 0, categoriesCreated: 0, unmappedCategory: 0, bundles: 0, bundlesSkipped: 0, errors: [] as string[] };
   const samples: unknown[] = [];
 
   try {
@@ -308,6 +378,11 @@ export async function syncProducts(payload: Payload, { dryRun = false, limit, id
         seen.add(blId);
         try {
           const existing = await findExisting(payload, blId, p);
+          // Katalog konta jest większy niż sklep: nowe produkty dodaje się tylko wybierając je w imporcie
+          if (!existing && !picked.length) {
+            stats.skippedNew++;
+            continue;
+          }
           if (existing && !existing.baselinkerId) stats.linked++;
           const keep = existing?.keep ?? {};
           const price = (s.priceGroupId != null && p.prices?.[String(s.priceGroupId)] != null ? p.prices[String(s.priceGroupId)] : undefined) ?? Object.values(p.prices ?? {})[0];
@@ -387,6 +462,7 @@ export async function syncProducts(payload: Payload, { dryRun = false, limit, id
 
     if (!dryRun) await payload.updateGlobal({ slug: "baselinker-settings", overrideAccess: true, data: { lastProductSyncAt: new Date().toISOString() } });
     const message = `${dryRun ? "[podgląd] " : ""}${picked.length ? "Wybrane produkty: " : "Produkty: "}${stats.found} w BaseLinkerze, nowe ${stats.created}, powiązane z istniejącymi (SKU/EAN) ${stats.linked}, zmienione ${stats.updated}, bez zmian ${stats.unchanged}, ukryte ${stats.hidden}` +
+      (stats.skippedNew ? `, pominięte (nie ma ich w sklepie) ${stats.skippedNew}` : "") +
       (stats.bundles ? `, zestawy ${stats.bundles}` : "") +
       (stats.bundlesSkipped ? `, zestawy pominięte ${stats.bundlesSkipped}` : "") +
       (stats.categoriesCreated ? `, nowe kategorie ${stats.categoriesCreated}` : "") +
@@ -407,46 +483,55 @@ export async function syncStock(payload: Payload, { dryRun = false, quiet = fals
     const s = await settings(payload);
     const warehouse = s.warehouseId as string | undefined;
     const qtyOf = (stock: Record<string, number> | undefined) =>
-      warehouse ? Number(stock?.[warehouse] ?? 0) : Object.values(stock ?? {}).reduce((a, b) => a + Number(b), 0);
-    let changed = 0, checked = 0;
+      Math.max(0, warehouse ? Number(stock?.[warehouse] ?? 0) : Object.values(stock ?? {}).reduce((a, b) => a + Number(b), 0));
+    const withPrices = getAuto().prices && s.sync?.prices !== false;
+    const priceOf = (prices: Record<string, number> | undefined) => {
+      const raw = s.priceGroupId != null ? prices?.[String(s.priceGroupId)] : Object.values(prices ?? {})[0];
+      const n = Number(raw);
+      return n > 0 ? n : undefined; // 0 w BaseLinkerze to brak ceny, nie darmowy produkt
+    };
+    let changed = 0, pricesChanged = 0, checked = 0;
     const samples: unknown[] = [];
+    const errors: string[] = [];
     const seen = new Set<number>();
 
-    const apply = async (blId: number, qty: number) => {
-      checked++;
+    const { docs: shop } = await payload.find({
+      collection: "products",
+      where: { baselinkerId: { exists: true } },
+      limit: 0,
+      pagination: false,
+      depth: 0,
+      overrideAccess: true,
+      select: { name: true, sku: true, stock: true, price: true, keep: true, baselinkerId: true },
+    });
+    const byBlId = new Map(shop.map((d) => [Number(d.baselinkerId), d]));
+
+    const apply = async (blId: number, offer: Pick<BLProductListItem, "stock" | "prices">) => {
       seen.add(blId);
-      const existing = (await payload.find({ collection: "products", where: { baselinkerId: { equals: blId } }, limit: 1, depth: 0, overrideAccess: true })).docs[0];
-      if (!existing || Number(existing.stock) === qty) return;
-      changed++;
-      if (samples.length < 10) samples.push({ name: existing.name, from: existing.stock, to: qty });
-      if (!dryRun) await payload.update({ collection: "products", id: existing.id, overrideAccess: true, data: { stock: qty } });
+      const existing = byBlId.get(blId);
+      if (!existing) return;
+      checked++;
+      const data: { stock?: number; price?: number } = {};
+      const qty = qtyOf(offer.stock);
+      if (Number(existing.stock) !== qty) data.stock = qty;
+      const price = withPrices && !existing.keep?.price ? priceOf(offer.prices) : undefined;
+      if (price != null && Number(existing.price) !== price) data.price = price;
+      if (data.stock === undefined && data.price === undefined) return;
+      if (data.stock !== undefined) changed++;
+      if (data.price !== undefined) pricesChanged++;
+      if (samples.length < 10) samples.push({ name: existing.name, stockFrom: existing.stock, stockTo: data.stock, priceFrom: existing.price, priceTo: data.price });
+      if (dryRun) return;
+      try {
+        await payload.update({ collection: "products", id: existing.id, overrideAccess: true, data });
+      } catch (e) {
+        errors.push(`${existing.sku || existing.name}: ${(e as Error).message}`);
+      }
     };
 
-    for (let page = 1; ; page++) {
-      const res = await blCall<{ products: Record<string, BLStockItem> }>("getInventoryProductsStock", { inventory_id: Number(s.inventoryId), page });
-      const items = Object.values(res.products ?? {});
-      for (const it of items) await apply(Number(it.product_id), qtyOf(it.stock));
-      if (items.length < 1000) break;
-    }
+    for (const item of await listAllProducts(Number(s.inventoryId))) await apply(Number(item.id), item);
 
-    // Produkty powiązane z innym katalogiem tego samego konta (np. Kenochem) nie wchodzą w listę powyżej.
-    const linked: number[] = [];
-    for (let page = 1; ; page++) {
-      const found = await payload.find({
-        collection: "products",
-        where: { baselinkerId: { exists: true } },
-        limit: 200,
-        page,
-        depth: 0,
-        overrideAccess: true,
-        select: { baselinkerId: true },
-      });
-      for (const doc of found.docs) {
-        const id = Number(doc.baselinkerId);
-        if (id && !seen.has(id)) linked.push(id);
-      }
-      if (!found.hasNextPage) break;
-    }
+    // Produkty powiązane z innym katalogiem tego samego konta nie wchodzą w listę powyżej.
+    const linked = [...byBlId.keys()].filter((id) => !seen.has(id));
     if (linked.length) {
       const inv = await blCall<{ inventories: { inventory_id: number }[] }>("getInventories");
       const others = (inv.inventories ?? []).map((c) => c.inventory_id).filter((id) => id !== Number(s.inventoryId));
@@ -458,7 +543,7 @@ export async function syncStock(payload: Payload, { dryRun = false, quiet = fals
           const res = await blCall<{ products: Record<string, BLProductData> }>("getInventoryProductsData", { inventory_id: inventoryId, products: batch });
           for (const [id, data] of Object.entries(res.products ?? {})) {
             still.delete(Number(id));
-            await apply(Number(id), qtyOf(data.stock));
+            await apply(Number(id), data);
           }
         }
         if (!still.size) break;
@@ -466,9 +551,9 @@ export async function syncStock(payload: Payload, { dryRun = false, quiet = fals
     }
 
     if (!dryRun) await payload.updateGlobal({ slug: "baselinker-settings", overrideAccess: true, data: { lastStockSyncAt: new Date().toISOString() } });
-    const message = `${dryRun ? "[podgląd] " : ""}Stany: sprawdzono ${checked}, zmieniono ${changed}`;
-    if (!quiet || changed) await writeLog(payload, { type: "stock", status: "success", message, startedAt, dryRun, details: { samples } });
-    return { ok: true, message, samples };
+    const message = `${dryRun ? "[podgląd] " : ""}Sprawdzono ${checked}, zmieniono stanów ${changed}${withPrices ? `, cen ${pricesChanged}` : " (ceny wyłączone)"}${errors.length ? `, błędy ${errors.length}` : ""}`;
+    if (!quiet || changed || pricesChanged || errors.length) await writeLog(payload, { type: "stock", status: errors.length ? "warning" : "success", message, startedAt, dryRun, details: { samples, errors } });
+    return { ok: !errors.length, message, samples, errors };
   } catch (e) {
     const message = (e as Error).message;
     await writeLog(payload, { type: "stock", status: "error", message, startedAt, dryRun });

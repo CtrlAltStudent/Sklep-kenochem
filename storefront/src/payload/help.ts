@@ -21,7 +21,7 @@ export const HELP: HelpSection[] = [
     title: "Zamówienia",
     intro: "Każde zamówienie ze sklepu trafia tu od razu i (jeśli BaseLinker jest włączony) do BaseLinkera. Numery: SX00001, SX00002…",
     steps: [
-      "[Zamówienia](/admin/collections/orders) – zakładki nad listą filtrują po statusie (Nowe, Czeka na płatność, Opłacone, Wysłane…). „Wszystkie” pokazuje całą listę; na dole wybierzesz, ile pozycji na stronę (do 200).",
+      "[Zamówienia](/admin/collections/orders) – zakładki nad listą filtrują po statusie (Nowe, Nieopłacone, Opłacone, Wysłane, Odebrane…). „Wszystkie” pokazuje całą listę; na dole wybierzesz, ile pozycji na stronę (do 200).",
       "Kliknij zamówienie – zobaczysz podgląd jak w BaseLinkerze: produkty, klient, dostawa, płatność, przesyłki, historia. „Edytuj” przy karcie otwiera edycję tej części.",
       "Prawy panel – szybkie akcje: Oznacz jako opłacone / wysłane, Anuluj (stany wracają, klient dostaje maila), Wyślij ponownie potwierdzenie, Drukuj, Inne zamówienia klienta.",
       "Karta „Historia zamówienia” zapisuje każdą zmianę statusu i płatności (kto i kiedy), wysłane maile i przekazania do BaseLinkera.",
@@ -133,7 +133,8 @@ export const HELP: HelpSection[] = [
     title: "Raporty sprzedaży",
     steps: [
       "[Raporty](/admin/raporty) – wybierz okres (dziś, 7/30/90 dni, miesiąc, rok albo własne daty).",
-      "[Statystyki sklepu](/admin/statystyki) – ile razy oglądano produkty, ile razy je kupiono, ścieżki klientów, miejsca gdzie kończą i adresy, których nie ma (404). Przełącznik „Bez nas” chowa ten komputer, na którym otwarto panel.",
+      "[Statystyki sklepu](/admin/statystyki) – wejścia i zamówienia w czasie z porównaniem do poprzedniego okresu, droga do zakupu, skąd przychodzą klienci, telefon czy komputer, czego szukają, kategorie i marki, produkty oglądane, a bez stanu, ścieżki klientów i adresy, których nie ma (404). Przełącznik „Bez nas” chowa ten komputer, na którym otwarto panel.",
+      "[Na żywo](/admin/na-zywo) – kto jest w sklepie w tej chwili. Kliknij osobę i nadaj jej nazwę (zostaje przy tej przeglądarce). Zaznaczenie „ktoś od nas” wyłącza ją ze statystyk klientów. Widać też dokładną kategorię i automaty.",
       "Każda liczba ma porównanie z poprzednim okresem (strzałka w górę/dół). Wykres – najedź na słupek po szczegóły.",
       "Niżej: najlepsze produkty (z aktualnym stanem), najlepsi klienci, kategorie, dostawy, płatności, dni tygodnia, godziny i miasta.",
     ],

@@ -46,9 +46,9 @@ export const publicOrder = (o: Order) => ({
   total: o.total,
   shippingCost: o.shipping?.price ?? 0,
   items: (o.items ?? []).map((i) => ({ name: i.name, variant: i.variantLabel ?? "", qty: i.quantity, price: i.priceGross })),
-  shipping: { method: o.shipping?.method ?? "", point: o.shipping?.point?.code ?? "", address: [o.shipping?.street, [o.shipping?.postcode, o.shipping?.city].filter(Boolean).join(" ")].filter(Boolean).join(", ") },
+  shipping: { method: o.shipping?.method ?? "", point: o.shipping?.point?.code ?? "", address: [o.shipping?.street, [o.shipping?.postcode, o.shipping?.city].filter(Boolean).join(" ")].filter(Boolean).join(", "), tracking: o.shipping?.trackingNumber ?? "" },
   payment: { method: o.payment?.method ?? "", status: o.payment?.status ?? "" },
-  hasParcels: Boolean(o.baselinker?.orderId),
+  hasParcels: Boolean(o.baselinker?.orderId) || Boolean(o.shipping?.trackingNumber),
 });
 
 export async function customerOrders(payload: Payload, c: Customer) {

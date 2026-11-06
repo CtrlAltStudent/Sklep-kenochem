@@ -32,7 +32,7 @@ const ids = (v: unknown) => (Array.isArray(v) ? v.map(Number).filter((n) => Numb
 function cleanAuto(a: Record<string, unknown> | undefined): Partial<AutoSettings> | undefined {
   if (!a) return undefined;
   const out: Partial<AutoSettings> = {};
-  for (const k of ["stock", "products", "orders", "statuses"] as const) if (k in a) out[k] = Boolean(a[k]);
+  for (const k of ["stock", "prices", "products", "orders", "statuses"] as const) if (k in a) out[k] = Boolean(a[k]);
   if ("stockEveryMin" in a) out.stockEveryMin = int(a.stockEveryMin, 5, 1440, 15);
   if ("statusesEveryMin" in a) out.statusesEveryMin = int(a.statusesEveryMin, 5, 1440, 15);
   if ("productsHour" in a) out.productsHour = int(a.productsHour, 0, 23, 3);

@@ -59,7 +59,7 @@ export const Products: CollectionConfig = {
             section("Cena", "Cena detaliczna, pojemność do ceny za litr, promocja i progi ilościowe.", "tag", [
             { type: "row", fields: [
               { name: "price", label: "Cena brutto (detal) zł", type: "number", required: true, min: 0, admin: { step: 0.01, width: "33%", components: { Cell: "@/payload/components/Cells#ProductPriceCell" } } },
-              { name: "priceB2B", label: "Cena brutto B2B zł", type: "number", min: 0, admin: { step: 0.01, width: "33%", description: "Grupa cenowa B2B z BaseLinkera" } },
+              { name: "priceB2B", label: "Cena brutto B2B zł", type: "number", min: 0, access: { read: ({ req }) => req.user?.collection === "users" }, admin: { step: 0.01, width: "33%", description: "Grupa cenowa B2B z BaseLinkera" } },
               { name: "vatRate", label: "VAT %", type: "number", defaultValue: 23, admin: { width: "33%" } },
             ] },
             { name: "unitLabel", label: "Pojemność", type: "text", admin: { width: "50%", placeholder: "np. 5 L", description: "Ile jest w opakowaniu: 5 L, 500 ml albo 1 kg. Z tego liczy się cena za 1 l lub 1 kg. Numer modelu w nazwie (np. RO-180L) się nie liczy — wpisz prawdziwą pojemność bańki." } },

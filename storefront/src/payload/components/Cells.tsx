@@ -55,8 +55,8 @@ export function ProductStatusCell(props: DefaultCellComponentProps) {
 }
 
 const orderStatus: Record<string, [string, string]> = {
-  new: ["Nowe", "blue"], awaiting_payment: ["Czeka na płatność", "amber"], paid: ["Opłacone", "green"],
-  processing: ["W realizacji", "violet"], shipped: ["Wysłane", "green"], cancelled: ["Anulowane", "gray"],
+  new: ["Nowe", "blue"], awaiting_payment: ["Nieopłacone", "amber"], paid: ["Opłacone", "green"],
+  processing: ["Przekazane do realizacji", "violet"], shipped: ["Wysłane", "green"], received: ["Odebrane", "green"], cancelled: ["Anulowane", "gray"],
 };
 export function OrderStatusCell(props: DefaultCellComponentProps) {
   const { cellData } = props;

@@ -4,6 +4,7 @@ import { toCard } from "@/lib/data";
 import { searchProducts } from "@/lib/catalog";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Listing } from "@/components/Listing";
+import { SearchBeacon } from "@/components/StatBeacon";
 
 export const metadata: Metadata = { title: "Wyniki wyszukiwania", robots: { index: false, follow: true } };
 
@@ -14,6 +15,7 @@ async function Results({ searchParams }: { searchParams: Promise<Record<string, 
   const results = (await searchProducts(query)).map(toCard);
   return (
     <>
+      <SearchBeacon query={query} results={results.length} />
       <h1 className="mt-4 mb-8 text-3xl font-black">
         Wyniki dla „{query}” <span className="text-lg font-medium text-slate-400">({results.length})</span>
       </h1>

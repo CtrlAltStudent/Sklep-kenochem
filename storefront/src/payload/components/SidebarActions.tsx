@@ -18,7 +18,9 @@ function Msg({ res }: { res: Res | null }) {
 
 const NEXT: { to: string; label: string; icon: typeof Truck; from: string[] }[] = [
   { to: "paid", label: "Oznacz jako opłacone", icon: CheckCircle2, from: ["new", "awaiting_payment"] },
-  { to: "shipped", label: "Oznacz jako wysłane", icon: Truck, from: ["new", "paid", "processing"] },
+  { to: "processing", label: "Przekazane do realizacji", icon: PackageCheck, from: ["paid"] },
+  { to: "shipped", label: "Oznacz jako wysłane", icon: Truck, from: ["paid", "processing"] },
+  { to: "received", label: "Oznacz jako odebrane", icon: CheckCircle2, from: ["shipped"] },
   { to: "cancelled", label: "Anuluj zamówienie", icon: Ban, from: ["new", "awaiting_payment", "paid", "processing"] },
 ];
 

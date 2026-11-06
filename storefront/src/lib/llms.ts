@@ -20,7 +20,7 @@ async function header() {
   return [
     "# Sklep SONAX – Białystok (sonax.sklep.pl)",
     "",
-    "> Oficjalny sklep internetowy z chemią i kosmetykami samochodowymi SONAX oraz środkami do myjni, domu i ogrodu. Prowadzi go KENOCHEM Kuczyński Sp. J., ul. Gen. Andersa 40, 15-113 Białystok (NIP 5423224790). Sprzedaż w Polsce, ceny brutto w PLN.",
+    "> Sklep internetowy oficjalnego dystrybutora SONAX: chemia i kosmetyki samochodowe SONAX oraz środki do myjni, domu i ogrodu. Prowadzi go KENOCHEM Kuczyński Sp. J., ul. Gen. Andersa 40, 15-113 Białystok (NIP 5423224790). Sprzedaż w Polsce, ceny brutto w PLN.",
     "",
     ...(getSite().llmsIntro ? [getSite().llmsIntro.trim(), ""] : []),
     "## Zakupy w skrócie",

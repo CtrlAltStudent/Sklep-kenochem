@@ -3,7 +3,7 @@ import { Pool } from "pg";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSite } from "@/integrations/vault";
 import { SHOP_PHONE, shopTel } from "@/lib/data";
-import { isBot, isStaff, noteRedirect, readSession, recordHit } from "@/lib/stats";
+import { clientIp, isBot, isStaff, noteBot, noteRedirect, readSession, recordHit } from "@/lib/stats";
 
 // Przerwa techniczna (panel: Ustawienia → Widoczność i technika → „Przerwa techniczna”).
 // Klienci dostają stronę z komunikatem (kod 503 – Google wie, że to chwilowe), pracownik zalogowany do panelu widzi sklep normalnie.
@@ -47,6 +47,37 @@ function jumpFor(path: string, map: Map<string, Hop>): Hop | null {
   if (base === "/blog") return { to: "/blog", permanent: true };
   if (base.startsWith("/kategoria-produktu/")) return { to: base, permanent: true };
   return null;
+}
+
+// Stare adresy WordPressa z parametrami (Google ma ich setki w raporcie „Strona zawiera przekierowanie”):
+//  ?s=…            → wyszukiwarka sklepu
+//  ?attachment_id=, ?page_id=, ?p=, ?product= na stronie głównej → 410 „usunięte na stałe” (Google szybciej je zapomina, niż gdy lądują na stronie głównej)
+//  ?add-to-cart=, ?orderby=, ?product-page= … → ten sam adres bez tych parametrów (jeden czysty adres zamiast wielu kopii)
+const WP_JUNK = ["add-to-cart", "orderby", "product-page", "add_to_wishlist", "removed_item", "quantity", "variation_id", "_wpnonce", "replytocom"];
+const WP_GONE = ["attachment_id", "page_id", "p", "product", "post_type", "cat", "tag", "m"];
+
+function wordpressQuery(req: NextRequest, path: string) {
+  // Strony pojedynczych zdjęć WordPressa (…/attachment/123) – nie mają odpowiednika
+  if (/\/attachment\/[^/]+$/.test(path)) {
+    return new NextResponse(missingHtml, { status: 410, headers: { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": "noindex", "Cache-Control": "no-store" } });
+  }
+  const sp = req.nextUrl.searchParams;
+  if (path === "/") {
+    const search = sp.get("s");
+    if (search != null) {
+      const to = new URL("/szukaj", req.url);
+      if (search.trim()) to.searchParams.set("q", search.trim());
+      return NextResponse.redirect(to, 308);
+    }
+    if (WP_GONE.some((k) => sp.has(k))) {
+      return new NextResponse(missingHtml, { status: 410, headers: { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": "noindex", "Cache-Control": "no-store" } });
+    }
+  }
+  if (!WP_JUNK.some((k) => sp.has(k))) return null;
+  const clean = new URL(req.url);
+  for (const k of WP_JUNK) clean.searchParams.delete(k);
+  clean.pathname = path;
+  return NextResponse.redirect(clean, 308);
 }
 
 function rememberMissing(req: NextRequest, path: string) {
@@ -119,10 +150,21 @@ export async function proxy(req: NextRequest) {
     });
   }
   const path = req.nextUrl.pathname.replace(/\/+$/, "") || "/";
+  if (isBot(req.headers.get("user-agent"))) {
+    const query = req.nextUrl.searchParams;
+    const filter = new URLSearchParams();
+    const sub = query.get("sub") || "";
+    const typ = query.get("typ") || "";
+    if (/^[a-z0-9-]{1,80}$/.test(sub)) filter.set("sub", sub);
+    if (/^[a-z0-9-]{1,80}$/.test(typ)) filter.set("typ", typ);
+    noteBot(req.headers.get("user-agent"), path, clientIp(req.headers.get("x-forwarded-for"), req.headers.get("x-real-ip")), filter.toString());
+  }
+  const wp = wordpressQuery(req, path);
+  if (wp) return wp;
   const known = await shopPaths();
   const jump = jumpFor(path, known.redirects);
   if (jump && jump.to !== path) {
-    noteRedirect(path);
+    if (!isBot(req.headers.get("user-agent"))) noteRedirect(path);
     return NextResponse.redirect(new URL(jump.to, req.url), jump.permanent ? 308 : 307);
   }
   const product = path.match(/^\/produkt\/([^/]+)$/);

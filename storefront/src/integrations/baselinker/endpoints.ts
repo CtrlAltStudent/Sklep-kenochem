@@ -6,7 +6,7 @@ import { hasRole } from "@/payload/access";
 import { integrationMode, isMock } from "./client";
 import { buildAddOrder, sendOrderToBaseLinker } from "./orders";
 import { orderPackages } from "./shipping";
-import { linkBySku, searchCatalog, syncProducts, syncStock, testConnection } from "./sync";
+import { linkBySku, moveToCatalog, searchCatalog, syncProducts, syncStock, testConnection } from "./sync";
 
 const deny = () => Response.json({ ok: false, message: "Brak uprawnień" }, { status: 403 });
 const body = async (req: PayloadRequest) => {
@@ -76,6 +76,15 @@ export const baselinkerEndpoints: Endpoint[] = [
     path: "/baselinker/link-sku",
     method: "post",
     handler: async (req) => ((await hasRole(req, "admin")) ? Response.json(await linkBySku(req.payload)) : deny()),
+  },
+  {
+    path: "/baselinker/move-catalog",
+    method: "post",
+    handler: async (req) => {
+      if (!(await hasRole(req, "admin"))) return deny();
+      const { inventoryId, dryRun } = await body(req);
+      return Response.json(await moveToCatalog(req.payload, Number(inventoryId), { dryRun: Boolean(dryRun) }));
+    },
   },
   {
     path: "/baselinker/order-preview/:id",

@@ -9,6 +9,7 @@ import { p24Mode, registerP24 } from "../przelewy24";
 import type { Order } from "@/payload-types";
 import { paymentAvailable, shippingAvailable } from "../availability";
 import { BLIK_CODE, startBlik, type BlikClient } from "./blik";
+import { confirmKey } from "./confirmKey";
 import { orderPlacedMails } from "../mail/events";
 import { markCartsOrdered } from "../carts";
 import { priceAfterQtyDeal } from "@/lib/qtyDeal";
@@ -128,6 +129,34 @@ export async function placeOrder(payload: Payload, raw: CheckoutInput, client: B
   const total = round2(Math.max(0, subtotal - discount) + shipCost);
 
   const postcode = raw.postcode.replace(/^(\d{2})(\d{3})$/, "$1-$2");
+
+  // To samo zamówienie wysłane drugi raz (odświeżenie, ponowne kliknięcie) nie tworzy drugiego i nie gubi pierwszego.
+  const recent = await payload.find({
+    collection: "orders",
+    where: { and: [{ email: { equals: raw.email } }, { createdAt: { greater_than: new Date(Date.now() - 10 * 60_000).toISOString() } }] },
+    sort: "-createdAt",
+    limit: 5,
+    depth: 0,
+    overrideAccess: true,
+  });
+  const same = recent.docs.find((o) => {
+    const sameAddress = (o.shipping?.street ?? "") === raw.street && (o.shipping?.postcode ?? "") === postcode;
+    const sameItems = (o.items ?? []).length === lines.length && (o.items ?? []).every((item, i) => Number(typeof item.product === "object" ? item.product?.id : item.product) === Number(lines[i]?.product) && Number(item.quantity) === lines[i]?.quantity);
+    return sameAddress && sameItems && o.status !== "cancelled";
+  });
+  if (same?.orderNumber) {
+    return {
+      ok: true as const,
+      already: true,
+      confirmKey: confirmKey(same.orderNumber, same.id),
+      orderNumber: same.orderNumber,
+      orderId: same.id,
+      total: Number(same.total),
+      paid: same.payment?.status === "paid" || same.payment?.status === "deferred",
+      message: "To zamówienie jest już zapisane. Nie składaj go drugi raz.",
+    };
+  }
+
   let point: { code: string; name?: string; address?: string; postcode?: string; city?: string } | undefined;
   const carrier = carrierFromShipping(ship.code);
   if (ship.requiresPoint) {
@@ -153,7 +182,7 @@ export async function placeOrder(payload: Payload, raw: CheckoutInput, client: B
     collection: "orders",
     overrideAccess: true,
     data: {
-      customer: customerId, // zalogowany klient – zamówienie trafia do historii w koncie
+      ...(customerId ? { customer: customerId } : {}),
       email: raw.email,
       phone: raw.phone.replace(/\s+/g, ""),
       items: lines,
@@ -211,6 +240,7 @@ export async function placeOrder(payload: Payload, raw: CheckoutInput, client: B
       ok: true as const,
       analytics,
       orderNumber: order.orderNumber as string,
+      confirmKey: confirmKey(order.orderNumber as string, order.id),
       orderId: order.id,
       total: Number(order.total),
       paid: false,
@@ -241,7 +271,18 @@ export async function placeOrder(payload: Payload, raw: CheckoutInput, client: B
       });
       redirectUrl = p24.redirectUrl;
     } catch (e) {
-      return { ok: false as const, message: e instanceof Error ? e.message : "Nie udało się rozpocząć płatności." };
+      payload.logger.error({ err: e }, `Płatność zamówienia ${order.orderNumber} nie wystartowała`);
+      return {
+        ok: true as const,
+        analytics,
+        orderNumber: order.orderNumber as string,
+        confirmKey: confirmKey(order.orderNumber as string, order.id),
+        orderId: order.id,
+        total: Number(order.total),
+        paid: false,
+        paymentProblem: "Zamówienie jest zapisane, ale płatność online nie ruszyła. Zadzwoń: 664 953 377 – dokończymy je bez ponownego wypełniania.",
+        message: "Zamówienie zapisane. Płatność wymaga dokończenia.",
+      };
     }
   }
 
@@ -249,6 +290,7 @@ export async function placeOrder(payload: Payload, raw: CheckoutInput, client: B
     ok: true as const,
     analytics,
     orderNumber: order.orderNumber as string,
+    confirmKey: confirmKey(order.orderNumber as string, order.id),
     orderId: order.id,
     total: Number(order.total),
     paid: order.payment?.status === "paid" || order.payment?.status === "deferred",

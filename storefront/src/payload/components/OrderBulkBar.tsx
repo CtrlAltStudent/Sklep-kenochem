@@ -9,7 +9,7 @@ import { useState } from "react";
 import { Download, Mail, Printer, RefreshCw, Trash2, X } from "lucide-react";
 
 const STATUSES: [string, string][] = [
-  ["new", "Nowe"], ["awaiting_payment", "Czeka na płatność"], ["paid", "Opłacone"], ["processing", "W realizacji"], ["shipped", "Wysłane"], ["cancelled", "Anulowane"],
+  ["new", "Nowe"], ["awaiting_payment", "Nieopłacone"], ["paid", "Opłacone"], ["processing", "Przekazane do realizacji"], ["shipped", "Wysłane"], ["received", "Odebrane"], ["cancelled", "Anulowane"],
 ];
 
 type Res = { ok: boolean; message: string };

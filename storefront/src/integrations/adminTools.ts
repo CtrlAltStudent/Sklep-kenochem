@@ -16,6 +16,7 @@ import { blActive } from "./baselinker/client";
 import { fetchOffer } from "./baselinker/sync";
 import { getP24Transaction, p24Mode, refundP24 } from "./przelewy24";
 import { addHistory } from "./history";
+import { orderContext } from "./mail/events";
 import { mailConfig, sendMail } from "./mail/send";
 import * as T from "./mail/templates";
 import { LEGAL_PAGES, toLexical } from "./legalTexts";
@@ -38,7 +39,7 @@ const csvCell = (v: unknown) => {
 };
 const csv = (rows: unknown[][]) => "\uFEFF" + rows.map((r) => r.map(csvCell).join(";")).join("\r\n");
 const plNum = (n: unknown) => (n == null || n === "" ? "" : String(Number(n).toFixed(2)).replace(".", ","));
-const ORDER_ST: Record<string, string> = { new: "Nowe", awaiting_payment: "Czeka na płatność", paid: "Opłacone", processing: "W realizacji", shipped: "Wysłane", cancelled: "Anulowane" };
+const ORDER_ST: Record<string, string> = { new: "Nowe", awaiting_payment: "Nieopłacone", paid: "Opłacone", processing: "Przekazane do realizacji", shipped: "Wysłane", received: "Odebrane", cancelled: "Anulowane" };
 const PAY_ST: Record<string, string> = { pending: "czeka na wpłatę", paid: "opłacone", failed: "nieudana", refunded: "zwrócona", deferred: "przy odbiorze" };
 const B2B_ST: Record<string, string> = { pending: "czeka na weryfikację", approved: "zatwierdzone", rejected: "odrzucone" };
 const plDate = (d: unknown) => (d ? new Date(String(d)).toLocaleString("pl-PL") : "");
@@ -318,13 +319,7 @@ export const adminToolEndpoints: Endpoint[] = [
       if (!(await hasRole(req, "orders"))) return deny();
       if (!mailConfig()) return Response.json({ ok: false, message: "Poczta nie jest skonfigurowana (Integracje → Poczta)." });
       const o = await req.payload.findByID({ collection: "orders", id: idOf(req), depth: 0, overrideAccess: true });
-      const store = await req.payload.findGlobal({ slug: "store-settings", overrideAccess: true });
-      const built = T.orderPlaced(o, {
-        shop: store as T.Shop,
-        shipLabel: store.shippingMethods?.find((m) => m.code === o.shipping?.method)?.label,
-        payLabel: store.paymentMethods?.find((m) => m.code === o.payment?.method)?.label,
-        bank: mailConfig()?.bank ?? "",
-      });
+      const built = T.orderPlaced(o, await orderContext(req.payload, o));
       const r = await sendMail(req.payload, { to: o.email, ...built, order: o.id });
       return Response.json(r.ok ? { ok: true, message: `Wysłano ponownie na ${o.email}` } : { ok: false, message: r.message });
     },

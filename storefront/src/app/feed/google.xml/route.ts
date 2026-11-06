@@ -5,6 +5,7 @@ import { freeShippingFrom, methodFreeFrom } from "@/lib/data";
 import { shippingAvailable } from "@/integrations/availability";
 import { absUrl, siteBase } from "@/lib/site";
 import { getSite } from "@/integrations/vault";
+import { mpnOf } from "@/lib/seo";
 
 // /feed/google.xml – plik produktów dla Google Merchant Center (Zakupy Google, kampanie Performance Max, remarketing).
 // Merchant Center: Produkty → Źródła danych → „Plik zaplanowany” z tym adresem. Odświeżany co godzinę.
@@ -32,7 +33,7 @@ export async function GET() {
   const site = getSite();
   if (!site.feedEnabled) return new Response("Not found", { status: 404 });
   const [products, store, cms, categories] = await Promise.all([getProducts(), getStoreSettings(), getCms(), getShopCategories()]);
-  const { docs } = await cms.find({ collection: "products", limit: 0, pagination: false, depth: 0, overrideAccess: true, where: { status: { equals: "active" } }, select: { slug: true, descriptionHtml: true, shortDescription: true, sale: true, merchant: true, seo: true } });
+  const { docs } = await cms.find({ collection: "products", limit: 0, pagination: false, depth: 0, overrideAccess: true, where: { status: { equals: "active" } }, select: { slug: true, name: true, descriptionHtml: true, shortDescription: true, sale: true, merchant: true, seo: true } });
   const extra = new Map(docs.map((d) => [d.slug, d]));
 
   // Koszt dostawy w pliku: najtańsza płatna metoda; od progu darmowej dostawy – 0 zł
@@ -66,7 +67,7 @@ export async function GET() {
       if (seen.has(id)) continue;
       seen.add(id);
       const g = gtin(v.ean || p.ean);
-      const sku = v.sku || p.sku;
+      const mpn = mpnOf(row?.name ?? p.name, p.brand);
       const regular = v.oldPrice ?? v.price;
       const saleTo = row?.sale?.to ? new Date(row.sale.to) : null;
       const saleFrom = row?.sale?.from ? new Date(row.sale.from) : new Date(Date.now() - 86_400_000);
@@ -87,8 +88,9 @@ export async function GET() {
         `<g:condition>new</g:condition>`,
         p.brand ? `<g:brand>${xml(p.brand)}</g:brand>` : "",
         g ? `<g:gtin>${g}</g:gtin>` : "",
-        sku ? `<g:mpn>${xml(sku)}</g:mpn>` : "",
-        !g && !(p.brand && sku) ? "<g:identifier_exists>no</g:identifier_exists>" : "",
+        // MPN = numer katalogowy producenta z nazwy (SONAX 275300, Kwazar WTO.0332), nie nasz SKU
+        mpn ? `<g:mpn>${xml(mpn)}</g:mpn>` : "",
+        !g && !(p.brand && mpn) ? "<g:identifier_exists>no</g:identifier_exists>" : "",
         path(p) ? `<g:product_type>${xml(path(p))}</g:product_type>` : "",
         `<g:google_product_category>${xml(row?.merchant?.googleCategory || googleCategory[p.category] || googleCategory["mycie-auta"])}</g:google_product_category>`,
         ...([0, 1, 2] as const).map((n) => { const l = row?.merchant?.[`customLabel${n}`]; return l ? `<g:custom_label_${n}>${xml(l.slice(0, 100))}</g:custom_label_${n}>` : ""; }),

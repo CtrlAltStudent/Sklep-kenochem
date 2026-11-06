@@ -67,10 +67,11 @@ export const Orders: CollectionConfig = {
     { name: "orderNumber", label: "Numer zamówienia", type: "text", unique: true, index: true, admin: { readOnly: true, position: "sidebar", description: "Nadawany automatycznie przy zapisie.", components: { Cell: "@/payload/components/Cells#OrderNumberCell" } } },
     { name: "status", label: "Status w sklepie", type: "select", defaultValue: "new", index: true, admin: { position: "sidebar", components: { Cell: "@/payload/components/Cells#OrderStatusCell" } }, options: [
       { label: "Nowe", value: "new" },
-      { label: "Oczekuje na płatność", value: "awaiting_payment" },
+      { label: "Nieopłacone", value: "awaiting_payment" },
       { label: "Opłacone", value: "paid" },
       { label: "Przekazane do realizacji (BaseLinker)", value: "processing" },
-      { label: "Wysłane do klienta", value: "shipped" },
+      { label: "Wysłane", value: "shipped" },
+      { label: "Odebrane", value: "received" },
       { label: "Anulowane", value: "cancelled" },
     ] },
     { type: "ui", name: "quickActions", admin: { position: "sidebar", disableListColumn: true, components: { Field: "@/payload/components/SidebarActions#OrderActions" } } },
@@ -137,6 +138,7 @@ export const Orders: CollectionConfig = {
                 { type: "row", fields: [
                   { name: "method", label: "Kod metody dostawy", type: "text", required: true, admin: { width: "50%", description: "Kod z Ustawienia sklepu → Metody dostawy" } },
                   { name: "price", label: "Koszt dostawy brutto", type: "number", defaultValue: 0, min: 0, admin: { width: "50%", step: 0.01 } },
+                  { name: "trackingNumber", label: "Numer przesyłki", type: "text", admin: { width: "50%", description: "Wpisuje się sam, gdy BaseLinker nada paczkę." } },
                 ] },
                 { type: "row", fields: [
                   { name: "fullName", label: "Odbiorca", type: "text", admin: { width: "50%" } },

@@ -97,7 +97,7 @@ export function DilutionGuide({ examples }: { examples: DilutionExample[] }) {
               <li key={ex.slug}>
                 <button type="button" onClick={() => { setRatio(ex.ratio); setPicked(ex.slug); document.getElementById("kalkulator")?.scrollIntoView({ behavior: "smooth", block: "center" }); }}
                   className={`flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left ring-1 transition hover:ring-leaf ${picked === ex.slug ? "ring-2 ring-leaf" : "ring-brand-100"}`}>
-                  <ProductImage src={ex.image} alt="" className="h-16 w-16 shrink-0 rounded-xl" sizes="64px" />
+                  <ProductImage src={ex.image} alt={ex.name} className="h-16 w-16 shrink-0 rounded-xl" sizes="64px" />
                   <span className="min-w-0">
                     <span className="block font-bold text-navy">{ex.name}</span>
                     <span className="mt-0.5 block text-sm text-slate-500">{ex.note}</span>

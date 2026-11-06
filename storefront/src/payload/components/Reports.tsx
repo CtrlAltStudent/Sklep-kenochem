@@ -22,7 +22,7 @@ const daysSince = (d: Date) => Math.max(1, Math.ceil((Date.now() - d.getTime()) 
 const parseDay = (s: unknown) => (typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s) ? new Date(`${s}T00:00:00`) : null);
 
 const PRESETS: [string, string][] = [["dzis", "Dziś"], ["7", "7 dni"], ["30", "30 dni"], ["90", "90 dni"], ["miesiac", "Ten miesiąc"], ["poprzedni", "Poprzedni miesiąc"], ["365", "Rok"]];
-const ORDER_ST: Record<string, string> = { new: "Nowe", awaiting_payment: "Czeka na płatność", paid: "Opłacone", processing: "W realizacji", shipped: "Wysłane", cancelled: "Anulowane" };
+const ORDER_ST: Record<string, string> = { new: "Nowe", awaiting_payment: "Nieopłacone", paid: "Opłacone", processing: "Przekazane do realizacji", shipped: "Wysłane", received: "Odebrane", cancelled: "Anulowane" };
 const WEEKDAYS = ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"];
 
 function range(sp: Record<string, unknown> | undefined) {
@@ -55,7 +55,7 @@ function summarize(orders: Order[]) {
   };
 }
 
-function Delta({ now, before, invert }: { now: number; before: number; invert?: boolean }) {
+export function Delta({ now, before, invert }: { now: number; before: number; invert?: boolean }) {
   if (!before && !now) return <span className="kc-delta">bez zmian</span>;
   if (!before) return <span className="kc-delta is-up">nowe</span>;
   const d = ((now - before) / before) * 100;
@@ -64,7 +64,7 @@ function Delta({ now, before, invert }: { now: number; before: number; invert?: 
   return <span className={`kc-delta ${good ? "is-up" : "is-down"}`}><Icon size={13} /> {Math.abs(d).toFixed(0)}% <small>vs poprzedni okres</small></span>;
 }
 
-function Bars({ rows, money, sub }: { rows: { label: string; value: number; extra?: string }[]; money?: boolean; sub?: string }) {
+export function Bars({ rows, money, sub }: { rows: { label: string; value: number; extra?: string }[]; money?: boolean; sub?: string }) {
   const max = Math.max(...rows.map((r) => r.value), 1);
   if (!rows.length) return <p className="kc-empty">Brak danych w wybranym okresie.</p>;
   return (

@@ -65,7 +65,7 @@ export async function syncOrderStatuses(payload: Payload) {
     depth: 0,
     limit: MAX_PER_RUN,
     sort: "updatedAt",
-    where: { and: [{ status: { equals: "processing" } }, { "baselinker.orderId": { exists: true } }, { createdAt: { greater_than: new Date(Date.now() - 60 * DAY).toISOString() } }] },
+    where: { and: [{ status: { in: ["processing", "shipped"] } }, { "baselinker.orderId": { exists: true } }, { createdAt: { greater_than: new Date(Date.now() - 60 * DAY).toISOString() } }] },
   });
 
   let toShipped = 0, toCancelled = 0;
@@ -74,11 +74,21 @@ export async function syncOrderStatuses(payload: Payload) {
     try {
       const res = await blCall<{ orders: { order_status_id: number }[] }>("getOrders", { order_id: o.baselinker?.orderId, get_unconfirmed_orders: true });
       const st = Number(res.orders?.[0]?.order_status_id);
-      const next: Order["status"] | null = shipped.has(st) ? "shipped" : cancelled.has(st) ? "cancelled" : null;
-      if (!next) continue;
-      await payload.update({ collection: "orders", id: o.id, overrideAccess: true, context: { skipBaseLinker: true }, data: { status: next } });
+      const packs = await orderPackages(Number(o.baselinker?.orderId)).catch(() => []);
+      const tracking = packs.find((p) => p.number)?.number ?? "";
+      const delivered = packs.some((p) => p.status === "Doręczona");
+      let next: Order["status"] | null = cancelled.has(st) ? "cancelled" : shipped.has(st) || delivered ? "shipped" : null;
+      if (o.status === "shipped" && delivered) next = "received";
+      if (o.status === "shipped" && !delivered) next = null;
+      const freshTrack = Boolean(tracking && tracking !== o.shipping?.trackingNumber);
+      if (!next && !freshTrack) continue;
+      await payload.update({
+        collection: "orders", id: o.id, overrideAccess: true,
+        context: { skipBaseLinker: true, ...(freshTrack ? { trackingNumber: tracking } : {}) },
+        data: { ...(next ? { status: next } : {}), ...(freshTrack ? { shipping: { trackingNumber: tracking } } : {}) },
+      });
       if (next === "shipped") toShipped++;
-      else toCancelled++;
+      else if (next === "cancelled") toCancelled++;
     } catch (e) {
       errors.push(`${o.orderNumber}: ${(e as Error).message}`);
     }

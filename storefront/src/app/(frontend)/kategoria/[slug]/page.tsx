@@ -1,4 +1,4 @@
-import { Fragment, Suspense } from "react";
+import { Fragment, Suspense, cache } from "react";
 import { connection } from "next/server";
 import Link from "next/link";
 import { notFound, permanentRedirect, redirect } from "next/navigation";
@@ -20,29 +20,60 @@ export async function generateStaticParams() {
   return (await getShopCategories()).map((c) => ({ slug: c.slug }));
 }
 
-// Podkategoria (?sub=) i typ (&typ=) mają własny tytuł, opis i adres kanoniczny – Google traktuje je jak osobne strony,
-// a filtry (marka, cena, sortowanie) wskazują kanonicznie na stronę bez filtrów.
-export async function generateMetadata(props: PageProps<"/kategoria/[slug]">): Promise<Metadata> {
-  const { slug } = await props.params;
-  const sp = await props.searchParams;
-  const c = (await getShopCategories()).find((x) => x.slug === slug);
-  if (!c) return {};
+type Tree = Awaited<ReturnType<typeof getShopCategories>>;
+
+// Który poziom kategorii pokazujemy: dział, podkategoria (?sub=) czy typ (&typ=). Nieznane ?sub= / &typ= są pomijane.
+function levelOf(tree: Tree, slug: string, sp: Record<string, string | string[] | undefined>) {
+  const c = tree.find((x) => x.slug === slug);
+  if (!c) return undefined;
   const sub = c.children.find((s) => s.slug === sp.sub);
   const type = sub?.types.find((t) => t.slug === sp.typ);
-  const canonical = `/kategoria/${c.slug}${sub ? `?sub=${sub.slug}${type ? `&typ=${type.slug}` : ""}` : ""}`;
-  const name = type ? `${type.name} – ${sub!.name}` : sub ? `${sub.name} – ${c.name}` : c.name;
-  const description = type
+  const href = `/kategoria/${c.slug}${sub ? `?sub=${sub.slug}${type ? `&typ=${type.slug}` : ""}` : ""}`;
+  // Ścieżka od działu do wybranego poziomu – do okruszków i danych dla Google
+  const path = [
+    { name: c.name, href: `/kategoria/${c.slug}` },
+    ...(sub ? [{ name: sub.name, href: `/kategoria/${c.slug}?sub=${sub.slug}` }] : []),
+    ...(sub && type ? [{ name: type.name, href }] : []),
+  ];
+  return { c, sub, type, href, path, name: (type ?? sub ?? c).name, levelSlug: (type ?? sub ?? c).slug };
+}
+
+// Opis i pola SEO kategorii z panelu – każdy poziom (dział, podkategoria, typ) ma własny dokument
+const getCategoryDoc = cache(async (slug: string) => {
+  const payload = await getCms();
+  const doc = (await payload.find({ collection: "categories", where: { slug: { equals: slug } }, limit: 1, depth: 0, select: { description: true, seo: true } })).docs[0];
+  return doc;
+});
+
+// Pusty edytor zapisuje akapit bez tekstu – taki opis traktujemy jak brak opisu
+const hasText = (d: unknown) => /"text":"[^"]*\S/.test(JSON.stringify(d ?? null));
+
+// Podkategoria (?sub=) i typ (&typ=) mają własny tytuł, opis i adres kanoniczny – Google traktuje je jak osobne strony,
+// a filtry (marka, cena, sortowanie) wskazują kanonicznie na stronę bez filtrów. Tytuł i opis z panelu mają pierwszeństwo.
+export async function generateMetadata(props: PageProps<"/kategoria/[slug]">): Promise<Metadata> {
+  const { slug } = await props.params;
+  const lvl = levelOf(await getShopCategories(), slug, await props.searchParams);
+  if (!lvl) return {};
+  const { c, sub, type } = lvl;
+  // Kolejne strony listy (?strona=2) są osobnymi adresami z własnym adresem kanonicznym
+  const sp = await props.searchParams;
+  const page = Math.max(1, Number.parseInt(typeof sp.strona === "string" ? sp.strona : "", 10) || 1);
+  const canonical = page > 1 ? `${lvl.href}${lvl.href.includes("?") ? "&" : "?"}strona=${page}` : lvl.href;
+  const seo = (await getCategoryDoc(lvl.levelSlug))?.seo;
+  const name = seo?.title?.trim() || (type ? `${type.name} – ${sub!.name}` : sub ? `${sub.name} – ${c.name}` : c.name);
+  const description = seo?.description?.trim() || (type
     ? `${type.name} (${sub!.name.toLowerCase()}) w sklepie SONAX Białystok. Oryginalne produkty, wysyłka 24h InPost i ORLEN Paczka.`
     : sub
       ? `${sub.name}: ${sub.types.slice(0, 6).map((t) => t.name.toLowerCase()).join(", ")}. Sklep SONAX Białystok – wysyłka 24h.`
-      : `${c.name} – ${c.children.map((s) => s.name).join(", ")}. Sklep Sonax Białystok, wysyłka InPost.`;
-  return { title: name, description, alternates: { canonical }, openGraph: { type: "website", siteName: "Sklep Sonax", locale: "pl_PL", title: name, description, images: [categoryPhoto[c.slug] || "/sonax/logo.png"] } };
-}
-
-async function getCategoryDescription(slug: string) {
-  const payload = await getCms();
-  const doc = (await payload.find({ collection: "categories", where: { slug: { equals: slug } }, limit: 1, depth: 0, select: { description: true } })).docs[0];
-  return doc?.description;
+      : `${c.name} – ${c.children.map((s) => s.name).join(", ")}. Sklep Sonax Białystok, wysyłka InPost.`);
+  const pageNote = page > 1 ? ` – strona ${page}` : "";
+  return {
+    title: `${name}${pageNote}`,
+    description: page > 1 ? `${description.replace(/\.?$/, ".")} Strona ${page}.` : description,
+    alternates: { canonical },
+    robots: seo?.noindex ? { index: false, follow: true } : undefined,
+    openGraph: { type: "website", siteName: "Sklep Sonax", locale: "pl_PL", title: name, description, images: [categoryPhoto[c.slug] || "/sonax/logo.png"] },
+  };
 }
 
 export default async function CategoryPage(props: PageProps<"/kategoria/[slug]">) {
@@ -54,7 +85,15 @@ export default async function CategoryPage(props: PageProps<"/kategoria/[slug]">
     if (r) (r.permanent ? permanentRedirect : redirect)(r.to);
     notFound();
   }
-  const [items, counts, description, posts] = await Promise.all([getByCategory(slug), getCategoryCounts(), getCategoryDescription(slug), getPosts()]);
+  const lvl = levelOf(await getShopCategories(), slug, await props.searchParams)!;
+  const [items, counts, levelDoc, mainDoc, posts] = await Promise.all([
+    getByCategory(slug), getCategoryCounts(), getCategoryDoc(lvl.levelSlug), getCategoryDoc(slug), getPosts(),
+  ]);
+  // Opis wybranego poziomu; podkategoria bez własnego opisu pokazuje opis działu
+  const own = hasText(levelDoc?.description);
+  const description = own ? levelDoc?.description : hasText(mainDoc?.description) ? mainDoc?.description : undefined;
+  const descriptionTitle = own && lvl.sub ? `O kategorii: ${lvl.name}` : `O dziale: ${category.name}`;
+  const shown = items.filter((p) => (!lvl.sub || p.subcategory === lvl.sub.slug) && (!lvl.type || p.type === lvl.type.slug));
   const bestsellers = items.filter((p) => p.badges?.includes("bestseller") && p.stock > 0 && usableImages(p.images).length).slice(0, 4);
 
   // Bloki widoku kategorii – kolejność i widoczność z panelu (Treści i wygląd → Układ strony)
@@ -72,7 +111,7 @@ export default async function CategoryPage(props: PageProps<"/kategoria/[slug]">
     ),
     description: description && (
       <section className="mt-16 rounded-xl bg-white p-6 ring-1 ring-brand-100 sm:p-10">
-        <h2 className="mb-4 text-2xl font-extrabold text-navy">O dziale: {category.name}</h2>
+        <h2 className="mb-4 text-2xl font-extrabold text-navy">{descriptionTitle}</h2>
         <RichContent data={description} />
       </section>
     ),
@@ -97,16 +136,16 @@ export default async function CategoryPage(props: PageProps<"/kategoria/[slug]">
       <JsonLd data={[
         { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
           { "@type": "ListItem", position: 1, name: "Sklep", item: origin },
-          { "@type": "ListItem", position: 2, name: category.name, item: `${origin}/kategoria/${category.slug}` },
+          ...lvl.path.map((s, i) => ({ "@type": "ListItem", position: i + 2, name: s.name, item: `${origin}${s.href}` })),
         ] },
-        { "@context": "https://schema.org", "@type": "CollectionPage", name: category.name, url: `${origin}/kategoria/${category.slug}`,
-          mainEntity: { "@type": "ItemList", numberOfItems: items.length, itemListElement: items.slice(0, 24).map((p, i) => ({ "@type": "ListItem", position: i + 1, name: p.name, url: `${origin}/produkt/${p.slug}` })) } },
+        { "@context": "https://schema.org", "@type": "CollectionPage", name: lvl.name, url: `${origin}${lvl.href}`,
+          mainEntity: { "@type": "ItemList", numberOfItems: shown.length, itemListElement: shown.slice(0, 24).map((p, i) => ({ "@type": "ListItem", position: i + 1, name: p.name, url: `${origin}/produkt/${p.slug}` })) } },
       ]} />
-      <Breadcrumbs items={[{ label: category.name }]} />
+      <Breadcrumbs items={lvl.path.map((s, i) => (i === lvl.path.length - 1 ? { label: s.name } : { label: s.name, href: s.href }))} />
 
       <header className="mt-3 mb-5 border-b border-brand-100 pb-4">
-        <h1 className="text-2xl font-extrabold tracking-tight text-navy sm:text-3xl">{category.name}</h1>
-        <p className="mt-1 text-sm text-slate-500">{items.length.toLocaleString("pl-PL")} produktów</p>
+        <h1 className="text-2xl font-extrabold tracking-tight text-navy sm:text-3xl">{lvl.name}</h1>
+        <p className="mt-1 text-sm text-slate-500">{shown.length.toLocaleString("pl-PL")} produktów</p>
       </header>
 
       {getLayout("category").filter((s) => s.visible).map((s) => <Fragment key={s.id}>{blocks[s.id] || null}</Fragment>)}
@@ -173,7 +212,7 @@ async function CategoryListing({ searchParams, slug, items, counts }: {
       )}
       {subs.length > 0 && <div className="mb-5 hidden lg:block">{subNav()}</div>}
       {activeSubDef && <div className="-mt-2 mb-5 hidden border-b border-brand-100 pb-4 lg:block">{typeNav()}</div>}
-      <Listing key={`${slug}|${activeSub}|${activeType}`} products={items} category={category} counts={counts} params={params} />
+      <Listing key={`${slug}|${activeSub}|${activeType}`} products={items} category={category} counts={counts} params={params} paged />
     </>
   );
 }

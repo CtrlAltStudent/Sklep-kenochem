@@ -48,7 +48,7 @@ export const MAILS: MailDef[] = [
     id: "order-placed", group: "Zamówienia", label: "Zamówienie przyjęte", when: "Zaraz po złożeniu zamówienia (także ponowne wysłanie z panelu).",
     subject: "Zamówienie {{numer}} przyjęte",
     title: "Dziękujemy za zamówienie",
-    lead: "{{#oplacone}}Zamówienie jest opłacone – przygotowujemy je do wysyłki.{{/oplacone}}{{#pobranie}}Zapłacisz przy odbiorze. Przygotowujemy zamówienie do wysyłki.{{/pobranie}}{{#przelew}}Wyślemy zamówienie, gdy wpłata pojawi się na naszym koncie.{{/przelew}}{{#czeka}}Gdy tylko potwierdzimy płatność, przygotujemy zamówienie do wysyłki.{{/czeka}}",
+    lead: "{{#oplacone}}Zamówienie jest opłacone – przygotowujemy je do wysyłki.{{/oplacone}}{{#pobranie}}Zapłacisz przy odbiorze. Przygotowujemy zamówienie do wysyłki.{{/pobranie}}{{#przelew}}Zamówienie jest zapisane. Wyślemy je, gdy wpłata pojawi się na koncie. Numer konta, kwota i tytuł przelewu są poniżej.{{/przelew}}{{#czeka}}Zamówienie jest zapisane. Gdy tylko potwierdzimy płatność, przygotujemy je do wysyłki.{{/czeka}}",
     button: "{{#konto}}Zobacz zamówienie w koncie{{/konto}}{{^konto}}Wróć do sklepu{{/konto}}",
     body: `{{naglowek_zamowienia}}
 ${P("{{wstep}}")}
@@ -272,7 +272,7 @@ export const DEFAULT_FRAME = `<!doctype html><html lang="pl"><head><meta charset
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="{{kolor_tla}}" style="background:{{kolor_tla}}"><tr><td align="center" class="m-outer" style="padding:32px 16px;font-family:${FONT}">
 <!--[if mso]><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px">
-<tr><td class="m-pad m-flat" bgcolor="{{kolor_naglowka}}" style="background:{{kolor_naglowka}};border-radius:10px 10px 0 0;padding:10px 32px;font-size:11px;line-height:16px;letter-spacing:.08em;text-transform:uppercase;color:#cfd4da">Oficjalny sklep SONAX &middot; Białystok</td></tr>
+<tr><td class="m-pad m-flat" bgcolor="{{kolor_naglowka}}" style="background:{{kolor_naglowka}};border-radius:10px 10px 0 0;padding:10px 32px;font-size:11px;line-height:16px;letter-spacing:.08em;text-transform:uppercase;color:#cfd4da">Oficjalny dystrybutor SONAX &middot; Białystok</td></tr>
 <tr><td bgcolor="{{kolor}}" style="height:3px;background:{{kolor}};line-height:3px;font-size:1px">&nbsp;</td></tr>
 <tr><td class="m-pad" bgcolor="#ffffff" style="background:#ffffff;padding:24px 32px 20px;border-bottom:1px solid #e5e7eb">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>

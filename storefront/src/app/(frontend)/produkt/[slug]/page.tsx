@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowDown, BookOpen, Download, FileText, ShieldAlert, Star, TriangleAlert } from "lucide-react";
-import { brandSlug, freeShippingFrom, plainText, toCard, usableImages, variantDisplayOf } from "@/lib/data";
+import { brandSlug, freeShippingFrom, toCard, usableImages, variantDisplayOf } from "@/lib/data";
 import { getDescription, getProduct, getProducts, getSafety, getShopCategories } from "@/lib/catalog";
 import { findRedirect, getPostsAboutProduct, getReviews, getStoreSettings } from "@/lib/cms";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -16,6 +16,7 @@ import { ProductTabs } from "@/components/ProductTabs";
 import { ReviewForm } from "@/components/forms/Forms";
 import { RecentlyViewed } from "@/components/ProductExtras";
 import { JsonLd, productLd } from "@/components/JsonLd";
+import { cleanTitle, faqFromHtml, faqLd, metaDescription, titleWithShop } from "@/lib/seo";
 
 // Opinie i stany z panelu – strona odświeżana co minutę
 export const revalidate = 60;
@@ -29,14 +30,17 @@ export async function generateMetadata(props: PageProps<"/produkt/[slug]">): Pro
   const { slug } = await props.params;
   const p = await getProduct(slug);
   if (!p) return {};
-  // Zakładka „SEO i Google” w panelu; puste pola → nazwa i krótki opis (przycięty do długości wyniku Google)
-  const description = plainText(p.seo?.description || p.short || `${p.name} – oryginalny produkt ${p.brand || "SONAX"}. Sklep Sonax Białystok, wysyłka 24h.`).slice(0, 160);
+  // Zakładka „SEO i Google” w panelu; puste pola → uporządkowana nazwa (bez numerów katalogowych) i początek opisu,
+  // przycięty do pełnego zdania (src/lib/seo.ts)
+  const desc = await getDescription(p.slug);
+  const description = metaDescription(p, desc.html);
+  const ogTitle = p.seo?.title || cleanTitle(p.name);
   return {
-    title: p.seo?.title || p.name,
+    title: p.seo?.title || { absolute: titleWithShop(cleanTitle(p.name)) },
     description,
     alternates: { canonical: p.seo?.canonical || `/produkt/${slug}` },
     robots: p.seo?.noindex ? { index: false, follow: true } : undefined,
-    openGraph: { type: "website", siteName: "Sklep Sonax", locale: "pl_PL", title: p.seo?.title || p.name, description, images: p.images.slice(0, 1) },
+    openGraph: { type: "website", siteName: "Sklep Sonax", locale: "pl_PL", title: ogTitle, description, images: p.images.slice(0, 1) },
   };
 }
 
@@ -328,7 +332,9 @@ export default async function ProductPage(props: PageProps<"/produkt/[slug]">) {
         { name: "Strona główna", url: "/" },
         ...crumbs.map((c) => ({ name: c.label, url: c.href })),
         { name: product.name, url: `/produkt/${slug}` },
-      ], reviews, shipLd, slug)} />
+      ], reviews, shipLd, slug, metaDescription(product, description))} />
+      {/* Pytania i odpowiedzi z opisu produktu jako dane FAQ */}
+      {faqLd(faqFromHtml(description)) && <JsonLd data={faqLd(faqFromHtml(description))!} />}
       <Breadcrumbs items={[
         ...crumbs,
         { label: product.name },

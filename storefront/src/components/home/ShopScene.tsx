@@ -7,7 +7,7 @@ import { formatPrice, type ProductCardData } from "@/lib/data";
 import { actions } from "@/lib/store";
 import { ProductImage } from "@/components/ProductImage";
 
-export type SceneSpotView = { x: number; y: number; products: ProductCardData[] };
+export type SceneSpotView = { x: number; y: number; cardX?: number; cardY?: number; products: ProductCardData[] };
 
 export function ShopScene({ kicker, title, hint, image, spots }: {
   kicker: string;
@@ -57,8 +57,15 @@ export function ShopScene({ kicker, title, hint, image, spots }: {
             </span>
           </button>
         ))}
-        {open != null && spots[open] && (
-          <div className="absolute right-3 bottom-3 left-3 z-10 max-h-[70%] overflow-auto sm:top-4 sm:right-4 sm:bottom-auto sm:left-auto sm:w-80" onMouseEnter={() => setOpen(open)}>
+        {open != null && spots[open] && (() => {
+          const spot = spots[open];
+          const placed = Number.isFinite(spot.cardX) && Number.isFinite(spot.cardY);
+          return (
+          <div
+            className={placed ? "absolute z-10 max-h-[80%] overflow-auto" : "absolute right-3 bottom-3 left-3 z-10 max-h-[70%] overflow-auto sm:top-4 sm:right-4 sm:bottom-auto sm:left-auto sm:w-80"}
+            style={placed ? { left: `${spot.cardX}%`, top: `${spot.cardY}%`, width: `min(20rem, ${Math.max(28, 100 - (spot.cardX ?? 0))}%)` } : undefined}
+            onMouseEnter={() => setOpen(open)}
+          >
             <ul className="space-y-2">
               {spots[open].products.map((product) => {
                 const variant = product.variants.find((v) => (v.stock ?? product.stock) > 0) ?? product.variants[0];
@@ -80,7 +87,8 @@ export function ShopScene({ kicker, title, hint, image, spots }: {
               })}
             </ul>
           </div>
-        )}
+          );
+        })()}
       </div>
     </section>
   );

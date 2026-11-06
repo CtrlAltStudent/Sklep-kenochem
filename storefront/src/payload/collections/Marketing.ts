@@ -74,7 +74,8 @@ export const Reviews: CollectionConfig = {
     { type: "row", fields: [
       { name: "rating", label: "Ocena", type: "number", min: 1, max: 5, required: true, admin: { width: "25%", components: { Cell: `${C}RatingCell` } } },
       { name: "author", label: "Podpis", type: "text", required: true, admin: { width: "35%" } },
-      { name: "email", label: "E-mail (niepubliczny)", type: "email", admin: { width: "40%" } },
+      // E-mail widzą tylko pracownicy – publiczne API (/api/reviews) go nie zwraca
+      { name: "email", label: "E-mail (niepubliczny)", type: "email", access: { read: ({ req }) => req.user?.collection === "users" }, admin: { width: "40%" } },
     ] },
     { name: "title", label: "Tytuł", type: "text", required: true },
     { name: "content", label: "Treść", type: "textarea", required: true },

@@ -219,8 +219,9 @@ export type ModuleState = { installed: boolean; enabled: boolean };
 
 // Ustawienia automatycznej synchronizacji (bez haseł)
 export type AutoSettings = {
-  stock: boolean; // stany i ceny z BaseLinkera
+  stock: boolean; // stany (i ceny, gdy prices = true) z BaseLinkera
   stockEveryMin: number;
+  prices: boolean; // razem ze stanami aktualizuj ceny
   products: boolean; // pełne dane produktów raz na dobę
   productsHour: number;
   orders: boolean; // ponawianie wysyłki zamówień, które nie doszły
@@ -233,6 +234,7 @@ export type AutoSettings = {
 export const defaultAuto: AutoSettings = {
   stock: false,
   stockEveryMin: 15,
+  prices: false,
   products: false,
   productsHour: 3,
   orders: false,

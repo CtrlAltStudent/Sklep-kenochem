@@ -15,10 +15,11 @@ async function build(payload: Payload, slug: CollectionSlug, defs: TabDef[]) {
 export const OrderTabs = ({ payload }: { payload: Payload }) => build(payload, "orders", [
   { label: "Wszystkie" },
   { label: "Nowe", where: [["status", "equals", "new"]], tone: "navy" },
-  { label: "Czeka na płatność", where: [["status", "equals", "awaiting_payment"]], tone: "amber" },
+  { label: "Nieopłacone", where: [["status", "equals", "awaiting_payment"]], tone: "amber" },
   { label: "Opłacone", where: [["status", "equals", "paid"]], tone: "green" },
-  { label: "W realizacji", where: [["status", "equals", "processing"]], tone: "green" },
+  { label: "Do realizacji", where: [["status", "equals", "processing"]], tone: "green" },
   { label: "Wysłane", where: [["status", "equals", "shipped"]], tone: "green" },
+  { label: "Odebrane", where: [["status", "equals", "received"]], tone: "green" },
   { label: "Błąd BaseLinkera", where: [["baselinker.syncStatus", "equals", "error"]], tone: "red" },
   { label: "Anulowane", where: [["status", "equals", "cancelled"]], tone: "slate" },
 ]);

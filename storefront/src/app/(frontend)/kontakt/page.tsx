@@ -5,6 +5,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ConsentMap, CopyButton, OpenNowBadge } from "@/components/ClientBits";
 import { ContactForm } from "@/components/forms/Forms";
 import { getStoreSettings } from "@/lib/cms";
+import { BANK } from "@/lib/bank";
 import { SHOP_PHONE, shopTel } from "@/lib/data";
 
 export const metadata: Metadata = {
@@ -20,9 +21,9 @@ const company = {
   nip: "5423224790",
   regon: "200690197",
   krs: "0000417794",
-  bank: "mBank",
-  account: "36 1140 2004 0000 3602 8638 0572",
-  swift: "BREXPLPWMBK",
+  bank: BANK.bank,
+  account: BANK.account,
+  swift: BANK.swift,
 };
 const mapQuery = "Gen. Władysława Andersa 40, 15-113 Białystok";
 

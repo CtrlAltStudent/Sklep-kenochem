@@ -121,12 +121,20 @@ export const stripDescriptionImagesHook: CollectionBeforeChangeHook = ({ data })
   return data;
 };
 
-// Opis zmieniony ręcznie w panelu → zaznacz „Nie nadpisuj opisu”, żeby synchronizacja z BaseLinkerem go nie skasowała
+// Nazwa albo opis zmienione ręcznie w panelu → „Nie nadpisuj”, żeby synchronizacja z BaseLinkerem ich nie skasowała
 export const keepEditedDescription: CollectionBeforeChangeHook = ({ data, originalDoc, req, operation }) => {
   if (operation !== "update" || req.user?.collection !== "users") return data;
+  const keep = { ...(originalDoc?.keep ?? {}), ...(data.keep ?? {}) };
+  let changed = false;
   if (data.descriptionHtml !== undefined && data.descriptionHtml !== originalDoc?.descriptionHtml) {
-    data.keep = { ...(originalDoc?.keep ?? {}), ...(data.keep ?? {}), description: true };
+    keep.description = true;
+    changed = true;
   }
+  if (typeof data.name === "string" && data.name.trim() && data.name !== originalDoc?.name) {
+    keep.name = true;
+    changed = true;
+  }
+  if (changed) data.keep = keep;
   return data;
 };
 

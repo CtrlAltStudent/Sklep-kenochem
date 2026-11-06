@@ -1,7 +1,8 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Barlow_Condensed, Inter } from "next/font/google";
 import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { Footer, type SocialLink } from "@/components/Footer";
 import { CartDrawer } from "@/components/CartDrawer";
 import { getCatalog } from "@/lib/catalog";
 import { getNavigation, getStoreSettings } from "@/lib/cms";
@@ -23,7 +24,7 @@ const barlow = Barlow_Condensed({ variable: "--font-barlow", subsets: ["latin", 
 export const generateMetadata = (): Metadata => ({
   metadataBase: new URL(siteBase()),
   title: { default: "Chemia samochodowa SONAX – kosmetyki do auta | Sklep Sonax Białystok", template: "%s | Sklep Sonax" },
-  description: "Oficjalny sklep SONAX w Białymstoku: chemia samochodowa, kosmetyki detailingowe, środki do myjni i domu. Szybka wysyłka i fachowe doradztwo.",
+  description: "Oficjalny dystrybutor SONAX w Białymstoku: chemia samochodowa, kosmetyki detailingowe, środki do myjni i domu. Szybka wysyłka i fachowe doradztwo.",
   icons: { icon: "/sonax/icon-512.png", apple: "/sonax/icon-512.png" },
   openGraph: { type: "website", siteName: "Sklep Sonax", locale: "pl_PL", images: [{ url: "/sonax/logo.png", alt: "SONAX" }] },
   // serwer testowy nie trafia do wyszukiwarek (src/lib/site.ts)
@@ -35,6 +36,16 @@ export const generateMetadata = (): Metadata => ({
 // Sklep czyta kategorie z bazy serwera przy każdym wejściu. Inaczej strona zbudowana na komputerze
 // w biurze pokazywałaby stare działy jeszcze przez minutę po wdrożeniu.
 export const dynamic = "force-dynamic";
+
+function socialLinks(): SocialLink[] {
+  const s = getSite();
+  const all: SocialLink[] = [
+    { name: "facebook", label: "Facebook", href: s.facebook },
+    { name: "instagram", label: "Instagram", href: s.instagram },
+    { name: "youtube", label: "YouTube", href: s.youtube },
+  ];
+  return all.filter((x) => x.href.startsWith("https://"));
+}
 
 function storeProfile() {
   const s = getSite();
@@ -59,10 +70,12 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <ShopConfigProvider value={{ freeShipping: freeShippingFrom(store), categories: tree }}>
         <Header counts={counts} bar={bar} phone={store.phone || SHOP_PHONE} hours={store.hours || "Pn–Pt 8:00–16:00"} />
         <main className="flex-1">{children}</main>
-        <Footer productCount={total} phone={store.phone || SHOP_PHONE} />
+        <Footer productCount={total} phone={store.phone || SHOP_PHONE} social={socialLinks()} />
         <CartDrawer />
         <CookieConsent />
-        <StatBeacon />
+        <Suspense fallback={null}>
+          <StatBeacon />
+        </Suspense>
         <JsonLd data={organizationLd(store.phone || SHOP_PHONE, storeProfile())} />
         </ShopConfigProvider>
       </body>

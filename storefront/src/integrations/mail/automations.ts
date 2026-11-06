@@ -48,7 +48,7 @@ async function reviewRequests(payload: Payload) {
   const done: number[] = [];
   for (const id of ids.slice(0, 50)) {
     const o = await payload.findByID({ collection: "orders", id, depth: 0, overrideAccess: true }).catch(() => null);
-    if (!o || o.status !== "shipped") continue;
+    if (!o || (o.status !== "shipped" && o.status !== "received")) continue;
     if (anonymous(o.email)) { done.push(id); continue; }
     const products = await reviewProducts(payload, o);
     if (!products.length) { done.push(id); continue; }

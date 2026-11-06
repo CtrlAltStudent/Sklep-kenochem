@@ -33,6 +33,7 @@ const map = {
   "nav-global-baselinker-settings": "plug-zap",
   "nav-reports": "chart-column",
   "nav-stats": "activity",
+  "nav-live": "radio",
   "nav-missing": "map-pin-off",
   "nav-promo": "badge-percent",
   "nav-google-reviews": "message-square-quote",

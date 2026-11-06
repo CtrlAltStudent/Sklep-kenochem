@@ -50,7 +50,7 @@ export default async function AboutPage() {
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-brand-950 via-brand-950/85 to-transparent" />
         <div className="pointer-events-none absolute -right-16 bottom-0 h-full w-1/3 skew-x-[-14deg] bg-accent/50" />
         <div className="max-w-2xl px-6 py-12 sm:px-12 sm:py-20">
-          <p className="flex items-center gap-2 text-xs font-bold tracking-widest text-lime uppercase"><BadgeCheck className="h-4 w-4" /> Oficjalny sklep SONAX w Białymstoku</p>
+          <p className="flex items-center gap-2 text-xs font-bold tracking-widest text-lime uppercase"><BadgeCheck className="h-4 w-4" /> Oficjalny dystrybutor SONAX w Białymstoku</p>
           <h1 className="title-sport mt-3 text-5xl sm:text-7xl">Chemia, którą znasz z myjni – u siebie w garażu</h1>
           <p className="mt-5 text-lg text-white/80">Zaczynaliśmy od akcesoriów do pielęgnacji samochodów, a potem aktywnie wprowadzaliśmy na polski rynek chemię i kosmetyki niemieckiej marki SONAX. Dziś pomagamy kierowcom, studiom detailingowym, myjniom i warsztatom.</p>
         </div>

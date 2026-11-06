@@ -45,6 +45,8 @@ export function BaseLinkerPanel() {
   const [status, setStatus] = useState<Status | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [result, setResult] = useState<AnyRes | null>(null);
+  const [catalog, setCatalog] = useState("");
+  const [previewed, setPreviewed] = useState("");
 
   const refresh = () => fetch("/api/baselinker/status", { credentials: "include" }).then((r) => r.json()).then(setStatus).catch(() => {});
   useEffect(() => { refresh(); }, []);
@@ -99,7 +101,19 @@ export function BaseLinkerPanel() {
             {busy === "link" ? "Spinam…" : "Powiąż produkty po SKU (bez zmiany nazw)"}
           </Button>
           <Button buttonStyle="secondary" size="small" disabled={!!busy || mode === "unconfigured" || mode === "disabled"} onClick={() => run("stock", "sync-stock", {})}>
-            {busy === "stock" ? "Aktualizuję…" : "Aktualizuj stany"}
+            {busy === "stock" ? "Aktualizuję…" : "Aktualizuj stany i ceny"}
+          </Button>
+          <Button buttonStyle="secondary" size="small" disabled={!!busy || mode === "unconfigured" || mode === "disabled"} onClick={() => run("stockDry", "sync-stock", { dryRun: true })}>
+            {busy === "stockDry" ? "Sprawdzam…" : "Podgląd stanów i cen (bez zapisu)"}
+          </Button>
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginTop: 12, fontSize: 13 }}>
+          <label>Przenieś produkty na katalog o ID <input type="number" aria-label="ID katalogu" value={catalog} onChange={(e) => { setCatalog(e.target.value); setPreviewed(""); }} style={{ width: 90 }} /></label>
+          <Button buttonStyle="secondary" size="small" disabled={!!busy || !catalog || mode !== "live"} onClick={async () => { await run("moveDry", "move-catalog", { inventoryId: Number(catalog), dryRun: true }); setPreviewed(catalog); }}>
+            {busy === "moveDry" ? "Sprawdzam…" : "Podgląd przeniesienia"}
+          </Button>
+          <Button buttonStyle="secondary" size="small" disabled={!!busy || !catalog || previewed !== catalog} onClick={async () => { await run("move", "move-catalog", { inventoryId: Number(catalog) }); setPreviewed(""); }}>
+            {busy === "move" ? "Przenoszę…" : "Przenieś produkty"}
           </Button>
         </div>
       </div>
@@ -107,6 +121,12 @@ export function BaseLinkerPanel() {
       {result && (
         <div style={{ ...box, borderColor: result.ok ? "#2b6e1a" : "#c53030" }}>
           <strong style={{ color: result.ok ? "#2b6e1a" : "#c53030" }}>{result.ok ? "✔ " : "✖ "}{result.message}</strong>
+          {Array.isArray(result.left) && result.left.length > 0 && (
+            <details style={{ marginTop: 12 }}>
+              <summary>Zostają bez zmian ({result.left.length})</summary>
+              <ul style={{ fontSize: 13 }}>{(result.left as string[]).map((row) => <li key={row}>{row}</li>)}</ul>
+            </details>
+          )}
           <Table title="Katalogi (wpisz ID w pole „ID katalogu”)" rows={result.inventories as Record<string, unknown>[]} cols={[["inventory_id", "ID"], ["name", "Nazwa"], ["default_price_group", "Domyślna grupa cen"], ["default_warehouse", "Domyślny magazyn"]]} />
           <Table title="Grupy cenowe" rows={result.priceGroups as Record<string, unknown>[]} cols={[["price_group_id", "ID"], ["name", "Nazwa"], ["currency", "Waluta"]]} />
           <Table title="Magazyny (do pola „Magazyn stanów” wpisz klucz)" rows={warehouses} cols={[["key", "Klucz"], ["name", "Nazwa"]]} />

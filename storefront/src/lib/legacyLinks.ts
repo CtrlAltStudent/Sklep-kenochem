@@ -17,8 +17,26 @@ const exact = new Map(
     .map((r) => [r.source, r.destination]),
 );
 
+// Wklejone do wpisów linki bywają zakodowane (%2Fprodukt…, %3Fs%3D…) – przeglądarka doklejała je wtedy do adresu wpisu i wychodziło 404.
+// Stara wyszukiwarka WordPressa (?s=…) to dziś /szukaj?q=…, a znaczniki utm_* z linku nie są potrzebne.
+function tidyHref(raw: string) {
+  let url = raw;
+  if (/^%(2F|3F)/i.test(url)) {
+    try { url = decodeURIComponent(url); } catch { return raw; }
+  }
+  if (!url.startsWith("/") && !url.startsWith("?")) return url;
+  const [path, query = ""] = url.split("?");
+  const params = new URLSearchParams(query);
+  const search = params.get("s");
+  if (search && (!path || path === "/")) return `/szukaj?q=${encodeURIComponent(search)}`;
+  for (const key of [...params.keys()]) if (key.startsWith("utm_")) params.delete(key);
+  const rest = params.toString();
+  return rest ? `${path}?${rest}` : path;
+}
+
 // Link w poradniku: stary adres produktu zamieniamy na aktualny, zanim klient w niego kliknie.
-export function currentHref(url: string) {
+export function currentHref(raw: string) {
+  const url = tidyHref(raw);
   const [path, query] = url.split("?");
   const next = exact.get(path) ?? (path.startsWith("/producenci/") ? `/marki/${path.slice("/producenci/".length)}` : null);
   if (!next) return url;

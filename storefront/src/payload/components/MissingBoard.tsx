@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Download, MapPinOff } from "lucide-react";
 
-type Row = { path: string; n: number; last: number };
+type Row = { path: string; n: number; last: number; hint?: string | null };
 
 const when = (ts: number) => new Date(ts).toLocaleString("pl-PL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 const times = (n: number) => (n === 1 ? "1 wejście" : `${n} wejść`);
@@ -33,7 +33,15 @@ export function MissingBoard() {
     setBusy(from);
     const r = await fetch("/api/redirect-tools", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ from, to: target }) }).then((x) => x.json()).catch(() => ({ ok: false, message: "Brak połączenia" }));
     setBusy("");
+    setMsg(r.ok ? { ok: true, message: `Gotowe: ${from} prowadzi teraz do ${target}.` } : r);
+    if (r.ok) load();
+  };
+  const hide = async (path: string) => {
+    setBusy(path);
+    const r = await fetch("/api/missing-pages/hide", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path }) }).then((x) => x.json()).catch(() => ({ ok: false, message: "Brak połączenia" }));
+    setBusy("");
     setMsg(r);
+    if (r.ok) load();
   };
   const upload = async () => {
     setBusy("file");
@@ -54,6 +62,8 @@ export function MissingBoard() {
           <p className="kc-hero__text">Adresy, które ktoś otworzył, a sklep odpowiedział „nie ma takiej strony”. Im wyżej, tym częściej ludzie tam trafiają.</p>
         </div>
         <div className="kc-hero__actions">
+          {/* Pobranie pliku, nie przejście na inną stronę */}
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a className="kc-btn kc-btn--light" href="/api/redirect-tools/export"><Download size={14} /> Pobierz listę przekierowań</a>
         </div>
       </section>
@@ -83,7 +93,11 @@ export function MissingBoard() {
                     <div className="kc-tool__go">
                       <input value={to[r.path] ?? ""} placeholder="/kategoria/…" aria-label={`Nowy adres dla ${r.path}`} onChange={(e) => setTo({ ...to, [r.path]: e.target.value })} />
                       <button type="button" className="kc-btn kc-btn--lime" disabled={busy === r.path} onClick={() => add(r.path)}>{busy === r.path ? "Zapisuję…" : "Dodaj"}</button>
+                      <button type="button" className="kc-btn kc-btn--light" disabled={busy === r.path} title="Schowaj, jeśli ten adres nie jest ważny" onClick={() => hide(r.path)}>Schowaj</button>
                     </div>
+                    {r.hint && !to[r.path] && (
+                      <button type="button" className="kc-tool__hint" onClick={() => setTo({ ...to, [r.path]: r.hint! })}>Podobny produkt: {r.hint}</button>
+                    )}
                   </td>
                 </tr>
               ))}

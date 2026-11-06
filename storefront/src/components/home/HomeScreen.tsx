@@ -107,7 +107,7 @@ export async function HomeScreen({ draft = false, sectionIds = null }: { draft?:
     dealsTitle?: string | null; newestTitle?: string | null; brandsTitle?: string | null;
     aboutKicker?: string | null; aboutTitle?: string | null; aboutText?: string | null; aboutLinkLabel?: string | null; aboutLink?: string | null; aboutImage?: unknown;
     sceneKicker?: string | null; sceneTitle?: string | null; sceneHint?: string | null;
-    sceneImage?: unknown; sceneSpots?: { x?: number; y?: number; productIds?: number[] }[] | null;
+    sceneImage?: unknown; sceneSpots?: { x?: number; y?: number; cardX?: number; cardY?: number; productIds?: number[] }[] | null;
   }) | null;
 
   const slides: Slide[] = (home?.slides ?? [])
@@ -152,7 +152,7 @@ export async function HomeScreen({ draft = false, sectionIds = null }: { draft?:
         <Image src="/sonax/sonax-autoo-lite-2026-08-27.webp" alt="" fill priority sizes="100vw" className="-z-10 object-cover object-[70%_center]" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-navy from-[15%] via-navy/80 to-navy/20" />
         <div className="mx-auto max-w-shop px-4 py-16 sm:py-24">
-          <p className="text-xs font-bold tracking-[0.2em] text-white/70 uppercase">Oficjalny sklep SONAX · Białystok</p>
+          <p className="text-xs font-bold tracking-[0.2em] text-white/70 uppercase">Oficjalny dystrybutor SONAX · Białystok</p>
           <h1 className="mt-4 max-w-xl text-4xl font-extrabold tracking-tight sm:text-6xl">Chemia i kosmetyki<br />do auta</h1>
           <p className="mt-5 max-w-lg text-base text-white/80 sm:text-lg">{productTotal.toLocaleString("pl-PL")} produktów do mycia, polerowania i ochrony. Większość zamówień wysyłamy w 24h.</p>
           <div className="mt-8 flex flex-wrap gap-3">
@@ -186,11 +186,15 @@ export async function HomeScreen({ draft = false, sectionIds = null }: { draft?:
       const saved = (Array.isArray(home?.sceneSpots) ? home.sceneSpots : []).flatMap((item) => {
         const x = Number(item?.x);
         const y = Number(item?.y);
+        const cardX = Number(item?.cardX);
+        const cardY = Number(item?.cardY);
         const cards = (item?.productIds ?? []).flatMap((id) => {
           const product = products.find((p) => p.id === String(id));
           return product ? [toCard(product)] : [];
         });
-        return Number.isFinite(x) && Number.isFinite(y) && cards.length ? [{ x, y, products: cards }] : [];
+        return Number.isFinite(x) && Number.isFinite(y) && cards.length
+          ? [{ x, y, products: cards, ...(Number.isFinite(cardX) && Number.isFinite(cardY) ? { cardX, cardY } : {}) }]
+          : [];
       });
       const fallback = products.find((p) => p.slug === "kwazar-venus-opryskiwacz-2-l-360");
       const view = saved.length ? saved : fallback ? [{ x: 37.5, y: 72.5, products: [toCard(fallback)] }] : [];

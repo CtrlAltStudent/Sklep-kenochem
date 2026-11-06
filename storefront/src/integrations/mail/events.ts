@@ -8,6 +8,7 @@ import type { CollectionAfterChangeHook, Payload } from "payload";
 import type { Order } from "@/payload-types";
 import { blActive } from "../baselinker/client";
 import { orderPackages, trackingUrl } from "../baselinker/shipping";
+import { BANK } from "@/lib/bank";
 import { mailConfig, mailReady, sendLater, sendMail, type Mail } from "./send";
 import * as T from "./templates";
 
@@ -33,7 +34,7 @@ export async function orderContext(payload: Payload, o: Order) {
     shop: store as T.Shop,
     shipLabel: store.shippingMethods?.find((m) => m.code === o.shipping?.method)?.label,
     payLabel: store.paymentMethods?.find((m) => m.code === o.payment?.method)?.label,
-    bank: mailConfig()?.bank ?? "",
+    bank: mailConfig()?.bank?.trim() || `${BANK.bank}\n${BANK.account}\n${BANK.recipient}`,
   };
 }
 
@@ -58,12 +59,21 @@ export const orderStatusMailHook: CollectionAfterChangeHook<Order> = ({ doc, pre
   if (status === "paid" && previousDoc.payment?.status === "paid") return doc;
 
   sendLater(req.payload, async () => {
+    if (status === "paid") {
+      const prior = await req.payload.find({
+        collection: "integration-logs",
+        where: { and: [{ order: { equals: doc.id } }, { type: { equals: "email" } }, { status: { equals: "success" } }, { message: { contains: `Płatność za zamówienie ${doc.orderNumber}` } }] },
+        limit: 1, depth: 0, overrideAccess: true,
+      });
+      if (prior.docs.length) return null;
+    }
     const c = await orderContext(req.payload, doc);
     if (status === "paid") return toCustomer(doc, T.orderPaid(doc, c));
     if (status === "cancelled") return toCustomer(doc, T.orderCancelled(doc, c));
     let parcels: T.Parcel[] = [];
     // Numer przesłany przez BaseLinkera (integracja „Inny sklep”) – link do śledzenia po metodzie dostawy
-    const tracking = typeof hookContext?.trackingNumber === "string" ? hookContext.trackingNumber : "";
+    const saved = doc.shipping?.trackingNumber ?? "";
+    const tracking = typeof hookContext?.trackingNumber === "string" && hookContext.trackingNumber ? hookContext.trackingNumber : saved;
     if (tracking) parcels = [{ number: tracking, courier: c.shipLabel ?? "Przesyłka", url: trackingUrl(doc.shipping?.method ?? "", tracking) }];
     else if (blActive() && doc.baselinker?.orderId) {
       try {

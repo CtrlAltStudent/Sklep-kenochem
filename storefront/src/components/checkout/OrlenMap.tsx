@@ -7,6 +7,85 @@
 import { useEffect, useRef, useState } from "react";
 import { MapPin, X } from "lucide-react";
 
+// Widget otwiera okienko punktu na sztywno 350 px. Na telefonie mapa jest węższa,
+// więc karta wyjeżdża poza nią i znika (przycięta), a przycisku „Wybierz” nie da się nacisnąć.
+function installOrlenPopupFix() {
+  const w = window as Window & { __kcOrlenL?: boolean; L?: OrlenLeaflet };
+  const patch = (L: OrlenLeaflet | undefined) => {
+    if (!L?.Map?.prototype || L.Map.__kc) return;
+    L.Map.__kc = true;
+    const init = L.Map.prototype.initialize;
+    L.Map.prototype.initialize = function (this: OrlenMapInst, ...args: unknown[]) {
+      const result = init.apply(this, args);
+      this.options.closePopupOnClick = false;
+      const el = this.getContainer?.() ?? this._container;
+      if (el && typeof ResizeObserver !== "undefined") {
+        const ro = new ResizeObserver(() => this.invalidateSize?.({ animate: false, pan: false }));
+        ro.observe(el);
+        this.on?.("unload", () => ro.disconnect());
+      }
+      this.on?.("popupopen", (e: { popup?: OrlenPopup }) => {
+        const popup = e?.popup;
+        if (!popup?.options || popup.__kcSizing) return;
+        popup.__kcSizing = true;
+        const mapW = this.getSize?.().x || el?.clientWidth || 320;
+        const width = Math.max(200, Math.min(280, mapW - 48));
+        popup.options.maxWidth = width;
+        popup.options.minWidth = Math.min(200, width);
+        popup.options.autoPan = true;
+        popup.options.keepInView = true;
+        popup.options.autoPanPaddingTopLeft = [12, 12];
+        popup.options.autoPanPaddingBottomRight = [12, 12];
+        popup.update?.();
+        popup.__kcSizing = false;
+      });
+      return result;
+    };
+    const Marker = L.Marker;
+    const bind = Marker?.prototype?.bindPopup;
+    if (Marker && bind) {
+      Marker.prototype.bindPopup = function (this: { _popup?: OrlenPopup; getPopup?: () => OrlenPopup }, content: unknown, options?: Record<string, unknown>) {
+        const popup = bind.call(this, content, options);
+        const p = this._popup ?? this.getPopup?.();
+        if (p?.options) {
+          p.options.maxWidth = 260;
+          p.options.minWidth = 200;
+          p.options.autoPan = true;
+          p.options.keepInView = true;
+        }
+        return popup;
+      };
+    }
+  };
+  if (w.L) patch(w.L);
+  if (w.__kcOrlenL) return;
+  w.__kcOrlenL = true;
+  let current = w.L;
+  Object.defineProperty(window, "L", {
+    configurable: true,
+    enumerable: true,
+    get: () => current,
+    set: (value: OrlenLeaflet) => {
+      current = value;
+      patch(value);
+    },
+  });
+}
+
+type OrlenPopup = { options?: Record<string, unknown>; update?: () => void; __kcSizing?: boolean };
+type OrlenMapInst = {
+  options: { closePopupOnClick?: boolean };
+  getContainer?: () => HTMLElement;
+  _container?: HTMLElement;
+  getSize?: () => { x: number; y: number };
+  invalidateSize?: (o?: { animate?: boolean; pan?: boolean }) => void;
+  on?: (name: string, fn: (...args: never[]) => void) => void;
+};
+type OrlenLeaflet = {
+  Map: { __kc?: boolean; prototype: { initialize: (this: OrlenMapInst, ...args: unknown[]) => unknown } };
+  Marker?: { prototype: { bindPopup: (content: unknown, options?: Record<string, unknown>) => unknown } };
+};
+
 export function OrlenMap({ token, onSelect, onClose }: { token: string; onSelect: (p: { code: string; label: string }) => void; onClose: () => void }) {
   const codeRef = useRef<HTMLInputElement>(null);
   const labelRef = useRef<HTMLInputElement>(null);
@@ -25,6 +104,7 @@ export function OrlenMap({ token, onSelect, onClose }: { token: string; onSelect
       setError("Mapa ORLEN Paczka nie ma jeszcze klucza. Wpisz kod punktu ręcznie albo dodaj klucz w panelu: Integracje → ORLEN Paczka.");
       return;
     }
+    installOrlenPopupFix();
     const prev = document.querySelector("script[data-orlen-widget]");
     prev?.remove();
     const s = document.createElement("script");

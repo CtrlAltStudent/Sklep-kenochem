@@ -42,8 +42,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const s of c.children) {
       if (!counts[`${c.slug}/${s.slug}`]) continue;
       add({ url: `${base}/kategoria/${c.slug}?sub=${s.slug}`, lastModified: catalogDate, changeFrequency: "daily", priority: 0.7 });
-      for (const t of s.types) if (counts[`${c.slug}/${s.slug}/${t.slug}`])
-        add({ url: `${base}/kategoria/${c.slug}?sub=${s.slug}&typ=${t.slug}`, lastModified: catalogDate, changeFrequency: "weekly", priority: 0.6 });
+      // Typ (?sub=&typ=) zostaje w sklepie, ale nie w mapie. Adres ma „&”, a Google na pierwszej takiej linii
+      // przerywa czytanie całej mapy (błąd składni, u nas wiersz 80).
     }
   }
 

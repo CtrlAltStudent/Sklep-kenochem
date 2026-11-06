@@ -31,6 +31,7 @@ export const navSections: NavSection[] = [
       { id: "nav-dashboard", label: "Pulpit", href: "/admin", exact: true },
       { id: "nav-reports", label: "Raporty sprzedaży", href: "/admin/raporty", collection: "orders" },
       { id: "nav-stats", label: "Statystyki sklepu", href: "/admin/statystyki", collection: "orders" },
+      { id: "nav-live", label: "Na żywo", href: "/admin/na-zywo", collection: "orders" },
       { id: "nav-missing", label: "Brakujące strony", href: "/admin/brakujace-strony", collection: "redirects" },
       { id: "nav-help", label: "Instrukcja", href: "/admin/pomoc" },
     ],

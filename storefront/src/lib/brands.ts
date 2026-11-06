@@ -37,3 +37,19 @@ export const getShopBrands = cache(async (): Promise<ShopBrand[]> => {
     };
   });
 });
+
+// Strona jednej marki: marka z logiem albo każda inna, która ma produkty w sklepie (bez logo).
+// Lista /marki pokazuje tylko marki z logiem, ale adres /marki/… działa dla wszystkich – prowadzą do niego mapa strony i stare linki.
+export const getShopBrand = cache(async (slug: string): Promise<ShopBrand | undefined> => {
+  const withLogo = (await getShopBrands()).find((b) => b.slug === slug);
+  if (withLogo) return withLogo;
+  const mine = (await getProducts()).filter((p) => p.brand && brandSlug(p.brand) === slug);
+  if (!mine.length) return undefined;
+  return {
+    name: mine[0].brand!.trim(),
+    slug,
+    count: mine.length,
+    href: `/marki/${slug}`,
+    categories: [...new Set(mine.map((p) => p.category).filter(Boolean))],
+  };
+});

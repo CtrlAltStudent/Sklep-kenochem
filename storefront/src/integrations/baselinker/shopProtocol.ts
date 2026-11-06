@@ -3,8 +3,10 @@
 // Dokumentacja: https://developers.baselinker.com/shops_api/
 
 import { addHistory } from "../history";
+import { markOrderPaid, withOrderLock } from "../checkout/markPaid";
 import { timingSafeEqual } from "node:crypto";
 import type { Payload } from "payload";
+import { catalogIds, scheduleCatalogLink, skusForCatalogIds } from "./orderCatalog";
 import { getKey, moduleEnabled, recordRun } from "../vault";
 import type { Order, Product } from "@/payload-types";
 
@@ -28,7 +30,24 @@ const err = (code: string, text: string) => ({ error: true, error_code: code, er
 const json = (data: unknown, status = 200) => Response.json(data, { status });
 const n = (v: unknown) => String(v ?? "").trim();
 const unix = (d?: string | null) => Math.floor(new Date(d || Date.now()).getTime() / 1000);
-const shopUrl = () => process.env.NEXT_PUBLIC_SERVER_URL || "";
+const shopUrl = () => (process.env.NEXT_PUBLIC_SERVER_URL || "https://sonax.sklep.pl").replace(/\/$/, "");
+
+function absolute(url: string) {
+  if (/^https?:\/\//i.test(url)) return url;
+  return `${shopUrl()}${url.startsWith("/") ? url : `/${url}`}`;
+}
+
+// Pierwsze zdjęcie (indeks 0) jest miniaturą w zamówieniu. Adres musi być pełny – sam „/api/…” nie otworzy się w BaseLinkerze.
+function imageUrls(p: Product) {
+  const rows = (p.images ?? []) as { url?: string | null; media?: { url?: string | null } | number | null }[];
+  const out: string[] = [];
+  for (const row of rows) {
+    const media = row.media && typeof row.media === "object" ? row.media : null;
+    const raw = media?.url || row.url || "";
+    if (raw) out.push(absolute(raw));
+  }
+  return out;
+}
 
 function passOk(got: string, want: string) {
   const a = Buffer.from(got);
@@ -38,11 +57,12 @@ function passOk(got: string, want: string) {
 }
 
 const STATUSES: Record<string, string> = {
-  awaiting_payment: "Czeka na płatność",
   new: "Nowe",
+  awaiting_payment: "Nieopłacone",
   paid: "Opłacone",
-  processing: "W realizacji",
+  processing: "Przekazane do realizacji",
   shipped: "Wysłane",
+  received: "Odebrane",
   cancelled: "Anulowane",
 };
 
@@ -129,7 +149,7 @@ async function productsList(payload: Payload, form: FormData) {
   const name = n(form.get("filter_name"));
   if (sku) where.push({ sku: { like: sku } });
   if (ean) where.push({ ean: { like: ean } });
-  if (id) where.push({ id: { equals: Number(id) || id } });
+  if (id) where.push({ or: [{ id: { equals: Number(id) || id } }, { baselinkerId: { equals: Number(id) || id } }] });
   if (name) where.push({ name: { like: `%${name}%` } });
   const { docs } = await payload.find({
     collection: "products",
@@ -155,25 +175,23 @@ async function productsList(payload: Payload, form: FormData) {
   return out;
 }
 
-function imageUrls(p: Product) {
-  return ((p.images as { url?: string | null }[] | null) ?? []).map((i) => i.url).filter((u): u is string => Boolean(u));
-}
-
 async function productsData(payload: Payload, form: FormData) {
   const ids = n(form.get("products_id")).split(",").map((x) => x.trim()).filter(Boolean).slice(0, 100);
   if (!ids.length) return {};
+  const nums = ids.map((x) => Number(x)).filter((x) => x > 0);
   const { docs } = await payload.find({
     collection: "products",
-    where: { id: { in: ids } } as never,
-    limit: ids.length,
+    where: { or: [{ id: { in: nums } }, { baselinkerId: { in: nums } }] } as never,
+    limit: Math.max(ids.length, 1),
     depth: 1,
     overrideAccess: true,
   });
   const onlyImages = n(form.get("only_images")) === "1";
+  const wanted = new Set(ids);
   const out: Record<string, unknown> = {};
   for (const p of docs) {
     const cat = typeof p.category === "object" && p.category ? p.category : null;
-    out[String(p.id)] = onlyImages
+    const body = onlyImages
       ? { images: imageUrls(p) }
       : {
           sku: p.sku ?? "",
@@ -192,6 +210,47 @@ async function productsData(payload: Payload, form: FormData) {
           images: imageUrls(p),
           features: [],
         };
+    const keys = [String(p.id), p.baselinkerId ? String(p.baselinkerId) : ""].filter((k) => wanted.has(k));
+    for (const key of keys.length ? keys : [String(p.id)]) out[key] = body;
+  }
+  const missing = nums.filter((id) => !out[String(id)]);
+  if (missing.length) {
+    const byCatalog = await skusForCatalogIds(missing);
+    const skus = [...new Set([...byCatalog.values()])];
+    if (skus.length) {
+      const more = await payload.find({
+        collection: "products",
+        where: { sku: { in: skus } } as never,
+        limit: skus.length,
+        depth: 1,
+        overrideAccess: true,
+      });
+      for (const id of missing) {
+        const sku = byCatalog.get(id);
+        const p = sku ? more.docs.find((d) => (d.sku ?? "").toLowerCase() === sku.toLowerCase()) : undefined;
+        if (!p) continue;
+        const cat = typeof p.category === "object" && p.category ? p.category : null;
+        out[String(id)] = onlyImages
+          ? { images: imageUrls(p) }
+          : {
+              sku: p.sku ?? "",
+              ean: p.ean ?? "",
+              name: p.name,
+              quantity: Number(p.stock ?? 0),
+              price: Number(p.price ?? 0),
+              currency: "PLN",
+              tax: Number(p.vatRate ?? 23),
+              weight: Number(p.weight ?? 0),
+              description: p.descriptionHtml ?? "",
+              man_name: p.brand ?? "",
+              category_id: cat ? String(cat.id) : "",
+              category_name: cat?.name ?? "",
+              url: `${shopUrl()}/produkt/${p.slug}`,
+              images: imageUrls(p),
+              features: [],
+            };
+      }
+    }
   }
   return out;
 }
@@ -213,9 +272,14 @@ async function ordersGet(payload: Payload, form: FormData) {
   if (one) and.push({ id: { equals: Number(one) || one } });
   if (timeFrom) and.push({ createdAt: { greater_than_equal: new Date(timeFrom * 1000).toISOString() } });
   if (idFrom) and.push({ id: { greater_than: idFrom } });
-  // „tylko opłacone” w BaseLinkerze: opłacone online + pobranie / odbiór osobisty (płatność przy odbiorze) – też są do realizacji
-  if (onlyPaid) and.push({ "payment.status": { in: ["paid", "deferred"] } });
-  const { docs } = await payload.find({
+  // Nieopłacone (przelew tradycyjny i niedokończona płatność online) też oddajemy. W BaseLinkerze widać paid=0 i da się sprawdzić wpłatę na koncie.
+  if (onlyPaid) and.push({ or: [
+    { "payment.status": { in: ["paid", "deferred"] } },
+    { status: { equals: "awaiting_payment" } },
+    { "payment.provider": { equals: "transfer" } },
+    { "payment.status": { equals: "pending" } },
+  ] });
+  const found = await payload.find({
     collection: "orders",
     where: and.length ? ({ and } as never) : undefined,
     limit: 100,
@@ -223,9 +287,28 @@ async function ordersGet(payload: Payload, form: FormData) {
     overrideAccess: true,
     sort: "id",
   });
+  const docs = [...found.docs];
+  const seen = new Set(docs.map((d) => d.id));
+  const since = new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString();
+  const held = await payload.find({
+    collection: "orders",
+    where: {
+      and: [
+        { createdAt: { greater_than: since } },
+        { status: { not_in: ["cancelled", "shipped", "received"] } },
+        { "baselinker.syncStatus": { equals: "pending" } },
+        { or: [{ status: { equals: "awaiting_payment" } }, { "payment.status": { equals: "pending" } }, { "payment.provider": { equals: "transfer" } }] },
+      ],
+    } as never,
+    limit: 50,
+    depth: 0,
+    overrideAccess: true,
+  });
+  for (const extra of held.docs) if (!seen.has(extra.id)) docs.push(extra);
   const store = await payload.findGlobal({ slug: "store-settings", overrideAccess: true });
   const ships = new Map((store.shippingMethods ?? []).map((m) => [m.code, m]));
   const pays = new Map((store.paymentMethods ?? []).map((m) => [m.code, m]));
+  const catalog = await catalogIds((docs as Order[]).flatMap((o) => (o.items ?? []).map((item) => item.sku ?? "")));
   const out: Record<string, unknown> = {};
   for (const o of docs as Order[]) {
     const ship = ships.get(o.shipping?.method ?? "");
@@ -273,8 +356,11 @@ async function ordersGet(payload: Payload, form: FormData) {
       want_invoice: inv.wanted ? 1 : 0,
       extra_field_1: o.orderNumber ?? "",
       extra_field_2: "",
-      products: (o.items ?? []).map((item) => ({
-        id: String(typeof item.product === "object" ? item.product?.id : item.product ?? ""),
+      products: (o.items ?? []).map((item) => {
+        const shopId = typeof item.product === "object" ? item.product?.id : item.product;
+        const catalogId = catalog.get((item.sku ?? "").trim().toLowerCase());
+        return {
+        id: String(catalogId || shopId || ""),
         variant_id: "0",
         name: item.name,
         quantity: Number(item.quantity),
@@ -284,10 +370,12 @@ async function ordersGet(payload: Payload, form: FormData) {
         ean: item.ean ?? "",
         sku: item.sku ?? "",
         attributes: item.variantLabel ? [{ name: "Wariant", value: item.variantLabel, price: 0 }] : [],
-      })),
+        };
+      }),
     };
   }
   await markPulled(payload, docs as Order[]);
+  scheduleCatalogLink();
   return out;
 }
 
@@ -296,9 +384,15 @@ async function markPulled(payload: Payload, docs: Order[]) {
   recordRun("pull", { at: new Date().toISOString(), ok: true, message: docs.length ? `BaseLinker pobrał zamówienia: ${docs.map((o) => o.orderNumber).join(", ")}` : "BaseLinker sprawdził zamówienia – brak nowych" });
   for (const o of docs) {
     if (o.baselinker?.syncStatus === "sent" || o.status === "cancelled") continue;
+    // Nieopłacone zostaje „nieopłacone” w sklepie. W BaseLinkerze i tak jest, ze znacznikiem paid=0.
+    const unpaid = o.payment?.status === "pending" || o.payment?.status === "failed";
+    const handoff = !unpaid && (o.status === "new" || o.status === "paid" || o.status === "awaiting_payment");
     await payload.update({
-      collection: "orders", id: o.id, overrideAccess: true, context: { skipBaseLinker: true },
-      data: { baselinker: { ...(o.baselinker ?? {}), syncStatus: "sent", lastError: "", lastAttemptAt: new Date().toISOString() } } as never,
+      collection: "orders", id: o.id, overrideAccess: true, context: { skipBaseLinker: true, skipMail: true },
+      data: {
+        ...(handoff ? { status: "processing" } : {}),
+        baselinker: { ...(o.baselinker ?? {}), syncStatus: "sent", lastError: "", lastAttemptAt: new Date().toISOString() },
+      } as never,
     });
     await addHistory(payload, o.id, "Pobrane przez BaseLinkera (integracja „Inny sklep”)", "BaseLinker");
   }
@@ -313,22 +407,26 @@ async function orderUpdate(payload: Payload, form: FormData) {
     const order = await payload.findByID({ collection: "orders", id, depth: 0, overrideAccess: true }).catch(() => null);
     if (!order) continue;
     if (type === "status" && value && STATUSES[value]) {
-      await payload.update({ collection: "orders", id, overrideAccess: true, context: { skipBaseLinker: true }, data: { status: value as Order["status"] } });
-      counter++;
-    } else if (type === "paid") {
-      await payload.update({
-        collection: "orders",
-        id,
-        overrideAccess: true,
-        context: { skipBaseLinker: true },
-        data: { payment: { ...(order.payment ?? {}), method: order.payment?.method ?? "p24", status: value === "1" ? "paid" : order.payment?.status }, status: value === "1" ? "paid" : order.status } as never,
+      await withOrderLock(payload, id, async () => {
+        const fresh = await payload.findByID({ collection: "orders", id, depth: 0, overrideAccess: true });
+        if (fresh.status === value) return;
+        await payload.update({ collection: "orders", id, overrideAccess: true, context: { skipBaseLinker: true }, data: { status: value as Order["status"] } });
       });
       counter++;
-    } else if (type === "delivery_number") {
-      // Numer przesyłki z BaseLinkera: zapis w notatce i status „Wysłane” – klient dostaje mail z numerem i linkiem do śledzenia
-      const note = [order.adminNote, value && `Przesyłka: ${value}`].filter(Boolean).join("\n").slice(0, 200);
-      const status = order.status === "cancelled" ? order.status : "shipped";
-      await payload.update({ collection: "orders", id, overrideAccess: true, context: { skipBaseLinker: true, trackingNumber: value }, data: { adminNote: note, status } });
+    } else if (type === "paid" && value === "1") {
+      await markOrderPaid(payload, id, order.payment?.transactionId ?? undefined);
+      counter++;
+    } else if (type === "delivery_number" && value) {
+      // Numer przesyłki zostaje przy zamówieniu. Ten sam numer drugi raz nie wysyła kolejnego maila.
+      await withOrderLock(payload, id, async () => {
+        const fresh = await payload.findByID({ collection: "orders", id, depth: 0, overrideAccess: true });
+        if (fresh.shipping?.trackingNumber === value && (fresh.status === "shipped" || fresh.status === "received" || fresh.status === "cancelled")) return;
+        const status = fresh.status === "cancelled" || fresh.status === "received" ? fresh.status : "shipped";
+        await payload.update({
+          collection: "orders", id, overrideAccess: true, context: { skipBaseLinker: true, trackingNumber: value },
+          data: { status, shipping: { trackingNumber: value } } as never,
+        });
+      });
       counter++;
     }
   }

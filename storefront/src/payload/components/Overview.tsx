@@ -105,13 +105,20 @@ function useLabels() {
   return l;
 }
 
+const pid = (v: unknown) => {
+  if (typeof v === "number") return v;
+  if (typeof v === "string" && /^\d+$/.test(v)) return Number(v);
+  if (v && typeof v === "object" && "id" in v) return Number((v as { id: unknown }).id) || 0;
+  return 0;
+};
+
 const shipLogo = (code = "") =>
   code.includes("paczkomat") ? "/marks/inpost-paczkomat.svg" : code.startsWith("inpost") ? "/marks/inpost-kurier.svg"
     : code.startsWith("orlen") ? "/marks/orlen-paczka.png" : code.startsWith("gls") ? "/marks/gls.svg" : "";
 
 const ORDER_STATUS: Record<string, [string, string]> = {
-  new: ["Nowe", "blue"], awaiting_payment: ["Czeka na płatność", "amber"], paid: ["Opłacone", "green"],
-  processing: ["W realizacji", "violet"], shipped: ["Wysłane", "green"], cancelled: ["Anulowane", "gray"],
+  new: ["Nowe", "blue"], awaiting_payment: ["Nieopłacone", "amber"], paid: ["Opłacone", "green"],
+  processing: ["Przekazane do realizacji", "violet"], shipped: ["Wysłane", "green"], received: ["Odebrane", "green"], cancelled: ["Anulowane", "gray"],
 };
 const PAY_STATUS: Record<string, [string, string]> = {
   pending: ["Czeka na wpłatę", "amber"], paid: ["Opłacone", "green"], failed: ["Nieudana", "red"], refunded: ["Zwrócona", "gray"], deferred: ["Przy odbiorze / odroczona", "blue"],
@@ -132,6 +139,7 @@ export function OrderOverview() {
   const f = useFormFields(([fields]) => fields) as Fields;
   const labels = useLabels();
   const [parcels, setParcels] = useState<Parcel[] | null>(null);
+  const [thumbs, setThumbs] = useState<Record<number, string>>({});
   const blId = num(f, "baselinker.orderId");
   const [events, setEvents] = useState<HistoryEvent[] | null>(null);
   const updatedAt = String(f.updatedAt?.value ?? "");
@@ -156,9 +164,24 @@ export function OrderOverview() {
     return () => { alive = false; };
   }, [id, blId]);
 
-  if (!id) return null;
+  const items = rows(f, "items", ["name", "sku", "ean", "quantity", "priceGross", "vatRate", "variantLabel", "product"]);
+  const productIds = items.map((i) => pid(i.product)).filter((n) => n > 0).join(",");
+  useEffect(() => {
+    if (!productIds) return;
+    let alive = true;
+    fetch(`/api/product-picker?ids=${productIds}`, { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : { hits: [] }))
+      .then((j: { hits?: { id: number; thumb?: string }[] }) => {
+        if (!alive) return;
+        const map: Record<number, string> = {};
+        for (const h of j.hits ?? []) if (h.thumb) map[h.id] = h.thumb;
+        setThumbs(map);
+      })
+      .catch(() => undefined);
+    return () => { alive = false; };
+  }, [productIds]);
 
-  const items = rows(f, "items", ["name", "sku", "ean", "quantity", "priceGross", "vatRate", "variantLabel"]);
+  if (!id) return null;
   const subtotal = items.reduce((s, i) => s + Number(i.quantity ?? 0) * Number(i.priceGross ?? 0), 0);
   const shipPrice = num(f, "shipping.price");
   const ship = str(f, "shipping.method");
@@ -186,15 +209,18 @@ export function OrderOverview() {
             <table className="kc-ov__table">
               <thead><tr><th>Produkt</th><th>Ilość</th><th>Cena</th><th>VAT</th><th>Wartość</th></tr></thead>
               <tbody>
-                {items.map((i, n) => (
+                {items.map((i, n) => {
+                  const thumb = thumbs[pid(i.product)];
+                  return (
                   <tr key={n}>
-                    <td><b>{String(i.name ?? "")}</b><small>{[i.variantLabel, i.sku && `SKU ${i.sku}`, i.ean && `EAN ${i.ean}`].filter(Boolean).join(" · ")}</small></td>
+                    <td><span className="kc-ov__line">{thumb ? <img src={thumb} alt="" /> : <span className="kc-ov__ph" />}<span><b>{String(i.name ?? "")}</b><small>{[i.variantLabel, i.sku && `SKU ${i.sku}`, i.ean && `EAN ${i.ean}`].filter(Boolean).join(" · ")}</small></span></span></td>
                     <td>{Number(i.quantity ?? 0)} szt.</td>
                     <td>{pln(i.priceGross)}</td>
                     <td>{Number(i.vatRate ?? 23)}%</td>
                     <td><b>{pln(Number(i.quantity ?? 0) * Number(i.priceGross ?? 0))}</b></td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
             <div className="kc-ov__sum">
@@ -268,6 +294,9 @@ export function OrderOverview() {
             <Row k="BaseLinker"><Pill m={BL_STATUS} v={str(f, "baselinker.syncStatus") || "pending"} /></Row>
             <Row k="ID w BaseLinkerze">{blId ? String(blId) : ""}</Row>
             {str(f, "baselinker.lastError") && <p className="kc-ov__warn">{str(f, "baselinker.lastError")}</p>}
+            {str(f, "shipping.trackingNumber") && !(parcels ?? []).some((p) => p.number === str(f, "shipping.trackingNumber")) && (
+              <p className="kc-ov__parcel"><Truck size={15} /> <span><b>Numer przesyłki</b> {str(f, "shipping.trackingNumber")}</span></p>
+            )}
             {parcels?.map((p) => (
               <a key={p.number} href={p.url || undefined} target="_blank" rel="noreferrer" className="kc-ov__parcel">
                 <Truck size={15} /> <span><b>{p.courier}</b> {p.number}<small>{p.status}</small></span>{p.url && <ExternalLink size={13} />}

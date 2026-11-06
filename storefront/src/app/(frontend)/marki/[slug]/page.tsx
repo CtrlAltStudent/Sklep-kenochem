@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { BadgeCheck } from "lucide-react";
 import { toCard } from "@/lib/data";
 import { getByBrand, getCategoryCounts, getShopCategories } from "@/lib/catalog";
-import { getShopBrands } from "@/lib/brands";
+import { getShopBrand } from "@/lib/brands";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CatIcon } from "@/components/CatIcon";
 import { Listing } from "@/components/Listing";
@@ -14,16 +14,19 @@ import { siteBase } from "@/lib/site";
 
 export async function generateMetadata(props: PageProps<"/marki/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
-  const brand = (await getShopBrands()).find((b) => b.slug === slug);
+  const brand = await getShopBrand(slug);
   const title = brand ? `${brand.name} – produkty` : undefined;
   const description = brand ? `${brand.name}: ${brand.count} produktów w sklepie Sonax. Oryginalne produkty, wysyłka 24h.` : undefined;
-  return brand ? { title, description, alternates: { canonical: `/marki/${brand.slug}` }, openGraph: { type: "website", siteName: "Sklep Sonax", locale: "pl_PL", title, description } } : {};
+  const sp = await props.searchParams;
+  const page = Math.max(1, Number.parseInt(typeof sp.strona === "string" ? sp.strona : "", 10) || 1);
+  const canonical = brand ? `/marki/${brand.slug}${page > 1 ? `?strona=${page}` : ""}` : "";
+  const pageTitle = title && page > 1 ? `${title} – strona ${page}` : title;
+  return brand ? { title: pageTitle, description, alternates: { canonical }, openGraph: { type: "website", siteName: "Sklep Sonax", locale: "pl_PL", title, description } } : {};
 }
 
 export default async function BrandPage(props: PageProps<"/marki/[slug]">) {
   const { slug } = await props.params;
-  const [brands, items, counts, categories] = await Promise.all([getShopBrands(), getByBrand(slug), getCategoryCounts(), getShopCategories()]);
-  const brand = brands.find((b) => b.slug === slug);
+  const [brand, items, counts, categories] = await Promise.all([getShopBrand(slug), getByBrand(slug), getCategoryCounts(), getShopCategories()]);
   if (!brand) notFound();
   const cats = categories.filter((c) => brand.categories.includes(c.slug));
 
@@ -73,5 +76,5 @@ export default async function BrandPage(props: PageProps<"/marki/[slug]">) {
 }
 
 async function BrandListing({ searchParams, items, counts }: { searchParams: Promise<Record<string, string | string[] | undefined>>; items: ReturnType<typeof toCard>[]; counts: Record<string, number> }) {
-  return <Listing products={items} counts={counts} params={await searchParams} />;
+  return <Listing products={items} counts={counts} params={await searchParams} paged />;
 }

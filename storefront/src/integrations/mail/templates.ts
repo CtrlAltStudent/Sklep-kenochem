@@ -155,7 +155,7 @@ function orderData(o: Order, c: Ctx): { vars: Vars; blocks: Record<string, strin
     blocks: {
       naglowek_zamowienia: chip(o), produkty: itemsTable(o, c), dostawa_i_platnosc: deliveryBox(o, c),
       dane_do_przelewu: transfer && c.bank && pay !== "paid"
-        ? `${gap(16)}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${SOFT}" style="background:${SOFT}"><tr><td style="padding:16px 18px;border-left:3px solid ${accent()};font-size:14px;line-height:1.6;color:${DARK}">${caption("Dane do przelewu")}<br>${esc(c.bank)}<br>Kwota: <b style="font-weight:600">${pln(o.total)}</b><br>Tytuł: <b style="font-weight:600">${esc(o.orderNumber)}</b></td></tr></table>`
+        ? `${gap(16)}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#fff7e6" style="background:#fff7e6"><tr><td style="padding:18px 20px;border-left:4px solid #d97706;font-size:15px;line-height:1.6;color:${DARK}">${caption("Jak zapłacić przelewem")}<br>${esc(c.bank).replace(/\n/g, "<br>")}<br><br>Kwota: <b style="font-size:18px;font-weight:700">${pln(o.total)}</b><br>Tytuł przelewu: <b style="font-size:18px;font-weight:700">${esc(o.orderNumber)}</b><br><span style="color:${MUTED};font-size:13px">W tytule wpisz sam numer zamówienia. Paczkę wyślemy, gdy wpłata pojawi się na koncie.</span></td></tr></table>`
         : "",
     },
   };

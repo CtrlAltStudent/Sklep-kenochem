@@ -139,14 +139,22 @@ function Guest({ onLogin }: { onLogin: () => void }) {
 type OrderRow = {
   id: number; number: string; createdAt: string; status: string; total: number; shippingCost: number;
   items: { name: string; variant: string; qty: number; price: number }[];
-  shipping: { method: string; point: string; address: string }; payment: { method: string; status: string }; hasParcels: boolean;
+  shipping: { method: string; point: string; address: string; tracking?: string }; payment: { method: string; status: string }; hasParcels: boolean;
 };
 const STATUS: Record<string, [string, string]> = {
-  new: ["Przyjęte", "bg-blue-50 text-blue-700"], awaiting_payment: ["Czeka na płatność", "bg-amber-50 text-amber-800"],
-  paid: ["Opłacone – kompletujemy", "bg-green-50 text-green-700"], processing: ["W realizacji", "bg-violet-50 text-violet-700"],
-  shipped: ["Wysłane", "bg-green-100 text-green-800"], cancelled: ["Anulowane", "bg-slate-100 text-slate-500"],
+  new: ["Nowe", "bg-blue-50 text-blue-700"], awaiting_payment: ["Nieopłacone", "bg-amber-50 text-amber-800"],
+  paid: ["Opłacone", "bg-green-50 text-green-700"], processing: ["Przekazane do realizacji", "bg-violet-50 text-violet-700"],
+  shipped: ["Wysłane", "bg-green-100 text-green-800"], received: ["Odebrane", "bg-green-100 text-green-800"], cancelled: ["Anulowane", "bg-slate-100 text-slate-500"],
 };
 const shipName = (c: string) => (c.includes("paczkomat") ? "Paczkomat InPost" : c.startsWith("inpost") ? "Kurier InPost" : c.startsWith("orlen") ? "ORLEN Paczka" : c === "pickup" ? "Odbiór osobisty" : c);
+const trackHref = (method: string, nr: string) => {
+  const n = encodeURIComponent(nr);
+  const c = method.toLowerCase();
+  if (c.includes("inpost") || c.includes("paczkomat")) return `https://inpost.pl/sledzenie-przesylek?number=${n}`;
+  if (c.includes("gls")) return `https://gls-group.com/PL/pl/sledzenie-paczek?match=${n}`;
+  if (c.includes("orlen")) return `https://www.orlenpaczka.pl/sledz-paczke/?numer=${n}`;
+  return "";
+};
 
 function OrderCard({ o }: { o: OrderRow }) {
   const [open, setOpen] = useState(false);
@@ -179,6 +187,13 @@ function OrderCard({ o }: { o: OrderRow }) {
             <li className="flex justify-between gap-3 text-slate-600"><span>Dostawa – {shipName(o.shipping.method)}</span><span>{o.shippingCost ? formatPrice(o.shippingCost) : "gratis"}</span></li>
           </ul>
           <p className="mt-3 text-xs text-slate-600">{o.shipping.point ? `Punkt odbioru: ${o.shipping.point}` : o.shipping.address}</p>
+          {o.shipping.tracking && !(parcels ?? []).some((p) => p.number === o.shipping.tracking) && (
+            <div className="mt-3 flex flex-wrap items-center gap-3 rounded-xl bg-white p-3 ring-1 ring-brand-100">
+              <Truck className="h-5 w-5 text-leaf" />
+              <span className="min-w-0 flex-1"><b>Numer przesyłki</b> · {o.shipping.tracking}</span>
+              {trackHref(o.shipping.method, o.shipping.tracking) && <a href={trackHref(o.shipping.method, o.shipping.tracking)} target="_blank" rel="noreferrer" className="rounded-lg bg-leaf px-3 py-1.5 text-xs font-bold text-white">Śledź paczkę</a>}
+            </div>
+          )}
           {parcels && parcels.length > 0 && (
             <div className="mt-3 space-y-2">
               {parcels.map((p) => (

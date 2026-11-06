@@ -88,8 +88,10 @@ function PriceRange({ min, max, value, onChange }: { min: number; max: number; v
   );
 }
 
-export function Listing({ products, category, counts, params = {} }: {
-  products: ProductCardData[]; category?: Category; counts?: Record<string, number>; params?: Params;
+// paged: lista ma prawdziwe adresy kolejnych stron (?strona=2) – Google nie klika przycisku „Pokaż kolejne”,
+// ale chodzi po linkach. Klient dalej dokłada produkty bez przeładowania.
+export function Listing({ products, category, counts, params = {}, paged = false }: {
+  products: ProductCardData[]; category?: Category; counts?: Record<string, number>; params?: Params; paged?: boolean;
 }) {
   const categories = useShopCategories();
   const typeSub = useMemo(() => new Map(categories.flatMap((c) => c.children.flatMap((s) => s.types.map((t) => [t.slug, s.slug] as const)))), [categories]);
@@ -115,7 +117,10 @@ export function Listing({ products, category, counts, params = {} }: {
   const [onlyNew, setOnlyNew] = useState(one(params.nowosci) === "1");
   const [sort, setSort] = useState<Sort>((one(params.sort) as Sort) in sortLabels ? (one(params.sort) as Sort) : "recommended");
   const [view, setView] = useState<"grid" | "list">(one(params.widok) === "lista" ? "list" : "grid");
-  const [shown, setShown] = useState(PAGE);
+  const firstPage = paged ? Math.max(1, Number.parseInt(one(params.strona), 10) || 1) : 1;
+  const [from, setFrom] = useState((firstPage - 1) * PAGE);
+  const [shown, setShown] = useState(firstPage * PAGE);
+  const restart = () => { setFrom(0); setShown(PAGE); };
   const [brandQuery, setBrandQuery] = useState("");
   const [allBrandsOpen, setAllBrandsOpen] = useState(false);
   const [drawer, setDrawer] = useState(false);
@@ -141,10 +146,10 @@ export function Listing({ products, category, counts, params = {} }: {
   const key = (f: F) => JSON.stringify({ ...f, price: [f.price[0], Number.isFinite(f.price[1]) ? f.price[1] : null] });
   const dirty = key(draft) !== key(applied);
   const loadDraft = (f: F) => { setSubs(f.subs); setTypes(f.types); setCats(f.cats); setBrands(f.brands); setSizes(f.sizes); setForms(f.forms); setPrice(f.price); setOnlyAvailable(f.onlyAvailable); setOnlyPromo(f.onlyPromo); setOnlyNew(f.onlyNew); };
-  const apply = () => { setApplied(draft); setShown(PAGE); };
+  const apply = () => { setApplied(draft); restart(); };
   const cancel = () => loadDraft(applied);
   // Zmiana od razu w obu stanach (np. usunięcie znacznika nad listą)
-  const applyNow = (patch: Partial<F>) => { setApplied({ ...applied, ...patch }); loadDraft({ ...draft, ...patch }); setShown(PAGE); };
+  const applyNow = (patch: Partial<F>) => { setApplied({ ...applied, ...patch }); loadDraft({ ...draft, ...patch }); restart(); };
 
   // Zapis zastosowanych filtrów w adresie strony (bez przeładowania) – link można skopiować i wysłać
   useEffect(() => {
@@ -164,12 +169,14 @@ export function Listing({ products, category, counts, params = {} }: {
     if (a.onlyNew) q.set("nowosci", "1");
     if (sort !== "recommended") q.set("sort", sort);
     if (view === "list") q.set("widok", "lista");
+    if (paged && from > 0) q.set("strona", String(Math.floor(from / PAGE) + 1));
     const url = `${window.location.pathname}${q.size ? `?${q}` : ""}`;
     if (url !== `${window.location.pathname}${window.location.search}`) window.history.replaceState(null, "", url);
-  }, [applied, sort, view]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applied, sort, view, from]);
 
   const empty: F = { subs: [], types: [], cats: [], brands: [], sizes: [], forms: [], price: [0, Infinity], onlyAvailable: false, onlyPromo: false, onlyNew: false };
-  const reset = () => { loadDraft(empty); setApplied(empty); setShown(PAGE); };
+  const reset = () => { loadDraft(empty); setApplied(empty); restart(); };
   const toggle = (arr: string[], set: (v: string[]) => void, v: string) => set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
   // Kategoria 3. poziomu: w podkategorii z zaznaczonymi typami pokazujemy tylko te typy
@@ -206,6 +213,16 @@ export function Listing({ products, category, counts, params = {} }: {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const filtered = useMemo(() => products.filter((p) => match(p, applied)).sort(by[sort]), [products, applied, sort, meta]);
   // Analityka: lista produktów widoczna po filtrach (pierwsze 20) – ponownie tylko po zmianie listy
+  // Strona z adresu (?strona=3) pokazuje od 49. produktu; poza zakresem – od początku
+  const start = from < filtered.length ? from : 0;
+  const pages = Math.ceil(filtered.length / PAGE);
+  // Adres strony listy: tylko podkategoria, typ i wyszukiwana fraza – filtry są zamknięte dla Google (robots.txt)
+  const pageHref = (n: number) => {
+    const q = new URLSearchParams();
+    for (const k of ["q", "sub", "typ"]) { const v = one(params[k]); if (v) q.set(k, v); }
+    if (n > 1) q.set("strona", String(n));
+    return q.size ? `?${q}` : "?";
+  };
   const listKey = filtered.slice(0, 20).map((p) => p.slug).join(",");
   const lastList = useRef("");
   useEffect(() => {
@@ -298,11 +315,11 @@ export function Listing({ products, category, counts, params = {} }: {
       )}
 
       <Section title="Cena" count={priceActive ? 1 : 0}>
-        <PriceRange min={bounds[0]} max={bounds[1]} value={price} onChange={(v) => { setPrice(v); setShown(PAGE); }} />
+        <PriceRange min={bounds[0]} max={bounds[1]} value={price} onChange={(v) => { setPrice(v); restart(); }} />
         <div className="mt-3 flex flex-wrap gap-1.5">
           {pricePresets.map(([l, a, b]) => {
             const on = price[0] === a && price[1] === b;
-            return <button key={l} onClick={() => { setPrice(on ? [0, Infinity] : [a, b]); setShown(PAGE); }}
+            return <button key={l} onClick={() => { setPrice(on ? [0, Infinity] : [a, b]); restart(); }}
               className={`rounded-full px-3 py-1 text-xs font-semibold transition ${on ? "bg-brand-700 text-white" : "bg-brand-50 text-brand-900 hover:bg-brand-100"}`}>{l}</button>;
           })}
         </div>
@@ -346,9 +363,9 @@ export function Listing({ products, category, counts, params = {} }: {
       )}
 
       <Section title="Dostępność i oferta" count={offerCount}>
-        <CheckRow checked={onlyAvailable} onChange={() => { setOnlyAvailable(!onlyAvailable); setShown(PAGE); }} label="Dostępne od ręki – wysyłka 24h" />
-        <CheckRow checked={onlyPromo} onChange={() => { setOnlyPromo(!onlyPromo); setShown(PAGE); }} label="Promocje" />
-        <CheckRow checked={onlyNew} onChange={() => { setOnlyNew(!onlyNew); setShown(PAGE); }} label="Nowości" />
+        <CheckRow checked={onlyAvailable} onChange={() => { setOnlyAvailable(!onlyAvailable); restart(); }} label="Dostępne od ręki – wysyłka 24h" />
+        <CheckRow checked={onlyPromo} onChange={() => { setOnlyPromo(!onlyPromo); restart(); }} label="Promocje" />
+        <CheckRow checked={onlyNew} onChange={() => { setOnlyNew(!onlyNew); restart(); }} label="Nowości" />
       </Section>
     </div>
   );
@@ -448,25 +465,48 @@ export function Listing({ products, category, counts, params = {} }: {
               <>
                 {filtered.length > 10 && <HelpBanner />}
                 <div className="grid grid-cols-2 gap-x-3 gap-y-7 sm:gap-x-5 md:grid-cols-3 xl:grid-cols-4 min-[1880px]:grid-cols-5">
-                  {filtered.slice(0, shown).map((p, i) => (
+                  {filtered.slice(start, shown).map((p, i) => (
                     <ProductCard key={p.slug} product={p} priority={i < 4} />
                   ))}
                 </div>
               </>
             ) : (
               <div className="space-y-3">
-                {filtered.slice(0, shown).map((p) => <ProductRow key={p.slug} product={p} />)}
+                {filtered.slice(start, shown).map((p) => <ProductRow key={p.slug} product={p} />)}
               </div>
             )}
-            {shown < filtered.length && (
+            {(shown < filtered.length || (paged && pages > 1)) && (
               <div className="mt-12 flex flex-col items-center gap-3">
-                <p className="text-sm text-slate-500">Wyświetlono {shown} z {filtered.length} produktów</p>
+                <p className="text-sm text-slate-500">
+                  Wyświetlono {start > 0 ? `${start + 1}–${Math.min(shown, filtered.length)}` : Math.min(shown, filtered.length)} z {filtered.length} produktów
+                </p>
                 <div className="h-1.5 w-60 overflow-hidden rounded-full bg-brand-100">
-                  <div className="h-full bg-accent" style={{ width: `${(shown / filtered.length) * 100}%` }} />
+                  <div className="h-full bg-accent" style={{ width: `${(Math.min(shown, filtered.length) / filtered.length) * 100}%` }} />
                 </div>
-                <button onClick={() => setShown(shown + PAGE)} className="rounded-full border-2 border-brand-700 px-8 py-3 font-bold text-brand-700 transition hover:bg-brand-700 hover:text-white">
-                  Pokaż kolejne {Math.min(PAGE, filtered.length - shown)}
-                </button>
+                {shown < filtered.length && (paged ? (
+                  // Prawdziwy link do następnej strony – dla Google; w przeglądarce dokładamy produkty bez przeładowania
+                  <a href={pageHref(Math.floor(shown / PAGE) + 1)} onClick={(e) => { e.preventDefault(); setShown(shown + PAGE); }}
+                    className="rounded-full border-2 border-brand-700 px-8 py-3 font-bold text-brand-700 transition hover:bg-brand-700 hover:text-white">
+                    Pokaż kolejne {Math.min(PAGE, filtered.length - shown)}
+                  </a>
+                ) : (
+                  <button onClick={() => setShown(shown + PAGE)} className="rounded-full border-2 border-brand-700 px-8 py-3 font-bold text-brand-700 transition hover:bg-brand-700 hover:text-white">
+                    Pokaż kolejne {Math.min(PAGE, filtered.length - shown)}
+                  </button>
+                ))}
+                {paged && pages > 1 && activeCount === 0 && (
+                  <nav aria-label="Strony listy produktów" className="mt-2 flex flex-wrap justify-center gap-1.5 text-sm">
+                    {Array.from({ length: pages }, (_, i) => i + 1).map((n) => {
+                      const here = n > start / PAGE && n <= Math.ceil(Math.min(shown, filtered.length) / PAGE);
+                      return (
+                        <a key={n} href={pageHref(n)} aria-current={n === Math.floor(start / PAGE) + 1 ? "page" : undefined}
+                          className={`grid h-9 min-w-9 place-items-center rounded-lg px-2 font-semibold ring-1 transition ${here ? "bg-brand-700 text-white ring-brand-700" : "bg-white text-slate-600 ring-brand-100 hover:ring-accent"}`}>
+                          {n}
+                        </a>
+                      );
+                    })}
+                  </nav>
+                )}
               </div>
             )}
           </>

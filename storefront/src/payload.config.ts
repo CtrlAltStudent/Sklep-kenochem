@@ -60,6 +60,7 @@ export default buildConfig({
         dashboard: { Component: "@/payload/components/Dashboard#Dashboard" },
         reports: { Component: "@/payload/components/Reports#Reports", path: "/raporty", meta: { title: "Raporty sprzedaży" } },
         stats: { Component: "@/payload/components/Stats#Stats", path: "/statystyki", meta: { title: "Statystyki sklepu" } },
+        live: { Component: "@/payload/components/Live#Live", path: "/na-zywo", meta: { title: "Na żywo" } },
         missing: { Component: "@/payload/components/MissingPages#MissingPages", path: "/brakujace-strony", meta: { title: "Brakujące strony" } },
         promotions: { Component: "@/payload/components/Promotions#Promotions", path: "/promocje", meta: { title: "Kampania promocyjna" } },
         googleReviews: { Component: "@/payload/components/GoogleReviews#GoogleReviews", path: "/opinie-google", meta: { title: "Opinie z Google" } },
